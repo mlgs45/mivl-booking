@@ -49,6 +49,69 @@ export default async function EnseignantDashboard() {
     );
   }
 
+  if (enseignant.statut !== "VALIDE") {
+    return (
+      <>
+        <AppHeader session={session} />
+        <main className="max-w-2xl mx-auto px-4 sm:px-6 py-12">
+          <h1 className="text-3xl font-heading font-bold text-neutral-900 mb-2">
+            Bonjour {enseignant.prenom}
+          </h1>
+          <p className="text-sm text-neutral-700 mb-8">
+            {enseignant.etablissement} · {enseignant.ville}
+          </p>
+
+          {enseignant.statut === "SOUMIS" && (
+            <div className="rounded-xl border border-primary/20 bg-primary/5 p-6">
+              <div className="flex items-start gap-3">
+                <span className="mt-1 w-2.5 h-2.5 rounded-full bg-primary animate-pulse shrink-0" />
+                <div>
+                  <h2 className="font-heading font-bold text-neutral-900 mb-1">
+                    Inscription en attente de validation
+                  </h2>
+                  <p className="text-sm text-neutral-700 leading-relaxed">
+                    Votre inscription est en cours d&#39;examen par l&#39;équipe
+                    de la CCI Centre-Val de Loire. Vous recevrez un email dès
+                    qu&#39;elle sera validée pour créer vos groupes et réserver
+                    leur parcours. Délai habituel : 2 jours ouvrés.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {enseignant.statut === "REFUSE" && (
+            <div className="rounded-xl border border-danger/20 bg-danger/5 p-6">
+              <h2 className="font-heading font-bold text-danger mb-2">
+                Inscription non retenue
+              </h2>
+              {enseignant.motifRefus && (
+                <>
+                  <p className="text-sm font-semibold text-neutral-900 mb-1">
+                    Motif
+                  </p>
+                  <p className="text-sm text-neutral-900 mb-4">
+                    {enseignant.motifRefus}
+                  </p>
+                </>
+              )}
+              <p className="text-sm text-neutral-700">
+                Pour toute question, contactez l&#39;équipe MIVL à{" "}
+                <a
+                  href="mailto:mathieu.langlois@centre.cci.fr"
+                  className="text-primary hover:underline underline-offset-2"
+                >
+                  mathieu.langlois@centre.cci.fr
+                </a>
+                .
+              </p>
+            </div>
+          )}
+        </main>
+      </>
+    );
+  }
+
   const groupes = enseignant.groupes;
   const nbAvecParcours = groupes.filter((g) => g.rendezVous.length > 0).length;
 

@@ -3,6 +3,7 @@
 import { db } from "@/lib/db";
 import { signIn } from "@/auth";
 import { inscriptionEnseignantSchema } from "@/lib/validation/enseignant";
+import { sendEmail } from "@/lib/emails";
 
 export type InscriptionEnseignantState = {
   ok: boolean;
@@ -60,6 +61,12 @@ export async function inscrireEnseignant(
         },
       },
     },
+  });
+
+  await sendEmail({
+    to: email,
+    template: "confirmation-inscription-enseignant",
+    data: { prenom, etablissement },
   });
 
   await signIn("nodemailer", { email, redirectTo: "/enseignant" });

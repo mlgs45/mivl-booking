@@ -9,18 +9,25 @@ export default async function AdminDashboard() {
   const session = await auth();
   if (!session?.user) return null;
 
-  const [exposantStats, userCount] = await Promise.all([
+  const [exposantStats, enseignantStats, userCount] = await Promise.all([
     db.exposant.groupBy({ by: ["statut"], _count: { _all: true } }),
+    db.enseignant.groupBy({ by: ["statut"], _count: { _all: true } }),
     db.user.count(),
   ]);
 
   const byStatut = Object.fromEntries(
     exposantStats.map((s) => [s.statut, s._count._all]),
   );
+  const byStatutEnseignant = Object.fromEntries(
+    enseignantStats.map((s) => [s.statut, s._count._all]),
+  );
 
   const soumisCount = byStatut.SOUMIS ?? 0;
   const valideCount = byStatut.VALIDE ?? 0;
   const totalExposants = exposantStats.reduce((sum, s) => sum + s._count._all, 0);
+  const enseignantsSoumis = byStatutEnseignant.SOUMIS ?? 0;
+  const enseignantsValides = byStatutEnseignant.VALIDE ?? 0;
+  const totalEnseignants = enseignantStats.reduce((sum, s) => sum + s._count._all, 0);
 
   return (
     <>
@@ -35,26 +42,51 @@ export default async function AdminDashboard() {
           </p>
         </div>
 
-        {/* Alerte si candidatures en attente */}
-        {soumisCount > 0 && (
-          <Link
-            href="/admin/exposants?statut=SOUMIS"
-            className="flex items-center gap-3 mb-6 rounded-xl border border-primary/20 bg-primary/5 p-4 hover:bg-primary/8 transition-colors"
-          >
-            <span className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse shrink-0" />
-            <p className="text-sm text-primary font-medium">
-              {soumisCount} candidature{soumisCount > 1 ? "s" : ""} exposant
-              {soumisCount > 1 ? "s" : ""} en attente de validation →
-            </p>
-          </Link>
+        {/* Alertes à traiter */}
+        {(soumisCount > 0 || enseignantsSoumis > 0) && (
+          <div className="space-y-2 mb-6">
+            {soumisCount > 0 && (
+              <Link
+                href="/admin/exposants?statut=SOUMIS"
+                className="flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/5 p-4 hover:bg-primary/8 transition-colors"
+              >
+                <span className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse shrink-0" />
+                <p className="text-sm text-primary font-medium">
+                  {soumisCount} candidature{soumisCount > 1 ? "s" : ""} exposant
+                  {soumisCount > 1 ? "s" : ""} en attente de validation →
+                </p>
+              </Link>
+            )}
+            {enseignantsSoumis > 0 && (
+              <Link
+                href="/admin/enseignants?statut=SOUMIS"
+                className="flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/5 p-4 hover:bg-primary/8 transition-colors"
+              >
+                <span className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse shrink-0" />
+                <p className="text-sm text-primary font-medium">
+                  {enseignantsSoumis} inscription{enseignantsSoumis > 1 ? "s" : ""} enseignant
+                  {enseignantsSoumis > 1 ? "s" : ""} en attente de validation →
+                </p>
+              </Link>
+            )}
+          </div>
         )}
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-          <StatCard label="Exposants total" value={totalExposants} href="/admin/exposants" />
+        {/* Stats exposants */}
+        <h2 className="text-sm font-bold uppercase tracking-wider text-neutral-500 mb-3">Exposants</h2>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <StatCard label="Total" value={totalExposants} href="/admin/exposants" />
           <StatCard label="Validés" value={valideCount} href="/admin/exposants?statut=VALIDE" accent="success" />
           <StatCard label="À traiter" value={soumisCount} href="/admin/exposants?statut=SOUMIS" accent={soumisCount > 0 ? "primary" : undefined} />
           <StatCard label="Inscrits (tous rôles)" value={userCount} />
+        </div>
+
+        {/* Stats enseignants */}
+        <h2 className="text-sm font-bold uppercase tracking-wider text-neutral-500 mb-3">Enseignants</h2>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+          <StatCard label="Total" value={totalEnseignants} href="/admin/enseignants" />
+          <StatCard label="Validés" value={enseignantsValides} href="/admin/enseignants?statut=VALIDE" accent="success" />
+          <StatCard label="À traiter" value={enseignantsSoumis} href="/admin/enseignants?statut=SOUMIS" accent={enseignantsSoumis > 0 ? "primary" : undefined} />
         </div>
 
         {/* Actions rapides */}
@@ -66,9 +98,10 @@ export default async function AdminDashboard() {
             badge={soumisCount > 0 ? `${soumisCount} en attente` : undefined}
           />
           <ActionCard
-            href="/admin/exposants?statut=VALIDE"
-            title="Exposants validés"
-            description={`${valideCount} exposant${valideCount > 1 ? "s" : ""} confirmé${valideCount > 1 ? "s" : ""} pour le salon.`}
+            href="/admin/enseignants"
+            title="Gérer les enseignants"
+            description="Valider les inscriptions des référents enseignants avant leurs réservations."
+            badge={enseignantsSoumis > 0 ? `${enseignantsSoumis} en attente` : undefined}
           />
           <ActionCard
             href="/admin"

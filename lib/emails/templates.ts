@@ -8,6 +8,9 @@ export type EmailTemplate =
   | "confirmation-inscription-exposant"
   | "exposant-valide"
   | "exposant-refuse"
+  | "confirmation-inscription-enseignant"
+  | "enseignant-valide"
+  | "enseignant-refuse"
   | "confirmation-rdv-enseignant"
   | "confirmation-rdv-visiteur"
   | "rappel-j-moins-1"
@@ -18,6 +21,9 @@ interface TemplateData {
   "confirmation-inscription-exposant": { raisonSociale: string };
   "exposant-valide": { raisonSociale: string; appUrl: string };
   "exposant-refuse": { raisonSociale: string; motif: string };
+  "confirmation-inscription-enseignant": { prenom: string; etablissement: string };
+  "enseignant-valide": { prenom: string; appUrl: string };
+  "enseignant-refuse": { prenom: string; motif: string };
   "confirmation-rdv-enseignant": {
     nomGroupe: string;
     planningUrl: string;
@@ -120,6 +126,50 @@ export function renderEmail<K extends EmailTemplate>(
           <p>Cordialement,<br>L'équipe MIVL</p>
         `),
         text: `Candidature non retenue pour cette édition. Motif : ${d.motif}`,
+      };
+    }
+    case "confirmation-inscription-enseignant": {
+      const d = data as TemplateData["confirmation-inscription-enseignant"];
+      return {
+        subject: "Votre inscription enseignant est enregistrée — MIVL Booking",
+        html: baseLayout(`
+          <p>Bonjour ${d.prenom},</p>
+          <p>Nous avons bien reçu votre inscription en tant qu'enseignant référent pour <strong>${d.etablissement}</strong> au salon Made In Val de Loire 2026.</p>
+          <p>Votre demande est en cours d'examen par l'équipe de la CCI Centre-Val de Loire. Vous recevrez un email dès que votre compte sera validé pour créer vos groupes et réserver leurs parcours.</p>
+          <p>À bientôt,<br>L'équipe MIVL</p>
+        `),
+        text: `Inscription enseignant enregistrée pour ${d.etablissement}. Validation par la CCI à venir.`,
+      };
+    }
+    case "enseignant-valide": {
+      const d = data as TemplateData["enseignant-valide"];
+      return {
+        subject: "Votre inscription enseignant est validée 🎉 — MIVL Booking",
+        html: baseLayout(`
+          <p>Bonjour ${d.prenom},</p>
+          <p>Bonne nouvelle ! Votre inscription enseignant a été validée par la CCI Centre-Val de Loire.</p>
+          <p>Vous pouvez dès à présent créer vos groupes et réserver leur parcours de 4 rendez-vous :</p>
+          <p style="margin: 32px 0;">
+            <a href="${d.appUrl}/enseignant" style="background: #1B4DB5; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">Accéder à mon espace</a>
+          </p>
+          <p>À bientôt,<br>L'équipe MIVL</p>
+        `),
+        text: `Inscription validée. Accédez à votre espace : ${d.appUrl}/enseignant`,
+      };
+    }
+    case "enseignant-refuse": {
+      const d = data as TemplateData["enseignant-refuse"];
+      return {
+        subject: "Suite donnée à votre inscription — MIVL Booking",
+        html: baseLayout(`
+          <p>Bonjour ${d.prenom},</p>
+          <p>Nous vous remercions de votre intérêt pour le salon Made In Val de Loire 2026.</p>
+          <p>Après examen, nous ne sommes malheureusement pas en mesure de retenir votre inscription en tant qu'enseignant pour cette édition.</p>
+          <p><strong>Motif :</strong> ${d.motif}</p>
+          <p>Pour toute question, n'hésitez pas à nous contacter par retour d'email.</p>
+          <p>Cordialement,<br>L'équipe MIVL</p>
+        `),
+        text: `Inscription enseignant non retenue. Motif : ${d.motif}`,
       };
     }
     case "confirmation-rdv-enseignant": {

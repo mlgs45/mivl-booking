@@ -18,9 +18,10 @@ async function getEnseignantId(): Promise<string | null> {
   if (!session?.user || session.user.role !== "ENSEIGNANT") return null;
   const ens = await db.enseignant.findUnique({
     where: { userId: session.user.id },
-    select: { id: true },
+    select: { id: true, statut: true },
   });
-  return ens?.id ?? null;
+  if (!ens || ens.statut !== "VALIDE") return null;
+  return ens.id;
 }
 
 function parsePrenoms(raw: FormDataEntryValue | null): string[] {

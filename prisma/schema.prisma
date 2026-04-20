@@ -31,6 +31,12 @@ enum StatutExposant {
   REFUSE
 }
 
+enum StatutEnseignant {
+  SOUMIS
+  VALIDE
+  REFUSE
+}
+
 /// Posture de l'exposant vis-à-vis du recrutement au moment du salon
 enum StatutRecrutement {
   OUI
@@ -260,10 +266,17 @@ model Enseignant {
   matiere       String?
   niveau        NiveauGroupe? // Niveau principal enseigné (indicatif)
 
+  statut        StatutEnseignant @default(SOUMIS)
+  motifRefus    String?          @db.Text
+  valideParId   String?
+  valideA       DateTime?
+
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   groupes       Groupe[]
+
+  @@index([statut])
 }
 
 model Groupe {
