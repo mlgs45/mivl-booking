@@ -97,7 +97,9 @@ enum StatutEmail {
 model User {
   id             String    @id @default(cuid())
   email          String    @unique
-  emailVerifie   DateTime?
+  // Champ attendu par Auth.js (@auth/prisma-adapter)
+  emailVerified  DateTime?
+  image          String?
   role           Role
   name           String?
   phone          String?
@@ -105,6 +107,11 @@ model User {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
+  // Relations Auth.js
+  accounts Account[]
+  sessions Session[]
+
+  // Relations métier
   exposant        Exposant?
   enseignant      Enseignant?
   jeune           Jeune?
@@ -415,8 +422,28 @@ model ConfigurationSalon {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// AUTH.JS v5 — tables supports (sessions, magic link tokens)
+// AUTH.JS v5 — tables supports (schéma attendu par @auth/prisma-adapter)
 // ═══════════════════════════════════════════════════════════════════════════
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
 
 model Session {
   id           String   @id @default(cuid())
@@ -424,6 +451,10 @@ model Session {
   userId       String
   expires      DateTime
   createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model VerificationToken {

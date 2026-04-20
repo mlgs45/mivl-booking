@@ -73,7 +73,7 @@ async function main() {
       role: "SUPER_ADMIN",
       name: "Mathieu Langlois",
       hashedPassword: passwordHash,
-      emailVerifie: new Date(),
+      emailVerified: new Date(),
     },
   });
 
@@ -84,7 +84,7 @@ async function main() {
       role: "GESTIONNAIRE",
       name: "Claire Moreau",
       hashedPassword: passwordHash,
-      emailVerifie: new Date(),
+      emailVerified: new Date(),
     },
   });
 
@@ -206,7 +206,7 @@ async function main() {
         email: ex.email,
         role: "EXPOSANT",
         name: ex.raisonSociale,
-        emailVerifie: new Date(),
+        emailVerified: new Date(),
       },
     });
     const exposant = await db.exposant.create({
@@ -238,7 +238,7 @@ async function main() {
       email: "profhistoire@college-jean-rostand.fr",
       role: "ENSEIGNANT",
       name: "Élise Dupont",
-      emailVerifie: new Date(),
+      emailVerified: new Date(),
     },
   });
   const enseignant1 = await db.enseignant.create({
@@ -258,7 +258,7 @@ async function main() {
       email: "profsvt@lycee-benjamin-franklin.fr",
       role: "ENSEIGNANT",
       name: "Thomas Leroy",
-      emailVerifie: new Date(),
+      emailVerified: new Date(),
     },
   });
   const enseignant2 = await db.enseignant.create({
@@ -403,7 +403,7 @@ async function main() {
         email: j.email,
         role: "JEUNE",
         name: `${j.prenom} ${j.nom}`,
-        emailVerifie: new Date(),
+        emailVerified: new Date(),
       },
     });
     const jeune = await db.jeune.create({
@@ -446,7 +446,7 @@ async function main() {
         email: de.email,
         role: "DEMANDEUR_EMPLOI",
         name: `${de.prenom} ${de.nom}`,
-        emailVerifie: new Date(),
+        emailVerified: new Date(),
       },
     });
     const d = await db.demandeurEmploi.create({
