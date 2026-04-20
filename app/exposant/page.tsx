@@ -63,7 +63,7 @@ export default async function ExposantDashboard({
       ville: true,
       numStand: true,
       emplacement: true,
-      _count: { select: { membresStand: true } },
+      _count: { select: { membresStand: true, creneaux: true } },
     },
   });
 
@@ -195,6 +195,17 @@ export default async function ExposantDashboard({
               </h2>
               <p className="text-sm text-neutral-700">
                 Relire ou mettre à jour vos informations validées.
+              </p>
+            </Link>
+            <Link
+              href="/exposant/rdv"
+              className="block rounded-xl border border-neutral-100 bg-white p-6 hover:border-primary/30 hover:bg-primary/3 transition-colors sm:col-span-2 lg:col-span-1"
+            >
+              <h2 className="font-heading font-bold text-neutral-900 mb-1">
+                Mes rendez-vous
+              </h2>
+              <p className="text-sm text-neutral-700">
+                Groupes scolaires le matin, speed datings l'après-midi.
               </p>
             </Link>
           </div>
