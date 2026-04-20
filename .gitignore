@@ -30,11 +30,17 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# env files
+.env
+.env.local
+.env.*.local
+# .env.example est volontairement commité (pas de secrets)
 
 # vercel
 .vercel
+
+# uploads générés (badges PDF, plannings)
+/uploads
 
 # typescript
 *.tsbuildinfo

@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
-import { Inter, Poppins, Geist } from "next/font/google";
+import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
-
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const inter = Inter({
   variable: "--font-inter",
@@ -36,7 +34,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr" className={cn("h-full", inter.variable, poppins.variable, "font-sans", geist.variable)}>
+    <html
+      lang="fr"
+      className={cn("h-full", inter.variable, poppins.variable)}
+    >
       <body className="min-h-full flex flex-col antialiased">{children}</body>
     </html>
   );
