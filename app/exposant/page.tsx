@@ -61,6 +61,9 @@ export default async function ExposantDashboard({
       statut: true,
       motifRefus: true,
       ville: true,
+      numStand: true,
+      emplacement: true,
+      _count: { select: { membresStand: true } },
     },
   });
 
@@ -157,6 +160,42 @@ export default async function ExposantDashboard({
               className="inline-block bg-white border border-neutral-100 hover:bg-neutral-50 text-neutral-900 font-semibold px-5 py-2.5 rounded-lg transition-colors"
             >
               Consulter mon profil →
+            </Link>
+          </div>
+        )}
+
+        {exposant.statut === "VALIDE" && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Link
+              href="/exposant/stand"
+              className="block rounded-xl border border-neutral-100 bg-white p-6 hover:border-primary/30 hover:bg-primary/3 transition-colors"
+            >
+              <div className="flex items-center justify-between gap-2 mb-1">
+                <h2 className="font-heading font-bold text-neutral-900">
+                  Mon stand
+                </h2>
+                {exposant.numStand && (
+                  <span className="shrink-0 text-xs bg-primary text-white font-semibold px-2 py-0.5 rounded-full">
+                    {exposant.numStand}
+                  </span>
+                )}
+              </div>
+              <p className="text-sm text-neutral-700">
+                {exposant.emplacement ?? "Emplacement à venir"} ·{" "}
+                {exposant._count.membresStand} membre
+                {exposant._count.membresStand > 1 ? "s" : ""}
+              </p>
+            </Link>
+            <Link
+              href="/exposant/profil"
+              className="block rounded-xl border border-neutral-100 bg-white p-6 hover:border-primary/30 hover:bg-primary/3 transition-colors"
+            >
+              <h2 className="font-heading font-bold text-neutral-900 mb-1">
+                Mon profil entreprise
+              </h2>
+              <p className="text-sm text-neutral-700">
+                Relire ou mettre à jour vos informations validées.
+              </p>
             </Link>
           </div>
         )}

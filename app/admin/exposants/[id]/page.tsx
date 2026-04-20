@@ -11,6 +11,7 @@ import type { ElementStandCode } from "@/lib/referentiel/elements-stand";
 import type { AnimationCode } from "@/lib/referentiel/animations";
 import { RefuserForm } from "./refuser-form";
 import { ValiderForm } from "./valider-form";
+import { AttribuerStandForm } from "./attribuer-stand-form";
 import type { TypeOffre, TypeOpportunite } from "@prisma/client";
 
 const OFFRE_LABELS: Record<TypeOffre, string> = {
@@ -63,7 +64,10 @@ export default async function AdminExposantDetailPage({
 
   const exposant = await db.exposant.findUnique({
     where: { id },
-    include: { user: { select: { email: true, name: true, createdAt: true } } },
+    include: {
+      user: { select: { email: true, name: true, createdAt: true } },
+      membresStand: { orderBy: { createdAt: "asc" } },
+    },
   });
   if (!exposant) notFound();
 
@@ -117,6 +121,25 @@ export default async function AdminExposantDetailPage({
           <div className="mb-8 rounded-xl border border-danger/20 bg-danger/5 p-5">
             <p className="text-sm font-semibold text-danger mb-1">Motif de refus</p>
             <p className="text-sm text-neutral-900">{exposant.motifRefus}</p>
+          </div>
+        )}
+
+        {exposant.statut === "VALIDE" && (
+          <div className="mb-8 rounded-xl border border-neutral-100 bg-neutral-50 p-5">
+            <div className="flex items-center justify-between gap-4 mb-3">
+              <h2 className="font-heading font-semibold text-neutral-900">
+                Attribution de stand
+              </h2>
+              <span className="text-xs text-neutral-500">
+                {exposant.membresStand.length} membre{exposant.membresStand.length > 1 ? "s" : ""} équipe
+              </span>
+            </div>
+            <AttribuerStandForm
+              exposantId={exposant.id}
+              defaultNumStand={exposant.numStand}
+              defaultEmplacement={exposant.emplacement}
+              defaultSuperficie={exposant.superficie}
+            />
           </div>
         )}
 

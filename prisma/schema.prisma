@@ -197,14 +197,51 @@ model Exposant {
   valideParId                  String?
   valideA                      DateTime?
 
+  // ── Stand (renseigné après validation) ──
+  /// Numéro / identifiant unique de stand attribué par la CCI (ex: "B12")
+  numStand                     String?        @unique
+  /// Zone / emplacement libre (ex: "Hall A - Zone Industrie")
+  emplacement                  String?
+  /// Superficie en m² (6 par défaut, plus pour partenaires)
+  superficie                   Int?
+  /// Nom commercial du stand (peut différer de la raison sociale)
+  nomStand                     String?
+  /// Accroche courte visible sur le stand / plan
+  accrocheStand                String?        @db.Text
+
   createdAt                    DateTime       @default(now())
   updatedAt                    DateTime       @updatedAt
 
   creneaux                     Creneau[]
   scansStand                   ScanEntreeStand[]
+  membresStand                 MembreStand[]
 
   @@index([statut])
   @@index([ville])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MEMBRES DE STAND (équipe présente le jour J — pas de compte utilisateur)
+// ═══════════════════════════════════════════════════════════════════════════
+
+model MembreStand {
+  id         String   @id @default(cuid())
+  exposantId String
+  exposant   Exposant @relation(fields: [exposantId], references: [id], onDelete: Cascade)
+
+  prenom     String
+  nom        String
+  email      String?
+  telephone  String?
+  fonction   String?
+
+  /// Token QR unique pour badge d'accès / pointage jour J
+  qrToken    String   @unique @default(cuid())
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([exposantId])
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

@@ -34,6 +34,7 @@ async function main() {
   await db.scanEntreeStand.deleteMany();
   await db.rendezVous.deleteMany();
   await db.creneau.deleteMany();
+  await db.membreStand.deleteMany();
   await db.exposant.deleteMany();
   await db.groupe.deleteMany();
   await db.enseignant.deleteMany();
@@ -122,6 +123,15 @@ async function main() {
       statutRecrutement: "OUI" as const,
       ressourcesMatin: 2,
       ressourcesApresMidi: 3,
+      numStand: "A01",
+      emplacement: "Hall A — Zone Aéronautique",
+      superficie: 9,
+      nomStand: "Thalès Mécanique — Usinage 5 axes",
+      accrocheStand: "Venez voir nos pièces titane de précision",
+      membres: [
+        { prenom: "Julien", nom: "Chauvin", fonction: "Responsable RH", email: "j.chauvin@thalesmecanique.fr" },
+        { prenom: "Amélie", nom: "Rousset", fonction: "Chargée de recrutement" },
+      ],
     },
     {
       email: "rh@cosmetique-loire.fr",
@@ -148,6 +158,15 @@ async function main() {
       statutRecrutement: "OUI" as const,
       ressourcesMatin: 2,
       ressourcesApresMidi: 2,
+      numStand: "B12",
+      emplacement: "Hall B — Zone Cosmétique & Pharma",
+      superficie: 6,
+      nomStand: "Cosmétique Val de Loire",
+      accrocheStand: "Conditionnement de luxe — nos métiers en démo",
+      membres: [
+        { prenom: "Karine", nom: "Boisseau", fonction: "DRH", email: "k.boisseau@cosmetique-loire.fr" },
+        { prenom: "Paul", nom: "Deschamps", fonction: "Responsable production" },
+      ],
     },
     {
       email: "emploi@plastiloire.fr",
@@ -174,6 +193,14 @@ async function main() {
       statutRecrutement: "PROCHAINEMENT" as const,
       ressourcesMatin: 1,
       ressourcesApresMidi: 2,
+      numStand: "C05",
+      emplacement: "Hall C — Zone Plasturgie",
+      superficie: 6,
+      nomStand: "Plastiloire Industries",
+      accrocheStand: "Injection plastique haute performance",
+      membres: [
+        { prenom: "Olivier", nom: "Moreau", fonction: "Dirigeant", email: "o.moreau@plastiloire.fr" },
+      ],
     },
     {
       email: "recrutement@metallurgie-bourges.fr",
@@ -201,6 +228,14 @@ async function main() {
       statutRecrutement: "NON" as const,
       ressourcesMatin: 1,
       ressourcesApresMidi: 1,
+      numStand: "D03",
+      emplacement: "Hall D — Zone Métallurgie",
+      superficie: 6,
+      nomStand: "Métallurgie de Bourges",
+      accrocheStand: "Fonderie d'aluminium et ferroviaire",
+      membres: [
+        { prenom: "Catherine", nom: "Lefèvre", fonction: "Responsable RH" },
+      ],
     },
     {
       email: "dev@numeric-tours.fr",
@@ -236,6 +271,16 @@ async function main() {
       statutRecrutement: "OUI" as const,
       ressourcesMatin: 2,
       ressourcesApresMidi: 3,
+      numStand: "E08",
+      emplacement: "Hall E — Zone Digital & Industrie 4.0",
+      superficie: 12,
+      nomStand: "Numeric Tours — Industrie 4.0",
+      accrocheStand: "Démos live IoT & automatismes — venez coder avec nous",
+      membres: [
+        { prenom: "Sébastien", nom: "Gautier", fonction: "CTO", email: "s.gautier@numeric-tours.fr" },
+        { prenom: "Noémie", nom: "Valette", fonction: "Lead dev embarqué" },
+        { prenom: "Marc", nom: "Tissier", fonction: "Chargé de recrutement" },
+      ],
     },
   ];
 
@@ -277,8 +322,24 @@ async function main() {
         statut: "VALIDE",
         valideParId: superAdmin.id,
         valideA: new Date(),
+        numStand: ex.numStand,
+        emplacement: ex.emplacement,
+        superficie: ex.superficie,
+        nomStand: ex.nomStand,
+        accrocheStand: ex.accrocheStand,
       },
     });
+    for (const m of ex.membres) {
+      await db.membreStand.create({
+        data: {
+          exposantId: exposant.id,
+          prenom: m.prenom,
+          nom: m.nom,
+          fonction: m.fonction,
+          email: "email" in m ? m.email : null,
+        },
+      });
+    }
     exposants.push(exposant);
   }
 
