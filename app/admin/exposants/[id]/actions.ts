@@ -195,3 +195,40 @@ export async function attribuerStand(
   revalidatePath(`/admin/exposants/${exposantId}`);
   return { ok: true, message: "Stand mis à jour." };
 }
+
+export async function togglePartenaire(
+  _prev: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  const session = await getAdminSession();
+  if (!session?.user) return { ok: false, message: "Non autorisé." };
+
+  const id = formData.get("exposantId");
+  if (typeof id !== "string") return { ok: false, message: "ID manquant." };
+
+  const exposant = await db.exposant.findUnique({
+    where: { id },
+    select: { estPartenaire: true },
+  });
+  if (!exposant) return { ok: false, message: "Exposant introuvable." };
+
+  const next = !exposant.estPartenaire;
+  await db.exposant.update({
+    where: { id },
+    data: { estPartenaire: next },
+  });
+
+  await db.auditLog.create({
+    data: {
+      userId: session.user.id,
+      action: next ? "exposant.partenaire.on" : "exposant.partenaire.off",
+      entite: "Exposant",
+      entiteId: id,
+    },
+  });
+
+  revalidatePath("/admin/exposants");
+  revalidatePath(`/admin/exposants/${id}`);
+  revalidatePath("/exposants");
+  return { ok: true, message: next ? "Marqué comme partenaire." : "Marqueur partenaire retiré." };
+}

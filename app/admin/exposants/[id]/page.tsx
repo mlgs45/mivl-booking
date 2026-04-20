@@ -12,6 +12,7 @@ import type { AnimationCode } from "@/lib/referentiel/animations";
 import { RefuserForm } from "./refuser-form";
 import { ValiderForm } from "./valider-form";
 import { AttribuerStandForm } from "./attribuer-stand-form";
+import { PartenaireToggle } from "./partenaire-toggle";
 import type { TypeOffre, TypeOpportunite } from "@prisma/client";
 
 const OFFRE_LABELS: Record<TypeOffre, string> = {
@@ -99,9 +100,16 @@ export default async function AdminExposantDetailPage({
               {new Date(exposant.user.createdAt).toLocaleDateString("fr-FR")}
             </p>
           </div>
-          <span className={`shrink-0 text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full ${statut.classes}`}>
-            {statut.label}
-          </span>
+          <div className="shrink-0 flex items-center gap-2">
+            {exposant.estPartenaire && (
+              <span className="text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full bg-accent/30 text-neutral-900">
+                Partenaire
+              </span>
+            )}
+            <span className={`text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full ${statut.classes}`}>
+              {statut.label}
+            </span>
+          </div>
         </div>
 
         {/* Actions de validation (sticky en bas) */}
@@ -125,22 +133,30 @@ export default async function AdminExposantDetailPage({
         )}
 
         {exposant.statut === "VALIDE" && (
-          <div className="mb-8 rounded-xl border border-neutral-100 bg-neutral-50 p-5">
-            <div className="flex items-center justify-between gap-4 mb-3">
-              <h2 className="font-heading font-semibold text-neutral-900">
-                Attribution de stand
-              </h2>
-              <span className="text-xs text-neutral-500">
-                {exposant.membresStand.length} membre{exposant.membresStand.length > 1 ? "s" : ""} équipe
-              </span>
+          <>
+            <div className="mb-4 rounded-xl border border-neutral-100 bg-white p-5">
+              <PartenaireToggle
+                exposantId={exposant.id}
+                estPartenaire={exposant.estPartenaire}
+              />
             </div>
-            <AttribuerStandForm
-              exposantId={exposant.id}
-              defaultNumStand={exposant.numStand}
-              defaultEmplacement={exposant.emplacement}
-              defaultSuperficie={exposant.superficie}
-            />
-          </div>
+            <div className="mb-8 rounded-xl border border-neutral-100 bg-neutral-50 p-5">
+              <div className="flex items-center justify-between gap-4 mb-3">
+                <h2 className="font-heading font-semibold text-neutral-900">
+                  Attribution de stand
+                </h2>
+                <span className="text-xs text-neutral-500">
+                  {exposant.membresStand.length} membre{exposant.membresStand.length > 1 ? "s" : ""} équipe
+                </span>
+              </div>
+              <AttribuerStandForm
+                exposantId={exposant.id}
+                defaultNumStand={exposant.numStand}
+                defaultEmplacement={exposant.emplacement}
+                defaultSuperficie={exposant.superficie}
+              />
+            </div>
+          </>
         )}
 
         {/* Contenu du profil */}

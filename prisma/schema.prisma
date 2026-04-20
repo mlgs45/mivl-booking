@@ -203,6 +203,9 @@ model Exposant {
   valideParId                  String?
   valideA                      DateTime?
 
+  /// Marqueur "Partenaire" (stand plus grand, sponsors, institutionnels). Badge public.
+  estPartenaire                Boolean        @default(false)
+
   // ── Stand (renseigné après validation) ──
   /// Numéro / identifiant unique de stand attribué par la CCI (ex: "B12")
   numStand                     String?        @unique
@@ -224,6 +227,7 @@ model Exposant {
 
   @@index([statut])
   @@index([ville])
+  @@index([estPartenaire])
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

@@ -31,8 +31,9 @@ export default async function ExposantsPage() {
       description: true,
       siteWeb: true,
       offres: true,
+      estPartenaire: true,
     },
-    orderBy: { raisonSociale: "asc" },
+    orderBy: [{ estPartenaire: "desc" }, { raisonSociale: "asc" }],
   });
 
   return (
@@ -78,8 +79,17 @@ export default async function ExposantsPage() {
                   return (
                     <div
                       key={e.id}
-                      className="bg-white rounded-xl border border-neutral-100 p-6 flex flex-col"
+                      className={`bg-white rounded-xl border p-6 flex flex-col ${
+                        e.estPartenaire
+                          ? "border-accent/60 ring-1 ring-accent/30"
+                          : "border-neutral-100"
+                      }`}
                     >
+                      {e.estPartenaire && (
+                        <span className="self-start inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-neutral-900 bg-accent/30 px-2.5 py-1 rounded-full mb-3">
+                          ★ Partenaire
+                        </span>
+                      )}
                       <div className="flex items-start justify-between gap-3 mb-4">
                         <h2 className="text-base font-heading font-bold text-neutral-900 leading-snug">
                           {e.raisonSociale}

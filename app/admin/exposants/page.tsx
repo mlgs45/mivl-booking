@@ -57,6 +57,7 @@ export default async function AdminExposantsPage({
         secteurs: true,
         statut: true,
         offres: true,
+        estPartenaire: true,
         user: { select: { email: true } },
         updatedAt: true,
       },
@@ -95,12 +96,20 @@ export default async function AdminExposantsPage({
               Exposants
             </h1>
           </div>
-          {soumisCount > 0 && (
-            <div className="bg-primary text-white rounded-xl px-5 py-3 text-center">
-              <div className="text-2xl font-bold">{soumisCount}</div>
-              <div className="text-xs text-white/80">à traiter</div>
-            </div>
-          )}
+          <div className="flex items-center gap-3">
+            {soumisCount > 0 && (
+              <div className="bg-primary text-white rounded-xl px-5 py-3 text-center">
+                <div className="text-2xl font-bold">{soumisCount}</div>
+                <div className="text-xs text-white/80">à traiter</div>
+              </div>
+            )}
+            <Link
+              href="/admin/exposants/nouveau"
+              className="inline-flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-white font-semibold px-4 py-2.5 rounded-lg text-sm transition-colors"
+            >
+              + Nouvel exposant
+            </Link>
+          </div>
         </div>
 
         {/* Notifications post-action */}
@@ -159,7 +168,14 @@ export default async function AdminExposantsPage({
                   return (
                     <tr key={e.id} className={`hover:bg-neutral-50 transition-colors ${cfg.row}`}>
                       <td className="px-4 py-3">
-                        <div className="font-medium text-neutral-900">{e.raisonSociale}</div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-medium text-neutral-900">{e.raisonSociale}</span>
+                          {e.estPartenaire && (
+                            <span className="text-[10px] font-bold uppercase tracking-wider bg-accent/30 text-neutral-900 px-2 py-0.5 rounded-full">
+                              ★ Partenaire
+                            </span>
+                          )}
+                        </div>
                         <div className="text-xs text-neutral-500">{e.user.email}</div>
                       </td>
                       <td className="px-4 py-3 text-neutral-700 hidden sm:table-cell">{e.ville}</td>
