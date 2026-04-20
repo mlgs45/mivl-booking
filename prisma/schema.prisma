@@ -1,0 +1,435 @@
+// MIVL Booking — Schéma Prisma
+// Salon Made In Val de Loire 2026, CCI Centre-Val de Loire
+// Voir docs/conventions.md pour les conventions de nommage et indexation.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ENUMS
+// ═══════════════════════════════════════════════════════════════════════════
+
+enum Role {
+  SUPER_ADMIN
+  GESTIONNAIRE
+  EXPOSANT
+  ENSEIGNANT
+  JEUNE
+  DEMANDEUR_EMPLOI
+}
+
+enum StatutExposant {
+  BROUILLON
+  SOUMIS
+  VALIDE
+  REFUSE
+}
+
+/// Catégorie d'offre haut niveau qu'un exposant propose aux visiteurs
+enum TypeOffre {
+  DECOUVERTE_ENTREPRISE // Présentation de l'entreprise, son activité, ses sites
+  DECOUVERTE_METIERS    // Focus sur les métiers exercés en interne
+  OPPORTUNITES          // Postes / stages / alternances à pourvoir
+}
+
+/// Type précis d'opportunité proposée (complète TypeOffre = OPPORTUNITES)
+enum TypeOpportunite {
+  STAGE_3E
+  STAGE_SECONDE
+  STAGE_BTS
+  STAGE_LICENCE
+  STAGE_MASTER
+  APPRENTISSAGE
+  ALTERNANCE
+  CDD
+  CDI
+  JOB_ETE
+  DECOUVERTE
+}
+
+enum NiveauGroupe {
+  QUATRIEME
+  TROISIEME
+  SECONDE
+}
+
+enum TypeCreneau {
+  GROUPE_MATIN   // RDV groupe scolaire (20 min) le matin
+  SPEED_DATING   // Speed dating individuel (5 min) l'après-midi
+}
+
+enum TypeRdv {
+  GROUPE
+  SPEED_DATING
+}
+
+enum StatutRdv {
+  CONFIRME
+  PRESENT
+  ABSENT
+  ANNULE
+}
+
+enum ProfilScanne {
+  GROUPE
+  JEUNE
+  DE
+  ENSEIGNANT
+  WALK_IN
+}
+
+enum StatutEmail {
+  EN_ATTENTE
+  ENVOYE
+  ERREUR
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// UTILISATEURS & RÔLES
+// ═══════════════════════════════════════════════════════════════════════════
+
+model User {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  emailVerifie   DateTime?
+  role           Role
+  name           String?
+  phone          String?
+  hashedPassword String?   // seulement pour SUPER_ADMIN / GESTIONNAIRE
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  exposant        Exposant?
+  enseignant      Enseignant?
+  jeune           Jeune?
+  demandeurEmploi DemandeurEmploi?
+
+  auditLogs AuditLog[]
+
+  @@index([role])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// EXPOSANT
+// ═══════════════════════════════════════════════════════════════════════════
+
+model Exposant {
+  id                           String         @id @default(cuid())
+  userId                       String         @unique
+  user                         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  raisonSociale                String
+  siret                        String?
+  secteur                      String         // Code secteur (voir lib/referentiel/secteurs.ts)
+  ville                        String
+  codePostal                   String?
+  description                  String         @db.Text
+  siteWeb                      String?
+  logoUrl                      String?
+
+  /// Types d'offres proposées (peut en cumuler plusieurs)
+  offres                       TypeOffre[]
+  /// Types d'opportunités, ne sert que si offres inclut OPPORTUNITES
+  typesOpportunites            TypeOpportunite[]
+  /// Codes métiers proposés (voir lib/referentiel/metiers.ts)
+  metiersProposes              String[]
+
+  /// Nombre de ressources humaines dispos pour accueillir en parallèle le matin
+  ressourcesMatin              Int            @default(1)
+  /// Nombre de ressources humaines dispos pour accueillir en parallèle l'après-midi
+  ressourcesApresMidi          Int            @default(1)
+
+  /// Quota : nb max de groupes scolaires accueillis sur un même créneau de 20 min
+  quotaGroupesMatinParCreneau  Int            @default(1)
+  /// Quota : nb max de groupes scolaires accueillis sur la matinée entière
+  quotaGroupesMatinTotal       Int            @default(10)
+
+  statut                       StatutExposant @default(BROUILLON)
+  motifRefus                   String?        @db.Text
+  valideParId                  String?
+  valideA                      DateTime?
+
+  createdAt                    DateTime       @default(now())
+  updatedAt                    DateTime       @updatedAt
+
+  creneaux                     Creneau[]
+  scansStand                   ScanEntreeStand[]
+
+  @@index([statut])
+  @@index([secteur])
+  @@index([ville])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ENSEIGNANT & GROUPE
+// ═══════════════════════════════════════════════════════════════════════════
+
+model Enseignant {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  prenom        String
+  nom           String
+  etablissement String
+  ville         String
+  matiere       String?
+  niveau        NiveauGroupe? // Niveau principal enseigné (indicatif)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  groupes       Groupe[]
+}
+
+model Groupe {
+  id                String       @id @default(cuid())
+  enseignantId      String
+  enseignant        Enseignant   @relation(fields: [enseignantId], references: [id], onDelete: Cascade)
+
+  nom               String       // ex: "4eB"
+  niveau            NiveauGroupe
+  tailleEffective   Int          // nb d'élèves concernés
+  prenomsEleves     String[]     // liste des prénoms (RGPD : uniquement prénoms pour les mineurs)
+
+  /// Créneau d'arrivée choisi par l'enseignant (ex: "09:00")
+  creneauArrivee    String?
+
+  qrCodeToken       String       @unique @default(cuid()) // signé côté app pour QR
+
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  rendezVous        RendezVous[]
+
+  @@index([enseignantId])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// JEUNE (lycéen terminale, lycéen pro, jeune diplômé)
+// ═══════════════════════════════════════════════════════════════════════════
+
+model Jeune {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  prenom         String
+  nom            String
+  dateNaissance  DateTime @db.Date // Pour stats anonymisées
+  niveauEtudes   String   // ex: "Terminale générale", "BTS 2e année"
+  etablissement  String?
+  metiersInteret String[] // codes métiers (lib/referentiel/metiers.ts)
+  secteurInteret String[] // codes secteurs
+  cvUrl          String?  // optionnel
+  linkedinUrl    String?
+
+  qrCodeToken    String   @unique @default(cuid())
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  rendezVous     RendezVous[]
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DEMANDEUR D'EMPLOI (fléché France Travail)
+// ═══════════════════════════════════════════════════════════════════════════
+
+model DemandeurEmploi {
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  prenom              String
+  nom                 String
+  agencePoleEmploi    String?
+  metiersRecherche    String[] // codes métiers
+  secteurRecherche    String[] // codes secteurs
+  cvUrl               String?
+
+  qrCodeToken         String   @unique @default(cuid())
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  rendezVous          RendezVous[]
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CRÉNEAUX & RENDEZ-VOUS
+// ═══════════════════════════════════════════════════════════════════════════
+
+model Creneau {
+  id             String      @id @default(cuid())
+  exposantId     String
+  exposant       Exposant    @relation(fields: [exposantId], references: [id], onDelete: Cascade)
+
+  debut          DateTime    // timestamp complet (date + heure)
+  fin            DateTime
+  type           TypeCreneau
+
+  /// Index de la ressource (1..N) permettant des créneaux parallèles sur un même exposant
+  ressourceIndex Int         @default(1)
+
+  /// Capacité max : 1 pour speed dating, = tailleEffective du groupe pour matin
+  capaciteMax    Int         @default(1)
+
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  rendezVous     RendezVous[]
+
+  @@unique([exposantId, debut, ressourceIndex])
+  @@index([exposantId, debut])
+  @@index([debut])
+  @@index([type, debut])
+}
+
+model RendezVous {
+  id                 String          @id @default(cuid())
+  creneauId          String
+  creneau            Creneau         @relation(fields: [creneauId], references: [id], onDelete: Cascade)
+
+  type               TypeRdv
+
+  // XOR sur les trois visiteurs — contrainte CHECK ajoutée en migration SQL
+  groupeId           String?
+  groupe             Groupe?         @relation(fields: [groupeId], references: [id], onDelete: Cascade)
+  jeuneId            String?
+  jeune              Jeune?          @relation(fields: [jeuneId], references: [id], onDelete: Cascade)
+  demandeurEmploiId  String?
+  demandeurEmploi    DemandeurEmploi? @relation(fields: [demandeurEmploiId], references: [id], onDelete: Cascade)
+
+  statut             StatutRdv       @default(CONFIRME)
+  noteVisiteur       String?         @db.Text
+  noteExposant       String?         @db.Text
+  annuleA            DateTime?
+
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  scans              ScanEntreeStand[]
+
+  @@index([creneauId])
+  @@index([groupeId])
+  @@index([jeuneId])
+  @@index([demandeurEmploiId])
+  @@index([statut])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SCAN ENTRÉE STAND (présence physique, y compris walk-in)
+// ═══════════════════════════════════════════════════════════════════════════
+
+model ScanEntreeStand {
+  id                 String        @id @default(cuid())
+  rendezVousId       String?
+  rendezVous         RendezVous?   @relation(fields: [rendezVousId], references: [id], onDelete: SetNull)
+
+  exposantId         String
+  exposant           Exposant      @relation(fields: [exposantId], references: [id], onDelete: Cascade)
+
+  profilScanne       ProfilScanne
+  identifiantScanne  String        // qrCodeToken brut (jeune / groupe / DE) — pour traçabilité
+  scanneA            DateTime      @default(now())
+
+  @@index([exposantId, scanneA])
+  @@index([rendezVousId])
+  @@index([profilScanne])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// EMAILS & AUDIT
+// ═══════════════════════════════════════════════════════════════════════════
+
+model EmailLog {
+  id           String      @id @default(cuid())
+  destinataire String
+  sujet        String
+  template     String      // identifiant du template (ex: "rdv-confirmation")
+  statut       StatutEmail @default(EN_ATTENTE)
+  envoyeA      DateTime?
+  erreur       String?     @db.Text
+  providerId   String?     // ID Brevo pour traçabilité
+  createdAt    DateTime    @default(now())
+
+  @@index([statut])
+  @@index([destinataire])
+  @@index([createdAt])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  action    String   // ex: "rdv.cree", "exposant.valide"
+  entite    String   // ex: "RendezVous", "Exposant"
+  entiteId  String?
+  payload   Json?
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([entite, entiteId])
+  @@index([createdAt])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CONFIGURATION GLOBALE (un seul enregistrement, id = 1)
+// ═══════════════════════════════════════════════════════════════════════════
+
+model ConfigurationSalon {
+  id                                 Int      @id @default(1)
+
+  dateSalon                          DateTime @db.Date
+
+  // ── Matin : groupes scolaires ──
+  heureDebutMatin                    String   // format "HH:MM"
+  heureFinMatin                      String
+  dureeRdvGroupeMinutes              Int      @default(20)
+  dureeTransitionGroupeMinutes       Int      @default(10)
+  nbRdvParParcoursGroupe             Int      @default(4)
+  creneauxArriveeMatin               String[] // ["09:00", "09:15", "09:30"]
+
+  // ── Après-midi : speed dating ──
+  heureDebutApresMidi                String
+  heureFinApresMidi                  String
+  dureeSpeedDatingMinutes            Int      @default(5)
+  dureeTransitionSpeedDatingMinutes  Int      @default(5)
+  maxRdvParVisiteur                  Int      @default(6)
+
+  // ── Ouvertures inscriptions (contrôle par le back-office) ──
+  inscriptionsExposantsOuvertes      Boolean  @default(false)
+  inscriptionsVisiteursOuvertes      Boolean  @default(false)
+
+  updatedAt                          DateTime @updatedAt
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// AUTH.JS v5 — tables supports (sessions, magic link tokens)
+// ═══════════════════════════════════════════════════════════════════════════
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  createdAt    DateTime @default(now())
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
