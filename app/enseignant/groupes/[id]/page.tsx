@@ -68,7 +68,7 @@ export default async function GroupeDetailPage({
           <span className="text-neutral-900 font-medium">{groupe.nom}</span>
         </div>
 
-        <div className="mb-8 flex items-start justify-between gap-4">
+        <div className="mb-6 flex items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <h1 className="text-3xl font-heading font-bold text-neutral-900">
@@ -83,6 +83,39 @@ export default async function GroupeDetailPage({
               {groupe.creneauArrivee && ` · arrivée ${groupe.creneauArrivee}`}
             </p>
           </div>
+          <Link
+            href={`/enseignant/groupes/${groupe.id}/modifier`}
+            className="shrink-0 text-sm font-semibold bg-white border border-neutral-200 hover:border-primary hover:text-primary text-neutral-900 px-4 py-2 rounded-lg transition-colors"
+          >
+            Modifier
+          </Link>
+        </div>
+
+        <div className="mb-8 rounded-xl border border-neutral-100 bg-white p-4">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-neutral-500">
+              Élèves du groupe
+            </h2>
+            <span className="text-xs text-neutral-500">
+              {groupe.prenomsEleves.length} / {groupe.tailleEffective}
+            </span>
+          </div>
+          {groupe.prenomsEleves.length > 0 ? (
+            <div className="flex flex-wrap gap-1.5">
+              {groupe.prenomsEleves.map((p, idx) => (
+                <span
+                  key={`${p}-${idx}`}
+                  className="text-xs bg-neutral-100 text-neutral-700 px-2 py-1 rounded-full"
+                >
+                  {p}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-neutral-500 italic">
+              Aucun prénom renseigné. Vous pouvez les ajouter plus tard pour faciliter l'émargement le jour J.
+            </p>
+          )}
         </div>
 
         {hasParcours ? (
@@ -107,37 +140,62 @@ export default async function GroupeDetailPage({
                 {groupe.rendezVous.map((rdv, i) => {
                   const debut = new Date(rdv.creneau.debut);
                   const fin = new Date(rdv.creneau.fin);
-                  const heure = `${debut.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })} – ${fin.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`;
+                  const fmt = (d: Date) =>
+                    d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+                  const heure = `${fmt(debut)} – ${fmt(fin)}`;
+                  const isLast = i === groupe.rendezVous.length - 1;
+                  const nextDebut = !isLast
+                    ? new Date(groupe.rendezVous[i + 1]!.creneau.debut)
+                    : null;
+
                   return (
-                    <li
-                      key={rdv.id}
-                      className="flex items-center gap-4 rounded-xl border border-neutral-100 bg-white p-4"
-                    >
-                      <span className="shrink-0 w-8 h-8 rounded-full bg-primary text-white font-bold text-sm flex items-center justify-center">
-                        {i + 1}
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-neutral-900 truncate">
-                          {rdv.creneau.exposant.raisonSociale}
+                    <li key={rdv.id} className="space-y-2">
+                      <div className="flex items-center gap-4 rounded-xl border border-neutral-100 bg-white p-4">
+                        <span className="shrink-0 w-8 h-8 rounded-full bg-primary text-white font-bold text-sm flex items-center justify-center">
+                          {i + 1}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-semibold text-neutral-900 truncate">
+                            {rdv.creneau.exposant.raisonSociale}
+                          </div>
+                          <div className="text-xs text-neutral-500 truncate">
+                            {rdv.creneau.exposant.ville}
+                            {rdv.creneau.exposant.emplacement && ` · ${rdv.creneau.exposant.emplacement}`}
+                          </div>
                         </div>
-                        <div className="text-xs text-neutral-500 truncate">
-                          {rdv.creneau.exposant.ville}
-                          {rdv.creneau.exposant.emplacement && ` · ${rdv.creneau.exposant.emplacement}`}
+                        <div className="shrink-0 text-right">
+                          <div className="text-sm font-semibold text-neutral-900">{heure}</div>
+                          {rdv.creneau.exposant.numStand && (
+                            <div className="text-xs text-neutral-500">Stand {rdv.creneau.exposant.numStand}</div>
+                          )}
                         </div>
                       </div>
-                      <div className="shrink-0 text-right">
-                        <div className="text-sm font-semibold text-neutral-900">{heure}</div>
-                        {rdv.creneau.exposant.numStand && (
-                          <div className="text-xs text-neutral-500">Stand {rdv.creneau.exposant.numStand}</div>
-                        )}
-                      </div>
+                      {nextDebut && (
+                        <div className="flex items-center gap-4 rounded-xl border border-dashed border-neutral-200 bg-neutral-50/50 px-4 py-2.5">
+                          <span className="shrink-0 w-8 h-8 rounded-full bg-neutral-100 text-neutral-500 text-sm flex items-center justify-center">
+                            ⇣
+                          </span>
+                          <div className="flex-1 text-sm text-neutral-500">
+                            Déplacement au stand suivant
+                          </div>
+                          <div className="shrink-0 text-right text-xs text-neutral-500">
+                            {fmt(fin)} – {fmt(nextDebut)} · 10 min
+                          </div>
+                        </div>
+                      )}
                     </li>
                   );
                 })}
               </ol>
             </div>
 
-            <div className="flex justify-end pt-2">
+            <div className="flex items-center justify-between pt-2">
+              <Link
+                href="/enseignant"
+                className="text-sm font-semibold text-neutral-700 hover:text-primary inline-flex items-center gap-1"
+              >
+                ← Retour à mes groupes
+              </Link>
               <AnnulerParcoursForm groupeId={groupe.id} />
             </div>
           </div>
@@ -155,6 +213,14 @@ export default async function GroupeDetailPage({
             >
               Réserver le parcours →
             </Link>
+            <div className="mt-6">
+              <Link
+                href="/enseignant"
+                className="text-sm font-semibold text-neutral-700 hover:text-primary inline-flex items-center gap-1"
+              >
+                ← Retour à mes groupes
+              </Link>
+            </div>
           </div>
         )}
       </main>

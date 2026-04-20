@@ -64,9 +64,15 @@ export default async function ConfirmerParcoursPage({
   const baseDate = new Date();
   baseDate.setUTCHours(h ?? 0, m ?? 0, 0, 0);
 
-  const heures = Array.from({ length: 4 }, (_, i) => {
-    const d = addMinutes(baseDate, i * SLOT_DURATION_MIN);
-    return `${String(d.getUTCHours()).padStart(2, "0")}:${String(d.getUTCMinutes()).padStart(2, "0")}`;
+  const RDV_MIN = 20;
+  const fmt = (d: Date) =>
+    `${String(d.getUTCHours()).padStart(2, "0")}:${String(d.getUTCMinutes()).padStart(2, "0")}`;
+
+  const slots = Array.from({ length: 4 }, (_, i) => {
+    const debut = addMinutes(baseDate, i * SLOT_DURATION_MIN);
+    const fin = addMinutes(debut, RDV_MIN);
+    const transitionFin = addMinutes(debut, SLOT_DURATION_MIN);
+    return { debut: fmt(debut), fin: fmt(fin), transitionFin: fmt(transitionFin) };
   });
 
   return (
@@ -99,34 +105,50 @@ export default async function ConfirmerParcoursPage({
           </p>
         </div>
 
-        <ol className="space-y-3 mb-6">
-          {ordered.map((e, i) => (
-            <li
-              key={e.id}
-              className="flex items-center gap-4 rounded-xl border border-neutral-100 bg-white p-4"
-            >
-              <span className="shrink-0 w-8 h-8 rounded-full bg-primary text-white font-bold text-sm flex items-center justify-center">
-                {i + 1}
-              </span>
-              <div className="flex-1 min-w-0">
-                <div className="font-semibold text-neutral-900 truncate">
-                  {e.raisonSociale}
+        <ol className="space-y-2 mb-6">
+          {ordered.map((e, i) => {
+            const slot = slots[i]!;
+            const isLast = i === ordered.length - 1;
+            return (
+              <li key={e.id} className="space-y-2">
+                <div className="flex items-center gap-4 rounded-xl border border-neutral-100 bg-white p-4">
+                  <span className="shrink-0 w-8 h-8 rounded-full bg-primary text-white font-bold text-sm flex items-center justify-center">
+                    {i + 1}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-neutral-900 truncate">
+                      {e.raisonSociale}
+                    </div>
+                    <div className="text-xs text-neutral-500 truncate">
+                      {e.ville}
+                      {e.emplacement && ` · ${e.emplacement}`}
+                    </div>
+                  </div>
+                  <div className="shrink-0 text-right">
+                    <div className="text-sm font-semibold text-neutral-900">
+                      {slot.debut} – {slot.fin}
+                    </div>
+                    {e.numStand && (
+                      <div className="text-xs text-neutral-500">Stand {e.numStand}</div>
+                    )}
+                  </div>
                 </div>
-                <div className="text-xs text-neutral-500 truncate">
-                  {e.ville}
-                  {e.emplacement && ` · ${e.emplacement}`}
-                </div>
-              </div>
-              <div className="shrink-0 text-right">
-                <div className="text-sm font-semibold text-neutral-900">
-                  {heures[i]}
-                </div>
-                {e.numStand && (
-                  <div className="text-xs text-neutral-500">Stand {e.numStand}</div>
+                {!isLast && (
+                  <div className="flex items-center gap-4 rounded-xl border border-dashed border-neutral-200 bg-neutral-50/50 px-4 py-2.5">
+                    <span className="shrink-0 w-8 h-8 rounded-full bg-neutral-100 text-neutral-500 text-sm flex items-center justify-center">
+                      ⇣
+                    </span>
+                    <div className="flex-1 text-sm text-neutral-500">
+                      Déplacement au stand suivant
+                    </div>
+                    <div className="shrink-0 text-right text-xs text-neutral-500">
+                      {slot.fin} – {slot.transitionFin} · 10 min
+                    </div>
+                  </div>
                 )}
-              </div>
-            </li>
-          ))}
+              </li>
+            );
+          })}
         </ol>
 
         <div className="rounded-lg bg-primary/5 border border-primary/10 p-4 text-sm text-neutral-900 mb-6">

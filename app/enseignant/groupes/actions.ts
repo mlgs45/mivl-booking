@@ -81,21 +81,26 @@ export async function modifierGroupe(
 
   const groupe = await db.groupe.findUnique({
     where: { id: groupeId },
-    select: { enseignantId: true, rendezVous: { where: { statut: { not: "ANNULE" } }, select: { id: true } } },
+    select: {
+      enseignantId: true,
+      creneauArrivee: true,
+      rendezVous: { where: { statut: { not: "ANNULE" } }, select: { id: true } },
+    },
   });
   if (!groupe || groupe.enseignantId !== enseignantId) {
     return { ok: false, message: "Groupe introuvable." };
   }
-  if (groupe.rendezVous.length > 0) {
-    return { ok: false, message: "Impossible de modifier un groupe avec un parcours actif. Annulez-le d'abord." };
-  }
+
+  const parcoursActif = groupe.rendezVous.length > 0;
 
   const parsed = groupeSchema.safeParse({
     nom: formData.get("nom"),
     niveau: formData.get("niveau"),
     tailleEffective: formData.get("tailleEffective"),
     prenomsEleves: parsePrenoms(formData.get("prenomsEleves")),
-    creneauArrivee: formData.get("creneauArrivee"),
+    creneauArrivee: parcoursActif
+      ? groupe.creneauArrivee
+      : formData.get("creneauArrivee"),
   });
 
   if (!parsed.success) {
@@ -109,13 +114,20 @@ export async function modifierGroupe(
 
   await db.groupe.update({
     where: { id: groupeId },
-    data: {
-      nom: parsed.data.nom,
-      niveau: parsed.data.niveau,
-      tailleEffective: parsed.data.tailleEffective,
-      prenomsEleves: parsed.data.prenomsEleves,
-      creneauArrivee: parsed.data.creneauArrivee,
-    },
+    data: parcoursActif
+      ? {
+          nom: parsed.data.nom,
+          niveau: parsed.data.niveau,
+          tailleEffective: parsed.data.tailleEffective,
+          prenomsEleves: parsed.data.prenomsEleves,
+        }
+      : {
+          nom: parsed.data.nom,
+          niveau: parsed.data.niveau,
+          tailleEffective: parsed.data.tailleEffective,
+          prenomsEleves: parsed.data.prenomsEleves,
+          creneauArrivee: parsed.data.creneauArrivee,
+        },
   });
 
   revalidatePath(`/enseignant/groupes/${groupeId}`);
