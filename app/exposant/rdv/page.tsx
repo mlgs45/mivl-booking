@@ -75,13 +75,28 @@ export default async function ExposantRdvPage({
           <span className="text-neutral-900 font-medium">Mes rendez-vous</span>
         </div>
 
-        <div className="mb-8">
-          <h1 className="text-3xl font-heading font-bold text-neutral-900">
-            Mes rendez-vous
-          </h1>
-          <p className="text-sm text-neutral-700 mt-1">
-            Salon du 15 octobre 2026 — {exposant.raisonSociale}
-          </p>
+        <div className="mb-8 flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-heading font-bold text-neutral-900">
+              Mes rendez-vous
+            </h1>
+            <p className="text-sm text-neutral-700 mt-1">
+              Salon du 15 octobre 2026 — {exposant.raisonSociale}
+            </p>
+          </div>
+          {rdvs.length > 0 && (
+            <Link
+              href="/exposant/rdv/imprimer"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="shrink-0 inline-flex items-center gap-2 bg-white border border-neutral-200 hover:border-primary hover:text-primary text-neutral-700 font-semibold px-4 py-2 rounded-lg text-sm transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+              </svg>
+              Exporter PDF
+            </Link>
+          )}
         </div>
 
         {/* Stats */}
