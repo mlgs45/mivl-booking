@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { PublicHeader } from "@/components/layout/public-header";
 import { PublicFooter } from "@/components/layout/public-footer";
@@ -84,9 +85,9 @@ export default function LandingPage() {
       <PublicHeader />
 
       {/* Hero */}
-      <section className="bg-primary text-white py-20 sm:py-28">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="max-w-3xl">
+      <section className="bg-primary text-white py-16 sm:py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 grid lg:grid-cols-[1fr_26rem] gap-12 items-stretch">
+          <div>
             <div className="inline-flex items-center gap-2 bg-white/10 text-white/90 text-sm font-medium px-3 py-1.5 rounded-full mb-6">
               <span className="w-2 h-2 bg-accent rounded-full" />
               15 octobre 2026 · CO&#39;Met Orléans
@@ -116,6 +117,17 @@ export default function LandingPage() {
                 Je m&#39;inscris
               </Link>
             </div>
+          </div>
+
+          <div className="relative h-[280px] lg:h-auto lg:min-h-full max-w-md mx-auto lg:mx-0 lg:ml-auto w-full rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/10">
+            <Image
+              src="/images/hero-salon.jpeg"
+              alt="Salon Made In Val de Loire à CO'Met Orléans"
+              fill
+              priority
+              className="object-cover"
+              sizes="(min-width: 1024px) 26rem, 28rem"
+            />
           </div>
         </div>
       </section>
