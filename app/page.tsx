@@ -111,7 +111,7 @@ export default function LandingPage() {
               </Link>
               <Link
                 href="/inscription"
-                className="inline-flex items-center justify-center bg-accent hover:bg-accent-dark text-white font-semibold px-6 py-3 rounded-lg transition-colors"
+                className="inline-flex items-center justify-center bg-accent hover:bg-accent-dark text-neutral-900 font-semibold px-6 py-3 rounded-lg transition-colors"
               >
                 Je m&#39;inscris
               </Link>
@@ -170,7 +170,7 @@ export default function LandingPage() {
                     />
                   </svg>
                 </div>
-                <div className="text-xs font-medium text-accent uppercase tracking-wider mb-2">
+                <div className="inline-flex text-xs font-bold text-neutral-900 bg-accent px-2 py-0.5 rounded mb-3">
                   {p.heure}
                 </div>
                 <h3 className="text-lg font-heading font-bold text-neutral-900 mb-3">

@@ -68,7 +68,7 @@ export default async function ConnexionPage() {
             </div>
             <Button
               type="submit"
-              className="w-full bg-accent hover:bg-accent-dark text-white font-semibold py-6"
+              className="w-full bg-accent hover:bg-accent-dark text-neutral-900 font-semibold py-6"
               size="lg"
             >
               Recevoir mon lien de connexion

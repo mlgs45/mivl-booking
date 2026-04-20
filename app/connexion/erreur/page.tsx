@@ -49,7 +49,7 @@ export default async function ErreurPage({
           <p className="text-neutral-700 mb-6">{message}</p>
           <Link
             href="/connexion"
-            className="inline-block bg-accent hover:bg-accent-dark text-white font-semibold px-6 py-3 rounded-lg transition-colors"
+            className="inline-block bg-accent hover:bg-accent-dark text-neutral-900 font-semibold px-6 py-3 rounded-lg transition-colors"
           >
             Retour à la connexion
           </Link>

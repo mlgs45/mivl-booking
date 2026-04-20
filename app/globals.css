@@ -6,10 +6,10 @@
 
 @theme inline {
   /* ── Brand colors MIVL ── */
-  --color-primary: #1C2F5E;
-  --color-primary-dark: #0F1A3A;
-  --color-accent: #E63946;
-  --color-accent-dark: #B82A36;
+  --color-primary: #1B4DB5;
+  --color-primary-dark: #143D9B;
+  --color-accent: #FFC72C;
+  --color-accent-dark: #E6AF00;
   --color-neutral-50: #F5F7FA;
   --color-neutral-100: #E9EDF2;
   --color-neutral-700: #2D2D2D;
@@ -61,19 +61,19 @@
   --popover: #ffffff;
   --popover-foreground: #0D0D0D;
   /* shadcn --primary mapped to brand primary */
-  --primary: #1C2F5E;
+  --primary: #1B4DB5;
   --primary-foreground: #ffffff;
   --secondary: #F5F7FA;
-  --secondary-foreground: #1C2F5E;
+  --secondary-foreground: #1B4DB5;
   --muted: #F5F7FA;
   --muted-foreground: #2D2D2D;
   /* shadcn --accent = hover/subtle (not brand accent) */
   --accent: #E9EDF2;
-  --accent-foreground: #1C2F5E;
+  --accent-foreground: #1B4DB5;
   --destructive: #DC2626;
   --border: #E9EDF2;
   --input: #E9EDF2;
-  --ring: #1C2F5E;
+  --ring: #1B4DB5;
   --radius: 0.5rem;
 }
 

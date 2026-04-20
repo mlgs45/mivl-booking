@@ -1,8 +1,8 @@
 export const brand = {
-  primary: '#1C2F5E',
-  primaryDark: '#0F1A3A',
-  accent: '#E63946',
-  accentDark: '#B82A36',
+  primary: '#1B4DB5',
+  primaryDark: '#143D9B',
+  accent: '#FFC72C',
+  accentDark: '#E6AF00',
   neutral50: '#F5F7FA',
   neutral100: '#E9EDF2',
   neutral700: '#2D2D2D',
