@@ -45,13 +45,13 @@ const baseLayout = (contenu: string) => `
 <html lang="fr">
 <head><meta charset="UTF-8"><title>MIVL Booking</title></head>
 <body style="font-family: -apple-system, system-ui, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; color: #2D2D2D;">
-  <div style="border-top: 6px solid #1C2F5E; padding-top: 24px;">
-    <h1 style="color: #1C2F5E; font-size: 24px; margin: 0 0 16px;">MIVL Booking</h1>
+  <div style="border-top: 6px solid #1B4DB5; padding-top: 24px;">
+    <h1 style="color: #1B4DB5; font-size: 24px; margin: 0 0 16px;">MIVL Booking</h1>
     ${contenu}
     <hr style="margin: 32px 0; border: none; border-top: 1px solid #E9EDF2;">
     <p style="color: #6B7280; font-size: 12px; line-height: 1.5;">
       Salon Made In Val de Loire — 15 octobre 2026 au CO'Met d'Orléans<br>
-      CCI Centre-Val de Loire · <a href="https://mivl-orleans.fr" style="color: #1C2F5E;">mivl-orleans.fr</a>
+      CCI Centre-Val de Loire · <a href="https://mivl-orleans.fr" style="color: #1B4DB5;">mivl-orleans.fr</a>
     </p>
   </div>
 </body>
@@ -164,7 +164,7 @@ export function renderEmail<K extends EmailTemplate>(
           <p>Petit rappel : le salon Made In Val de Loire 2026 a lieu <strong>demain, au CO'Met d'Orléans</strong>.</p>
           <p>Voici votre planning :</p>
           <p style="margin: 24px 0;">
-            <a href="${d.planningUrl}" style="background: #1C2F5E; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">Mon planning</a>
+            <a href="${d.planningUrl}" style="background: #1B4DB5; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">Mon planning</a>
           </p>
           <p>À demain !</p>
         `),
