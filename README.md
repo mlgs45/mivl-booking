@@ -1,36 +1,114 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MIVL Booking
 
-## Getting Started
+Plateforme de réservation des rendez-vous du salon **Made In Val de Loire 2026**
+— 15 octobre 2026, CO'Met Orléans.
 
-First, run the development server:
+Organisé par la CCI Centre-Val de Loire.
+
+## Stack
+
+| Couche | Technologie |
+|---|---|
+| Framework | Next.js 16 (App Router, TypeScript strict) |
+| Auth | Auth.js v5 (magic link + credentials) |
+| Base de données | PostgreSQL 16 + Prisma 6 |
+| UI | Tailwind CSS 4 + shadcn/ui |
+| Email | Brevo (prod) / console (dev) |
+| Runtime | Node.js 22, pnpm 10 |
+| Déploiement | Docker + Coolify sur Hetzner |
+
+## Prérequis
+
+- Node.js ≥ 22
+- pnpm ≥ 10 (`corepack enable pnpm`)
+- Docker (OrbStack recommandé sur Mac)
+
+## Installation
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone git@github.com:mlgs45/mivl-booking.git
+cd mivl-booking
+pnpm install
+cp .env.example .env.local
+# Remplir .env.local (voir section Variables d'environnement)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Démarrage dev
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# 1. Démarrer PostgreSQL
+pnpm db:up
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# 2. Appliquer les migrations et seed
+pnpm db:migrate
+pnpm db:seed
 
-## Learn More
+# 3. Lancer le serveur de développement
+pnpm dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+L'application est disponible sur [http://localhost:3000](http://localhost:3000).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**Comptes de test :**
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Email | Mot de passe | Rôle |
+|---|---|---|
+| mathieu.langlois@centre.cci.fr | ChangeMe123! | Super Admin |
+| gestionnaire@cci-centre.fr | ChangeMe123! | Gestionnaire |
+| Autres utilisateurs seed | — | Magic link (log console) |
 
-## Deploy on Vercel
+## Scripts
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Commande | Description |
+|---|---|
+| `pnpm dev` | Serveur de développement (Turbopack) |
+| `pnpm build` | Build de production |
+| `pnpm start` | Serveur de production |
+| `pnpm typecheck` | Vérification TypeScript |
+| `pnpm db:up` | Démarrer PostgreSQL via Docker |
+| `pnpm db:migrate` | Appliquer les migrations Prisma |
+| `pnpm db:reset` | Reset complet DB + re-seed |
+| `pnpm db:seed` | Insérer les données de demo |
+| `pnpm db:studio` | Ouvrir Prisma Studio |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Variables d'environnement
+
+Copier `.env.example` → `.env.local` et renseigner :
+
+| Variable | Description |
+|---|---|
+| `DATABASE_URL` | URL PostgreSQL |
+| `AUTH_SECRET` | Secret Auth.js (`openssl rand -base64 32`) |
+| `AUTH_URL` | URL publique de l'app |
+| `BREVO_API_KEY` | Clé API Brevo (email prod) |
+| `EMAIL_PROVIDER` | `console` (dev) ou `brevo` (prod) |
+| `QR_SIGNING_SECRET` | Secret HMAC pour QR codes |
+
+## Architecture
+
+```
+app/
+  (public)/          Pages publiques (landing, /exposants)
+  admin/             Dashboard SUPER_ADMIN / GESTIONNAIRE
+  exposant/          Espace exposant
+  enseignant/        Espace enseignant
+  visiteur/          Espace visiteur (jeune, DE)
+  connexion/         Flux d'authentification
+  api/auth/          Route handler Auth.js
+components/
+  layout/            PublicHeader, PublicFooter, AppHeader
+  auth/              SignOutButton
+  ui/                Composants shadcn/ui
+lib/
+  db.ts              Singleton Prisma
+  auth-redirect.ts   Redirection post-connexion par rôle
+  emails/            Service email abstrait + templates
+  referentiel/       Secteurs et métiers industriels
+prisma/
+  schema.prisma      Schéma DB complet
+  seed.ts            Données de démonstration
+```
+
+## Déploiement
+
+Voir [`docs/deploiement.md`](docs/deploiement.md) pour le guide Coolify complet.
