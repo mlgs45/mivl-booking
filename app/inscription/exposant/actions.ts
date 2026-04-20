@@ -59,7 +59,7 @@ export async function inscrireExposant(
       exposant: {
         create: {
           raisonSociale,
-          secteur: "",
+          secteurs: [],
           ville,
           codePostal: codePostal && codePostal.length > 0 ? codePostal : null,
           description: "",

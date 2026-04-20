@@ -26,7 +26,8 @@ export default async function ExposantsPage() {
       id: true,
       raisonSociale: true,
       ville: true,
-      secteur: true,
+      secteurs: true,
+      secteurAutre: true,
       description: true,
       siteWeb: true,
       offres: true,
@@ -68,8 +69,12 @@ export default async function ExposantsPage() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {exposants.map((e) => {
-                  const secteurLabel =
-                    SECTEUR_LABELS[e.secteur as SecteurCode] ?? e.secteur;
+                  const secteurLabels = [
+                    ...e.secteurs.map(
+                      (code) => SECTEUR_LABELS[code as SecteurCode] ?? code,
+                    ),
+                    ...(e.secteurAutre ? [e.secteurAutre] : []),
+                  ];
                   return (
                     <div
                       key={e.id}
@@ -79,9 +84,16 @@ export default async function ExposantsPage() {
                         <h2 className="text-base font-heading font-bold text-neutral-900 leading-snug">
                           {e.raisonSociale}
                         </h2>
-                        <span className="shrink-0 text-xs font-medium text-primary bg-primary/8 px-2.5 py-1 rounded-full">
-                          {secteurLabel}
-                        </span>
+                        <div className="shrink-0 flex flex-col items-end gap-1 max-w-[55%]">
+                          {secteurLabels.map((label) => (
+                            <span
+                              key={label}
+                              className="text-xs font-medium text-primary bg-primary/8 px-2.5 py-1 rounded-full text-right"
+                            >
+                              {label}
+                            </span>
+                          ))}
+                        </div>
                       </div>
 
                       <p className="text-sm text-neutral-700 leading-relaxed mb-5 flex-1 line-clamp-3">

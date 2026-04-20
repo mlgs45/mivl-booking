@@ -1,10 +1,12 @@
 /**
  * Service email abstrait.
- * - dev : provider "console" → log dans le terminal
+ * - dev : provider "console" → log dans le terminal + fichier tmp/emails-dev.log
  * - prod : provider "brevo" → API Brevo (Phase 5)
  *
  * Toutes les envois sont loggés dans la table EmailLog pour traçabilité admin.
  */
+import { appendFile, mkdir } from "node:fs/promises";
+import { join } from "node:path";
 import { db } from "@/lib/db";
 import { renderEmail, type EmailTemplate } from "./templates";
 
@@ -65,13 +67,26 @@ async function sendViaConsole(
   rendered: { subject: string; html: string; text: string }
 ): Promise<void> {
   const separator = "─".repeat(72);
-  console.log(`\n📧 [EMAIL CONSOLE] → ${to}`);
-  console.log(separator);
-  console.log(`Sujet  : ${rendered.subject}`);
-  console.log(`From   : ${FROM_NAME} <${FROM_EMAIL}>`);
-  console.log(separator);
-  console.log(rendered.text);
-  console.log(separator + "\n");
+  const block = [
+    `\n📧 [EMAIL CONSOLE] → ${to}`,
+    separator,
+    `Date   : ${new Date().toISOString()}`,
+    `Sujet  : ${rendered.subject}`,
+    `From   : ${FROM_NAME} <${FROM_EMAIL}>`,
+    separator,
+    rendered.text,
+    separator + "\n",
+  ].join("\n");
+
+  console.log(block);
+
+  try {
+    const dir = join(process.cwd(), "tmp");
+    await mkdir(dir, { recursive: true });
+    await appendFile(join(dir, "emails-dev.log"), block + "\n");
+  } catch {
+    // Ne jamais faire échouer un envoi console à cause du FS
+  }
 }
 
 async function sendViaBrevo(

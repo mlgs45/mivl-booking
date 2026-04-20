@@ -31,6 +31,13 @@ enum StatutExposant {
   REFUSE
 }
 
+/// Posture de l'exposant vis-à-vis du recrutement au moment du salon
+enum StatutRecrutement {
+  OUI
+  NON
+  PROCHAINEMENT
+}
+
 /// Catégorie d'offre haut niveau qu'un exposant propose aux visiteurs
 enum TypeOffre {
   DECOUVERTE_ENTREPRISE // Présentation de l'entreprise, son activité, ses sites
@@ -133,12 +140,22 @@ model Exposant {
 
   raisonSociale                String
   siret                        String?
-  secteur                      String         // Code secteur (voir lib/referentiel/secteurs.ts)
+  /// Codes secteurs (voir lib/referentiel/secteurs.ts) — un exposant peut en cumuler
+  secteurs                     String[]
+  /// Texte libre si "Autres industries" ou besoin de précision
+  secteurAutre                 String?
   ville                        String
   codePostal                   String?
+  /// Adresse postale complète du site présenté
+  adresse                      String?        @db.Text
   description                  String         @db.Text
   siteWeb                      String?
   logoUrl                      String?
+
+  /// Téléphone du référent qui sera présent sur le stand
+  telephoneContact             String?
+  /// Fonction du référent (DRH, dirigeant, responsable communication…)
+  fonctionContact              String?
 
   /// Types d'offres proposées (peut en cumuler plusieurs)
   offres                       TypeOffre[]
@@ -146,6 +163,24 @@ model Exposant {
   typesOpportunites            TypeOpportunite[]
   /// Codes métiers proposés (voir lib/referentiel/metiers.ts)
   metiersProposes              String[]
+
+  /// Éléments présentés sur le stand (voir lib/referentiel/elements-stand.ts)
+  elementsStand                String[]
+  /// Précision libre pour les éléments stand non listés
+  elementsStandAutre           String?
+  /// Animations / interventions proposées (voir lib/referentiel/animations.ts) — vide = aucune
+  animations                   String[]
+
+  /// L'exposant souhaite mettre en avant une innovation
+  innovationMiseEnAvant        Boolean        @default(false)
+  /// Description de l'innovation (si innovationMiseEnAvant = true)
+  descriptionInnovation        String?        @db.Text
+
+  /// Posture vis-à-vis du recrutement au moment du salon
+  statutRecrutement            StatutRecrutement @default(NON)
+
+  /// Consentement à la communication CCI (newsletters, supports presse, photos…)
+  consentementCommunication    Boolean        @default(false)
 
   /// Nombre de ressources humaines dispos pour accueillir en parallèle le matin
   ressourcesMatin              Int            @default(1)
@@ -169,7 +204,6 @@ model Exposant {
   scansStand                   ScanEntreeStand[]
 
   @@index([statut])
-  @@index([secteur])
   @@index([ville])
 }
 

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { AppHeader } from "@/components/layout/app-header";
@@ -42,9 +43,15 @@ const TONE_CLASSES: Record<"warning" | "info" | "success" | "danger", string> = 
   danger: "bg-danger/10 border-danger/30 text-danger",
 };
 
-export default async function ExposantDashboard() {
+export default async function ExposantDashboard({
+  searchParams,
+}: {
+  searchParams: Promise<{ soumis?: string }>;
+}) {
   const session = await auth();
   if (!session?.user) return null;
+  const params = await searchParams;
+  const justSoumis = params.soumis === "1";
 
   const exposant = await db.exposant.findUnique({
     where: { userId: session.user.id },
@@ -87,6 +94,13 @@ export default async function ExposantDashboard() {
           <p className="text-sm text-neutral-700">{exposant.ville}</p>
         </div>
 
+        {justSoumis && (
+          <div className="rounded-xl border border-success/30 bg-success/10 text-success p-4 mb-4 text-sm">
+            ✅ Votre profil a été soumis à la CCI. Vous recevrez un email dès
+            qu'une décision sera prise.
+          </div>
+        )}
+
         <div
           className={`rounded-xl border p-5 mb-8 ${TONE_CLASSES[config.tone]}`}
         >
@@ -106,22 +120,44 @@ export default async function ExposantDashboard() {
           )}
         </div>
 
-        {exposant.statut === "BROUILLON" && (
+        {(exposant.statut === "BROUILLON" || exposant.statut === "REFUSE") && (
           <div className="rounded-xl border border-neutral-100 bg-neutral-50 p-6">
             <h2 className="font-heading font-bold text-neutral-900 mb-2">
-              Compléter votre fiche
+              {exposant.statut === "REFUSE"
+                ? "Modifier et resoumettre votre profil"
+                : "Compléter votre fiche"}
             </h2>
             <p className="text-sm text-neutral-700 mb-4">
-              Le formulaire de profil entreprise (secteur, métiers, offres,
-              ressources) arrive en J7.
+              Renseignez votre secteur, vos offres, ce que vous présentez sur
+              le stand et vos animations. Vous pouvez enregistrer en brouillon
+              et revenir plus tard.
             </p>
-            <button
-              type="button"
-              disabled
-              className="bg-primary text-white font-semibold px-5 py-2.5 rounded-lg opacity-60 cursor-not-allowed"
+            <Link
+              href="/exposant/profil"
+              className="inline-block bg-primary hover:bg-primary-dark text-white font-semibold px-5 py-2.5 rounded-lg transition-colors"
             >
-              Compléter mon profil →
-            </button>
+              {exposant.statut === "REFUSE"
+                ? "Modifier mon profil →"
+                : "Compléter mon profil →"}
+            </Link>
+          </div>
+        )}
+
+        {exposant.statut === "SOUMIS" && (
+          <div className="rounded-xl border border-neutral-100 bg-neutral-50 p-6">
+            <h2 className="font-heading font-bold text-neutral-900 mb-2">
+              Consulter mon profil
+            </h2>
+            <p className="text-sm text-neutral-700 mb-4">
+              Votre profil n'est plus modifiable tant que la CCI ne l'a pas
+              traité. Vous pouvez le relire ci-dessous.
+            </p>
+            <Link
+              href="/exposant/profil"
+              className="inline-block bg-white border border-neutral-100 hover:bg-neutral-50 text-neutral-900 font-semibold px-5 py-2.5 rounded-lg transition-colors"
+            >
+              Consulter mon profil →
+            </Link>
           </div>
         )}
       </main>

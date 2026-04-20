@@ -1,28 +1,17 @@
 /**
- * Référentiel des secteurs industriels du salon Made In Val de Loire.
- * Liste pragmatique à enrichir avec la CCI — prévoir migration si évolution.
+ * Univers d'activité du salon Made In Val de Loire.
+ * 8 catégories officielles CCI + possibilité de texte libre (secteurAutre).
+ * Correspond à la question 10 du formulaire d'inscription exposant.
  */
 export const SECTEURS = [
-  { code: "AGRO_ALIMENTAIRE", label: "Agro-alimentaire" },
-  { code: "AERONAUTIQUE", label: "Aéronautique & Spatial" },
-  { code: "AUTOMOBILE", label: "Automobile & Mobilité" },
-  { code: "BATIMENT", label: "Bâtiment & Travaux publics" },
-  { code: "BOIS_AMEUBLEMENT", label: "Bois & Ameublement" },
-  { code: "CHIMIE", label: "Chimie & Pharmacie" },
-  { code: "COSMETIQUE", label: "Cosmétique & Parfumerie" },
-  { code: "ELECTRONIQUE", label: "Électronique & Électrotechnique" },
-  { code: "ENERGIE", label: "Énergie & Environnement" },
-  { code: "IMPRESSION_3D", label: "Fabrication additive & Impression 3D" },
-  { code: "IMPRIMERIE", label: "Imprimerie & Édition" },
-  { code: "LOGISTIQUE", label: "Logistique & Supply chain" },
-  { code: "MAINTENANCE", label: "Maintenance industrielle" },
-  { code: "MECANIQUE", label: "Mécanique & Usinage" },
-  { code: "METALLURGIE", label: "Métallurgie & Sidérurgie" },
-  { code: "NUMERIQUE", label: "Numérique & Industrie 4.0" },
-  { code: "PACKAGING", label: "Packaging & Emballage" },
-  { code: "PLASTURGIE", label: "Plasturgie & Composites" },
-  { code: "TEXTILE", label: "Textile & Cuir" },
-  { code: "VERRE_CERAMIQUE", label: "Verre & Céramique" },
+  { code: "AUTO_FERRO_AERO_DEFENSE", label: "Automobile, Ferroviaire, Aéronautique et Défense" },
+  { code: "ELEC_MECA_ROBOT_DIGITAL", label: "Electronique, Mécanique, Robotique et Digital" },
+  { code: "PLASTURGIE_CHIMIE", label: "Plasturgie et Chimie" },
+  { code: "PHARMA_MEDICAL_COSMETIQUE", label: "Pharma, Médical et Cosmétique" },
+  { code: "AGROALIMENTAIRE", label: "Agroalimentaire" },
+  { code: "MATIERES_EMBALLAGES", label: "Matières et Emballages" },
+  { code: "ENERGIE", label: "Énergie" },
+  { code: "AUTRES_INDUSTRIES", label: "Autres industries" },
 ] as const;
 
 export type SecteurCode = (typeof SECTEURS)[number]["code"];
@@ -32,3 +21,7 @@ export const SECTEUR_LABELS: Record<SecteurCode, string> = Object.fromEntries(
 ) as Record<SecteurCode, string>;
 
 export const SECTEUR_CODES = SECTEURS.map((s) => s.code);
+
+export function isSecteurCode(value: string): value is SecteurCode {
+  return (SECTEUR_CODES as readonly string[]).includes(value);
+}
