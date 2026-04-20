@@ -84,19 +84,30 @@ export default async function ExposantRdvPage({
               Salon du 15 octobre 2026 — {exposant.raisonSociale}
             </p>
           </div>
-          {rdvs.length > 0 && (
+          <div className="shrink-0 flex flex-wrap items-center gap-2">
             <Link
-              href="/exposant/rdv/imprimer"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="shrink-0 inline-flex items-center gap-2 bg-white border border-neutral-200 hover:border-primary hover:text-primary text-neutral-700 font-semibold px-4 py-2 rounded-lg text-sm transition-colors"
+              href="/exposant/scan"
+              className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-colors"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4h4v4H4V4zm0 8h4v4H4v-4zm8-8h4v4h-4V4zm8 0v4h-4V4h4zm-8 8v8m4-4h4m-8 4h4m-4-4h-4" />
               </svg>
-              Exporter PDF
+              Scanner un visiteur
             </Link>
-          )}
+            {rdvs.length > 0 && (
+              <Link
+                href="/exposant/rdv/imprimer"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-white border border-neutral-200 hover:border-primary hover:text-primary text-neutral-700 font-semibold px-4 py-2 rounded-lg text-sm transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                </svg>
+                Exporter PDF
+              </Link>
+            )}
+          </div>
         </div>
 
         {/* Stats */}
