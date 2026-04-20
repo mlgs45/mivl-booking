@@ -43,7 +43,7 @@ const CTAS = [
   {
     role: "Vous êtes exposant",
     desc: "Présentez votre entreprise, vos métiers et vos opportunités aux jeunes talents de la région.",
-    href: "/inscription?role=exposant",
+    href: "/inscription/exposant",
     cta: "Inscrire mon entreprise",
     accent: true,
     iconPath:
@@ -52,7 +52,7 @@ const CTAS = [
   {
     role: "Vous êtes enseignant",
     desc: "Réservez des créneaux pour votre groupe et organisez la visite de votre classe sur le salon.",
-    href: "/inscription?role=enseignant",
+    href: "/inscription/enseignant",
     cta: "Inscrire ma classe",
     accent: false,
     iconPath:
@@ -61,7 +61,7 @@ const CTAS = [
   {
     role: "Vous êtes jeune ou diplômé",
     desc: "Rencontrez les industriels de la région et découvrez les opportunités de stages et d'alternance.",
-    href: "/inscription?role=jeune",
+    href: "/inscription/jeune",
     cta: "Réserver mon parcours",
     accent: false,
     iconPath:
@@ -70,7 +70,7 @@ const CTAS = [
   {
     role: "Vous êtes demandeur d'emploi",
     desc: "Participez au speed dating emploi de l'après-midi et rencontrez des entreprises qui recrutent.",
-    href: "/inscription?role=demandeur",
+    href: "/inscription/demandeur-emploi",
     cta: "M'inscrire au speed dating",
     accent: false,
     iconPath:
