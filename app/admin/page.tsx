@@ -108,6 +108,11 @@ export default async function AdminDashboard() {
             title="Scan entrée salon (jour J)"
             description="Flasher les badges QR à l'accueil pour pointer les arrivées."
           />
+          <ActionCard
+            href="/admin/live"
+            title="Live jour J"
+            description="Compteurs d'arrivées, RDV honorés, walk-ins — auto-refresh 30s."
+          />
         </div>
       </main>
     </>

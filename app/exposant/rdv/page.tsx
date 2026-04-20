@@ -3,10 +3,13 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { AppHeader } from "@/components/layout/app-header";
+import { AutoRefresh } from "@/components/live/auto-refresh";
 import { AnnulerForm } from "./annuler-form";
 import type { StatutRdv, TypeCreneau } from "@prisma/client";
 
 export const metadata = { title: "Mes rendez-vous — MIVL Connect" };
+
+export const dynamic = "force-dynamic";
 
 const STATUT_CONFIG: Record<StatutRdv, { label: string; classes: string }> = {
   CONFIRME:  { label: "Confirmé",  classes: "bg-primary/10 text-primary" },
@@ -32,33 +35,47 @@ export default async function ExposantRdvPage({
   const params = await searchParams;
   const filterType = params.type as TypeCreneau | undefined;
 
-  const rdvs = await db.rendezVous.findMany({
-    where: {
-      creneau: {
-        exposantId: exposant.id,
-        ...(filterType ? { type: filterType } : {}),
-      },
-      statut: { not: "ANNULE" },
-    },
-    include: {
-      creneau: { select: { debut: true, fin: true, type: true, ressourceIndex: true } },
-      groupe: {
-        select: {
-          nom: true,
-          niveau: true,
-          tailleEffective: true,
-          enseignant: { select: { prenom: true, nom: true, etablissement: true } },
+  const [rdvs, annules, walkIns] = await Promise.all([
+    db.rendezVous.findMany({
+      where: {
+        creneau: {
+          exposantId: exposant.id,
+          ...(filterType ? { type: filterType } : {}),
         },
+        statut: { not: "ANNULE" },
       },
-      jeune: { select: { prenom: true, nom: true, niveauEtudes: true } },
-      demandeurEmploi: { select: { prenom: true, nom: true } },
-    },
-    orderBy: [{ creneau: { debut: "asc" } }, { creneau: { ressourceIndex: "asc" } }],
-  });
-
-  const annules = await db.rendezVous.count({
-    where: { creneau: { exposantId: exposant.id }, statut: "ANNULE" },
-  });
+      include: {
+        creneau: { select: { debut: true, fin: true, type: true, ressourceIndex: true } },
+        groupe: {
+          select: {
+            nom: true,
+            niveau: true,
+            tailleEffective: true,
+            arriveAuSalonA: true,
+            enseignant: { select: { prenom: true, nom: true, etablissement: true } },
+          },
+        },
+        jeune: { select: { prenom: true, nom: true, niveauEtudes: true, arriveAuSalonA: true } },
+        demandeurEmploi: { select: { prenom: true, nom: true, arriveAuSalonA: true } },
+      },
+      orderBy: [{ creneau: { debut: "asc" } }, { creneau: { ressourceIndex: "asc" } }],
+    }),
+    db.rendezVous.count({
+      where: { creneau: { exposantId: exposant.id }, statut: "ANNULE" },
+    }),
+    db.scanEntreeStand.findMany({
+      where: { exposantId: exposant.id, rendezVousId: null },
+      orderBy: { scanneA: "desc" },
+      select: {
+        id: true,
+        scanneA: true,
+        profilScanne: true,
+        walkInPrenom: true,
+        walkInNom: true,
+        walkInProfil: true,
+      },
+    }),
+  ]);
 
   const matinRdvs  = rdvs.filter((r) => r.creneau.type === "GROUPE_MATIN");
   const apremRdvs  = rdvs.filter((r) => r.creneau.type === "SPEED_DATING");
@@ -83,6 +100,9 @@ export default async function ExposantRdvPage({
             <p className="text-sm text-neutral-700 mt-1">
               Salon du 15 octobre 2026 — {exposant.raisonSociale}
             </p>
+            <div className="mt-2">
+              <AutoRefresh intervalSec={30} label="Live · refresh 30s" />
+            </div>
           </div>
           <div className="shrink-0 flex flex-wrap items-center gap-2">
             <Link
@@ -140,6 +160,38 @@ export default async function ExposantRdvPage({
             )}
           </div>
         )}
+
+        {walkIns.length > 0 && (
+          <section className="mt-10">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-neutral-500 mb-3">
+              Walk-ins ({walkIns.length})
+            </h2>
+            <div className="border border-neutral-100 rounded-xl overflow-hidden bg-white">
+              <ul className="divide-y divide-neutral-100">
+                {walkIns.map((w) => {
+                  const nom =
+                    [w.walkInPrenom, w.walkInNom].filter(Boolean).join(" ") ||
+                    (w.profilScanne === "WALK_IN" && !w.walkInPrenom && !w.walkInNom
+                      ? "Walk-in (badge scanné)"
+                      : "Walk-in anonyme");
+                  return (
+                    <li key={w.id} className="p-3 text-sm flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="font-medium text-neutral-900 truncate">{nom}</p>
+                        {w.walkInProfil && (
+                          <p className="text-xs text-neutral-500 truncate">{w.walkInProfil}</p>
+                        )}
+                      </div>
+                      <span className="text-xs text-neutral-500 tabular-nums shrink-0">
+                        {new Intl.DateTimeFormat("fr-FR", { hour: "2-digit", minute: "2-digit" }).format(w.scanneA)}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          </section>
+        )}
       </main>
     </>
   );
@@ -151,12 +203,12 @@ type RdvWithRelations = Awaited<
       creneau: { select: { debut: true; fin: true; type: true; ressourceIndex: true } };
       groupe: {
         select: {
-          nom: true; niveau: true; tailleEffective: true;
+          nom: true; niveau: true; tailleEffective: true; arriveAuSalonA: true;
           enseignant: { select: { prenom: true; nom: true; etablissement: true } };
         };
       };
-      jeune: { select: { prenom: true; nom: true; niveauEtudes: true } };
-      demandeurEmploi: { select: { prenom: true; nom: true } };
+      jeune: { select: { prenom: true; nom: true; niveauEtudes: true; arriveAuSalonA: true } };
+      demandeurEmploi: { select: { prenom: true; nom: true; arriveAuSalonA: true } };
     };
   }>>
 >[number];
@@ -196,22 +248,33 @@ function RdvRow({ rdv, now }: { rdv: RdvWithRelations; now: Date }) {
 
   let visitorName = "";
   let visitorDetail = "";
+  let arriveAuSalonA: Date | null = null;
   if (rdv.groupe) {
     visitorName   = `${rdv.groupe.nom} (${rdv.groupe.tailleEffective} élèves)`;
     visitorDetail = `${rdv.groupe.enseignant.etablissement} — ${rdv.groupe.enseignant.prenom} ${rdv.groupe.enseignant.nom}`;
+    arriveAuSalonA = rdv.groupe.arriveAuSalonA;
   } else if (rdv.jeune) {
     visitorName   = `${rdv.jeune.prenom} ${rdv.jeune.nom}`;
     visitorDetail = rdv.jeune.niveauEtudes;
+    arriveAuSalonA = rdv.jeune.arriveAuSalonA;
   } else if (rdv.demandeurEmploi) {
     visitorName   = `${rdv.demandeurEmploi.prenom} ${rdv.demandeurEmploi.nom}`;
     visitorDetail = "Demandeur d'emploi";
+    arriveAuSalonA = rdv.demandeurEmploi.arriveAuSalonA;
   }
 
   return (
     <tr className="hover:bg-neutral-50 transition-colors">
       <td className="px-4 py-3 text-neutral-900 font-medium whitespace-nowrap">{heure}</td>
       <td className="px-4 py-3">
-        <div className="font-medium text-neutral-900">{visitorName}</div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="font-medium text-neutral-900">{visitorName}</span>
+          {arriveAuSalonA && rdv.statut !== "PRESENT" && (
+            <span className="text-[10px] font-semibold uppercase tracking-wider bg-primary/10 text-primary px-1.5 py-0.5 rounded">
+              ● Au salon
+            </span>
+          )}
+        </div>
         <div className="text-xs text-neutral-500 md:hidden">{visitorDetail}</div>
       </td>
       <td className="px-4 py-3 text-neutral-700 hidden md:table-cell">{visitorDetail}</td>
