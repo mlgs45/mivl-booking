@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { PublicHeader } from "@/components/layout/public-header";
 import { PublicFooter } from "@/components/layout/public-footer";
@@ -18,6 +19,14 @@ export default function InscriptionEnseignantPage() {
           </nav>
 
           <div className="bg-white rounded-xl border border-neutral-100 p-8 sm:p-10">
+            <Image
+              src="/images/logo-mivl.png"
+              alt="Made In Val de Loire"
+              width={72}
+              height={72}
+              className="object-contain mb-5"
+              priority
+            />
             <h1 className="text-2xl sm:text-3xl font-heading font-bold text-neutral-900 mb-2">
               Inscription enseignant
             </h1>

@@ -92,9 +92,9 @@ export default function LandingPage() {
               15 octobre 2026 · CO&#39;Met Orléans
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-heading font-bold leading-tight mb-6">
-              Made In Val de Loire
-              <span className="block text-white/70 text-3xl sm:text-4xl lg:text-5xl mt-2">
-                Salon de l&#39;industrie régionale
+              <span className="block text-white">Made In Val de Loire</span>
+              <span className="block text-accent text-3xl sm:text-4xl lg:text-5xl mt-2">
+                Édition Orléans Métropole
               </span>
             </h1>
             <p className="text-lg sm:text-xl text-white/80 leading-relaxed mb-10 max-w-2xl">

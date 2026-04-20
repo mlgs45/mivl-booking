@@ -11,28 +11,24 @@ const PROFILS = [
     titre: "Je suis exposant",
     desc: "Entreprise industrielle qui souhaite participer au salon.",
     href: "/inscription/exposant",
-    open: true,
     accent: true,
   },
   {
     titre: "Je suis enseignant",
     desc: "Je souhaite inscrire une classe ou un groupe au parcours du matin.",
     href: "/inscription/enseignant",
-    open: false,
     accent: false,
   },
   {
     titre: "Je suis jeune ou diplômé",
     desc: "Je souhaite participer au speed dating de l'après-midi.",
     href: "/inscription/jeune",
-    open: false,
     accent: false,
   },
   {
     titre: "Je suis demandeur d'emploi",
     desc: "Référé par France Travail pour le speed dating emploi.",
     href: "/inscription/demandeur-emploi",
-    open: false,
     accent: false,
   },
 ];
@@ -58,46 +54,34 @@ export default function InscriptionPage() {
             {PROFILS.map((p) => (
               <Link
                 key={p.titre}
-                href={p.open ? p.href : "#"}
-                aria-disabled={!p.open}
+                href={p.href}
                 className={`block rounded-xl border p-6 transition-all ${
-                  p.open
-                    ? p.accent
-                      ? "bg-primary border-primary text-white hover:bg-primary-dark"
-                      : "bg-white border-neutral-100 hover:border-primary hover:shadow-sm"
-                    : "bg-neutral-100 border-neutral-100 text-neutral-700 cursor-not-allowed opacity-70"
+                  p.accent
+                    ? "bg-primary border-primary text-white hover:bg-primary-dark"
+                    : "bg-white border-neutral-100 hover:border-primary hover:shadow-sm"
                 }`}
               >
-                <div className="flex items-start justify-between gap-3 mb-2">
-                  <h2
-                    className={`font-heading font-bold text-lg ${
-                      p.open && p.accent ? "text-white" : "text-neutral-900"
-                    }`}
-                  >
-                    {p.titre}
-                  </h2>
-                  {!p.open && (
-                    <span className="text-xs font-medium bg-neutral-900/10 text-neutral-900 px-2 py-0.5 rounded-full shrink-0">
-                      Phase 3
-                    </span>
-                  )}
-                </div>
+                <h2
+                  className={`font-heading font-bold text-lg mb-2 ${
+                    p.accent ? "text-white" : "text-neutral-900"
+                  }`}
+                >
+                  {p.titre}
+                </h2>
                 <p
                   className={`text-sm leading-relaxed ${
-                    p.open && p.accent ? "text-white/80" : "text-neutral-700"
+                    p.accent ? "text-white/80" : "text-neutral-700"
                   }`}
                 >
                   {p.desc}
                 </p>
-                {p.open && (
-                  <div
-                    className={`mt-4 inline-flex items-center text-sm font-semibold ${
-                      p.accent ? "text-white" : "text-primary"
-                    }`}
-                  >
-                    S'inscrire →
-                  </div>
-                )}
+                <div
+                  className={`mt-4 inline-flex items-center text-sm font-semibold ${
+                    p.accent ? "text-white" : "text-primary"
+                  }`}
+                >
+                  S'inscrire →
+                </div>
               </Link>
             ))}
           </div>
