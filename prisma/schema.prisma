@@ -298,12 +298,16 @@ model Groupe {
 
   qrCodeToken       String       @unique @default(cuid()) // signé côté app pour QR
 
+  /// Horodatage du scan d'entrée au salon (jour J). Null tant que non arrivé.
+  arriveAuSalonA    DateTime?
+
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
 
   rendezVous        RendezVous[]
 
   @@index([enseignantId])
+  @@index([arriveAuSalonA])
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -327,10 +331,15 @@ model Jeune {
 
   qrCodeToken    String   @unique @default(cuid())
 
+  /// Horodatage du scan d'entrée au salon (jour J). Null tant que non arrivé.
+  arriveAuSalonA DateTime?
+
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
   rendezVous     RendezVous[]
+
+  @@index([arriveAuSalonA])
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -351,10 +360,15 @@ model DemandeurEmploi {
 
   qrCodeToken         String   @unique @default(cuid())
 
+  /// Horodatage du scan d'entrée au salon (jour J). Null tant que non arrivé.
+  arriveAuSalonA      DateTime?
+
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
   rendezVous          RendezVous[]
+
+  @@index([arriveAuSalonA])
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -434,6 +448,11 @@ model ScanEntreeStand {
   profilScanne       ProfilScanne
   identifiantScanne  String        // qrCodeToken brut (jeune / groupe / DE) — pour traçabilité
   scanneA            DateTime      @default(now())
+
+  /// Walk-in non rattaché à un profil inscrit (champs optionnels, renseignés au stand)
+  walkInPrenom       String?
+  walkInNom          String?
+  walkInProfil       String?       // ex: "Lycéen", "Demandeur d'emploi", libre
 
   @@index([exposantId, scanneA])
   @@index([rendezVousId])

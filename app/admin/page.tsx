@@ -104,10 +104,9 @@ export default async function AdminDashboard() {
             badge={enseignantsSoumis > 0 ? `${enseignantsSoumis} en attente` : undefined}
           />
           <ActionCard
-            href="/admin"
-            title="Statistiques avancées"
-            description="RDV, parcours, présence jour J — disponible en Phase 3."
-            disabled
+            href="/admin/scan"
+            title="Scan entrée salon (jour J)"
+            description="Flasher les badges QR à l'accueil pour pointer les arrivées."
           />
         </div>
       </main>
