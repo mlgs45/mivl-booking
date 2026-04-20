@@ -5,7 +5,7 @@ import { homePathForRole } from "@/lib/auth-redirect";
 import { Button } from "@/components/ui/button";
 
 export const metadata = {
-  title: "Connexion — MIVL Booking",
+  title: "Connexion — MIVL Connect",
 };
 
 async function sendMagicLink(formData: FormData) {
@@ -33,7 +33,7 @@ export default async function ConnexionPage() {
             href="/"
             className="inline-block text-primary font-heading font-bold text-2xl"
           >
-            MIVL Booking
+            MIVL Connect
           </Link>
           <p className="mt-2 text-sm text-neutral-700">
             Salon Made In Val de Loire · 15 octobre 2026

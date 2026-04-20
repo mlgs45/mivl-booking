@@ -1,4 +1,4 @@
-# MIVL Booking
+# MIVL Connect
 
 Plateforme de réservation des rendez-vous du salon **Made In Val de Loire 2026**
 — 15 octobre 2026, CO'Met Orléans.

@@ -6,7 +6,7 @@ import { homePathForRole } from "@/lib/auth-redirect";
 import { Button } from "@/components/ui/button";
 
 export const metadata = {
-  title: "Connexion administrateur — MIVL Booking",
+  title: "Connexion administrateur — MIVL Connect",
 };
 
 async function credentialsSignIn(formData: FormData) {
@@ -44,7 +44,7 @@ export default async function ConnexionAdminPage({
             href="/"
             className="inline-block text-primary font-heading font-bold text-2xl"
           >
-            MIVL Booking
+            MIVL Connect
           </Link>
           <p className="mt-2 text-sm text-neutral-700">Espace administrateur</p>
         </div>

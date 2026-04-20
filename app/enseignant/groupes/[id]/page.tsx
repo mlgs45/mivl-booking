@@ -6,7 +6,7 @@ import { AppHeader } from "@/components/layout/app-header";
 import { AnnulerParcoursForm } from "./annuler-parcours-form";
 import type { NiveauGroupe } from "@prisma/client";
 
-export const metadata = { title: "Groupe — MIVL Booking" };
+export const metadata = { title: "Groupe — MIVL Connect" };
 
 const NIVEAU_LABELS: Record<NiveauGroupe, string> = {
   QUATRIEME: "4e",

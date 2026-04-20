@@ -49,10 +49,10 @@ export interface RenderedEmail {
 const baseLayout = (contenu: string) => `
 <!DOCTYPE html>
 <html lang="fr">
-<head><meta charset="UTF-8"><title>MIVL Booking</title></head>
+<head><meta charset="UTF-8"><title>MIVL Connect</title></head>
 <body style="font-family: -apple-system, system-ui, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; color: #2D2D2D;">
   <div style="border-top: 6px solid #1B4DB5; padding-top: 24px;">
-    <h1 style="color: #1B4DB5; font-size: 24px; margin: 0 0 16px;">MIVL Booking</h1>
+    <h1 style="color: #1B4DB5; font-size: 24px; margin: 0 0 16px;">MIVL Connect</h1>
     ${contenu}
     <hr style="margin: 32px 0; border: none; border-top: 1px solid #E9EDF2;">
     <p style="color: #6B7280; font-size: 12px; line-height: 1.5;">
@@ -72,22 +72,22 @@ export function renderEmail<K extends EmailTemplate>(
     case "magic-link": {
       const d = data as TemplateData["magic-link"];
       return {
-        subject: "Votre lien de connexion — MIVL Booking",
+        subject: "Votre lien de connexion — MIVL Connect",
         html: baseLayout(`
           <p>Bonjour,</p>
-          <p>Cliquez sur le bouton ci-dessous pour vous connecter à votre espace MIVL Booking :</p>
+          <p>Cliquez sur le bouton ci-dessous pour vous connecter à votre espace MIVL Connect :</p>
           <p style="margin: 32px 0;">
             <a href="${d.url}" style="background: #E63946; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">Me connecter</a>
           </p>
           <p style="font-size: 14px; color: #6B7280;">Ce lien est valable 15 minutes. Si vous n'êtes pas à l'origine de cette demande, ignorez simplement cet email.</p>
         `),
-        text: `Connectez-vous à MIVL Booking : ${d.url} (valable 15 minutes)`,
+        text: `Connectez-vous à MIVL Connect : ${d.url} (valable 15 minutes)`,
       };
     }
     case "confirmation-inscription-exposant": {
       const d = data as TemplateData["confirmation-inscription-exposant"];
       return {
-        subject: "Votre candidature a bien été reçue — MIVL Booking",
+        subject: "Votre candidature a bien été reçue — MIVL Connect",
         html: baseLayout(`
           <p>Bonjour,</p>
           <p>Nous avons bien reçu la candidature de <strong>${d.raisonSociale}</strong> pour participer au salon Made In Val de Loire 2026.</p>
@@ -100,7 +100,7 @@ export function renderEmail<K extends EmailTemplate>(
     case "exposant-valide": {
       const d = data as TemplateData["exposant-valide"];
       return {
-        subject: "Votre participation est validée 🎉 — MIVL Booking",
+        subject: "Votre participation est validée 🎉 — MIVL Connect",
         html: baseLayout(`
           <p>Bonjour,</p>
           <p>Excellente nouvelle ! La candidature de <strong>${d.raisonSociale}</strong> a été validée.</p>
@@ -116,7 +116,7 @@ export function renderEmail<K extends EmailTemplate>(
     case "exposant-refuse": {
       const d = data as TemplateData["exposant-refuse"];
       return {
-        subject: "Suite donnée à votre candidature — MIVL Booking",
+        subject: "Suite donnée à votre candidature — MIVL Connect",
         html: baseLayout(`
           <p>Bonjour,</p>
           <p>Nous vous remercions pour l'intérêt porté au salon Made In Val de Loire 2026.</p>
@@ -131,7 +131,7 @@ export function renderEmail<K extends EmailTemplate>(
     case "confirmation-inscription-enseignant": {
       const d = data as TemplateData["confirmation-inscription-enseignant"];
       return {
-        subject: "Votre inscription enseignant est enregistrée — MIVL Booking",
+        subject: "Votre inscription enseignant est enregistrée — MIVL Connect",
         html: baseLayout(`
           <p>Bonjour ${d.prenom},</p>
           <p>Nous avons bien reçu votre inscription en tant qu'enseignant référent pour <strong>${d.etablissement}</strong> au salon Made In Val de Loire 2026.</p>
@@ -144,7 +144,7 @@ export function renderEmail<K extends EmailTemplate>(
     case "enseignant-valide": {
       const d = data as TemplateData["enseignant-valide"];
       return {
-        subject: "Votre inscription enseignant est validée 🎉 — MIVL Booking",
+        subject: "Votre inscription enseignant est validée 🎉 — MIVL Connect",
         html: baseLayout(`
           <p>Bonjour ${d.prenom},</p>
           <p>Bonne nouvelle ! Votre inscription enseignant a été validée par la CCI Centre-Val de Loire.</p>
@@ -160,7 +160,7 @@ export function renderEmail<K extends EmailTemplate>(
     case "enseignant-refuse": {
       const d = data as TemplateData["enseignant-refuse"];
       return {
-        subject: "Suite donnée à votre inscription — MIVL Booking",
+        subject: "Suite donnée à votre inscription — MIVL Connect",
         html: baseLayout(`
           <p>Bonjour ${d.prenom},</p>
           <p>Nous vous remercions de votre intérêt pour le salon Made In Val de Loire 2026.</p>
@@ -208,7 +208,7 @@ export function renderEmail<K extends EmailTemplate>(
     case "rappel-j-moins-1": {
       const d = data as TemplateData["rappel-j-moins-1"];
       return {
-        subject: "C'est demain ! — MIVL Booking",
+        subject: "C'est demain ! — MIVL Connect",
         html: baseLayout(`
           <p>Bonjour ${d.prenom},</p>
           <p>Petit rappel : le salon Made In Val de Loire 2026 a lieu <strong>demain, au CO'Met d'Orléans</strong>.</p>
@@ -224,11 +224,11 @@ export function renderEmail<K extends EmailTemplate>(
     case "annulation-rdv": {
       const d = data as TemplateData["annulation-rdv"];
       return {
-        subject: "Annulation d'un rendez-vous — MIVL Booking",
+        subject: "Annulation d'un rendez-vous — MIVL Connect",
         html: baseLayout(`
           <p>Bonjour,</p>
           <p>Nous vous informons que le rendez-vous du <strong>${d.creneau}</strong> avec <strong>${d.exposant}</strong> a été annulé.</p>
-          <p>Vous pouvez réserver un nouveau créneau depuis votre espace MIVL Booking.</p>
+          <p>Vous pouvez réserver un nouveau créneau depuis votre espace MIVL Connect.</p>
         `),
         text: `RDV ${d.creneau} avec ${d.exposant} annulé.`,
       };

@@ -19,7 +19,7 @@ export function AppHeader({ session }: { session: Session }) {
           href="/"
           className="font-heading font-bold text-primary text-xl"
         >
-          MIVL Booking
+          MIVL Connect
         </Link>
         <div className="flex items-center gap-4">
           <div className="text-right hidden sm:block">

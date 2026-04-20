@@ -14,7 +14,7 @@ export function PublicHeader() {
             className="object-contain"
           />
           <span className="font-heading font-bold text-primary text-lg leading-tight hidden sm:block">
-            MIVL Booking
+            MIVL Connect
           </span>
         </Link>
         <nav className="flex items-center gap-6">

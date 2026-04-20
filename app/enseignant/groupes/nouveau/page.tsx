@@ -4,7 +4,7 @@ import { auth } from "@/auth";
 import { AppHeader } from "@/components/layout/app-header";
 import { GroupeForm } from "./groupe-form";
 
-export const metadata = { title: "Nouveau groupe — MIVL Booking" };
+export const metadata = { title: "Nouveau groupe — MIVL Connect" };
 
 export default async function NouveauGroupePage() {
   const session = await auth();

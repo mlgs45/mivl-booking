@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 import { AppHeader } from "@/components/layout/app-header";
 import { GroupeEditForm } from "./groupe-edit-form";
 
-export const metadata = { title: "Modifier le groupe — MIVL Booking" };
+export const metadata = { title: "Modifier le groupe — MIVL Connect" };
 
 export default async function ModifierGroupePage({
   params,

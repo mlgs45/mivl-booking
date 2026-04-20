@@ -6,7 +6,7 @@ import type { SecteurCode } from "@/lib/referentiel/secteurs";
 import type { TypeOffre } from "@prisma/client";
 
 export const metadata = {
-  title: "Exposants participants — MIVL Booking",
+  title: "Exposants participants — MIVL Connect",
   description:
     "Découvrez les entreprises industrielles qui participent au salon Made In Val de Loire 2026.",
 };

@@ -9,7 +9,7 @@ import { SelectionBar } from "@/components/booking/selection-bar";
 import { SECTEUR_CODES } from "@/lib/referentiel/secteurs";
 import type { TypeOffre } from "@prisma/client";
 
-export const metadata = { title: "Choisir les exposants — MIVL Booking" };
+export const metadata = { title: "Choisir les exposants — MIVL Connect" };
 
 const OFFRES_POSSIBLES: TypeOffre[] = [
   "DECOUVERTE_ENTREPRISE",

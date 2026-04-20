@@ -6,7 +6,7 @@ import { AppHeader } from "@/components/layout/app-header";
 import { InfosStandForm } from "./infos-form";
 import { MembresSection } from "./membres-section";
 
-export const metadata = { title: "Mon stand — MIVL Booking" };
+export const metadata = { title: "Mon stand — MIVL Connect" };
 
 export default async function ExposantStandPage() {
   const session = await auth();

@@ -5,7 +5,7 @@ import { PublicFooter } from "@/components/layout/public-footer";
 import { InscriptionDEForm } from "./inscription-form";
 
 export const metadata = {
-  title: "Inscription demandeur d'emploi — MIVL Booking",
+  title: "Inscription demandeur d'emploi — MIVL Connect",
 };
 
 export default function InscriptionDemandeurEmploiPage() {

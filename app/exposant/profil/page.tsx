@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 import { AppHeader } from "@/components/layout/app-header";
 import { ProfilForm } from "./profil-form";
 
-export const metadata = { title: "Mon profil exposant — MIVL Booking" };
+export const metadata = { title: "Mon profil exposant — MIVL Connect" };
 
 export default async function ExposantProfilPage() {
   const session = await auth();

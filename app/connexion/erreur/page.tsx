@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 export const metadata = {
-  title: "Erreur de connexion — MIVL Booking",
+  title: "Erreur de connexion — MIVL Connect",
 };
 
 const MESSAGES: Record<string, string> = {

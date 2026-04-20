@@ -20,7 +20,7 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "MIVL Booking — Made In Val de Loire 2026",
+  title: "MIVL Connect — Made In Val de Loire 2026",
   description:
     "Plateforme de réservation des rendez-vous du salon Made In Val de Loire 2026 au CO'Met d'Orléans, le 15 octobre 2026.",
   metadataBase: new URL(

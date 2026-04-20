@@ -10,7 +10,7 @@ import { SECTEUR_CODES } from "@/lib/referentiel/secteurs";
 import { getVisitorContext } from "../actions";
 import type { TypeOffre } from "@prisma/client";
 
-export const metadata = { title: "Choisir mes exposants — MIVL Booking" };
+export const metadata = { title: "Choisir mes exposants — MIVL Connect" };
 
 const OFFRES_POSSIBLES: TypeOffre[] = [
   "DECOUVERTE_ENTREPRISE",

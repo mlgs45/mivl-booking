@@ -1,5 +1,5 @@
 /**
- * Seed de démo pour MIVL Booking.
+ * Seed de démo pour MIVL Connect.
  * - 1 super admin (depuis SUPER_ADMIN_EMAIL)
  * - 1 gestionnaire CCI
  * - 5 exposants validés (secteurs industriels variés)
@@ -28,7 +28,7 @@ const makeDateTime = (date: Date, hhmm: string): Date => {
 };
 
 async function main() {
-  console.log("🌱 MIVL Booking — seed démarré");
+  console.log("🌱 MIVL Connect — seed démarré");
 
   // ─── Nettoyage ─────────────────────────────────────────────────────────
   await db.scanEntreeStand.deleteMany();

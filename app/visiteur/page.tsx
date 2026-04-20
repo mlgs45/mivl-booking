@@ -5,7 +5,7 @@ import { AppHeader } from "@/components/layout/app-header";
 import { AnnulerRdvForm } from "./annuler-rdv-form";
 import { getVisitorContext } from "./actions";
 
-export const metadata = { title: "Mon speed dating — MIVL Booking" };
+export const metadata = { title: "Mon speed dating — MIVL Connect" };
 
 const MAX_RDVS = 6;
 

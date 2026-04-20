@@ -15,7 +15,7 @@ export function PublicFooter() {
                 height={36}
                 className="object-contain brightness-0 invert"
               />
-              <span className="font-heading font-bold text-lg">MIVL Booking</span>
+              <span className="font-heading font-bold text-lg">MIVL Connect</span>
             </div>
             <p className="text-sm text-white/70 leading-relaxed">
               Plateforme officielle de réservation des rendez-vous du salon Made
@@ -76,7 +76,7 @@ export function PublicFooter() {
         </div>
 
         <div className="mt-10 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/50">
-          <p>© 2026 CCI Centre-Val de Loire — MIVL Booking</p>
+          <p>© 2026 CCI Centre-Val de Loire — MIVL Connect</p>
           <p>Organisé par la CCI Centre-Val de Loire</p>
         </div>
       </div>

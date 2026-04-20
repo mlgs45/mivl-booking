@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { AppHeader } from "@/components/layout/app-header";
 import type { StatutExposant } from "@prisma/client";
 
-export const metadata = { title: "Espace exposant — MIVL Booking" };
+export const metadata = { title: "Espace exposant — MIVL Connect" };
 
 const STATUT_CONFIG: Record<
   StatutExposant,

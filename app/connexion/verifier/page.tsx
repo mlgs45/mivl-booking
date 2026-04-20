@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 export const metadata = {
-  title: "Vérifiez votre email — MIVL Booking",
+  title: "Vérifiez votre email — MIVL Connect",
 };
 
 export default function VerifierPage() {

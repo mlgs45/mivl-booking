@@ -6,7 +6,7 @@ import { AppHeader } from "@/components/layout/app-header";
 import { ConfirmerForm } from "./confirmer-form";
 import { getVisitorContext } from "../../actions";
 
-export const metadata = { title: "Confirmer mes rendez-vous — MIVL Booking" };
+export const metadata = { title: "Confirmer mes rendez-vous — MIVL Connect" };
 
 const MAX_RDVS = 6;
 

@@ -5,7 +5,7 @@ import { PublicFooter } from "@/components/layout/public-footer";
 import { InscriptionExposantForm } from "./inscription-form";
 
 export const metadata = {
-  title: "Inscription exposant — MIVL Booking",
+  title: "Inscription exposant — MIVL Connect",
 };
 
 export default function InscriptionExposantPage() {

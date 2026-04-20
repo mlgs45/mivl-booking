@@ -4,7 +4,7 @@ import { PublicHeader } from "@/components/layout/public-header";
 import { PublicFooter } from "@/components/layout/public-footer";
 import { InscriptionJeuneForm } from "./inscription-form";
 
-export const metadata = { title: "Inscription jeune / diplômé — MIVL Booking" };
+export const metadata = { title: "Inscription jeune / diplômé — MIVL Connect" };
 
 export default function InscriptionJeunePage() {
   return (

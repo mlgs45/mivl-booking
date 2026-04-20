@@ -6,7 +6,7 @@ import { AppHeader } from "@/components/layout/app-header";
 import { AnnulerForm } from "./annuler-form";
 import type { StatutRdv, TypeCreneau } from "@prisma/client";
 
-export const metadata = { title: "Mes rendez-vous — MIVL Booking" };
+export const metadata = { title: "Mes rendez-vous — MIVL Connect" };
 
 const STATUT_CONFIG: Record<StatutRdv, { label: string; classes: string }> = {
   CONFIRME:  { label: "Confirmé",  classes: "bg-primary/10 text-primary" },

@@ -21,7 +21,7 @@ interface SendEmailOptions<K extends EmailTemplate> {
 }
 
 const FROM_EMAIL = process.env.BREVO_FROM_EMAIL ?? "noreply@mivl-orleans.fr";
-const FROM_NAME = process.env.BREVO_FROM_NAME ?? "MIVL Booking";
+const FROM_NAME = process.env.BREVO_FROM_NAME ?? "MIVL Connect";
 
 export async function sendEmail<K extends EmailTemplate>(
   options: SendEmailOptions<K>

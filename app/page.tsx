@@ -4,7 +4,7 @@ import { PublicHeader } from "@/components/layout/public-header";
 import { PublicFooter } from "@/components/layout/public-footer";
 
 export const metadata = {
-  title: "Made In Val de Loire 2026 — MIVL Booking",
+  title: "Made In Val de Loire 2026 — MIVL Connect",
 };
 
 const STATS = [

@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
 import { AppHeader } from "@/components/layout/app-header";
 import { ConfirmerForm } from "./confirmer-form";
 
-export const metadata = { title: "Confirmer le parcours — MIVL Booking" };
+export const metadata = { title: "Confirmer le parcours — MIVL Connect" };
 
 const SLOT_DURATION_MIN = 30;
 

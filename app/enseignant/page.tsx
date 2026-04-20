@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 import { AppHeader } from "@/components/layout/app-header";
 import type { NiveauGroupe } from "@prisma/client";
 
-export const metadata = { title: "Espace enseignant — MIVL Booking" };
+export const metadata = { title: "Espace enseignant — MIVL Connect" };
 
 const NIVEAU_LABELS: Record<NiveauGroupe, string> = {
   QUATRIEME: "4e",

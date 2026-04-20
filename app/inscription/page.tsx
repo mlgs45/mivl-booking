@@ -3,7 +3,7 @@ import { PublicHeader } from "@/components/layout/public-header";
 import { PublicFooter } from "@/components/layout/public-footer";
 
 export const metadata = {
-  title: "Inscription — MIVL Booking",
+  title: "Inscription — MIVL Connect",
 };
 
 const PROFILS = [
