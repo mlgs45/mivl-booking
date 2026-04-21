@@ -2,42 +2,57 @@
 
 ## Infrastructure
 
-| Serveur | IP | Rôle |
-|---|---|---|
-| compute-01 | 135.181.45.69 | Coolify + app Docker |
-| data-01 | *(privé)* | PostgreSQL 16 — base `mivl_booking` |
+| Serveur     | Rôle                                             |
+|-------------|--------------------------------------------------|
+| compute-01  | Coolify + conteneur applicatif (Next.js)         |
+| data-01     | PostgreSQL 16 — base `mivl_booking`              |
 
-L'application est exposée sur `https://connect.mivl-orleans.fr`.
+- App exposée sur `https://connect.mivl-orleans.fr`
+- data-01 joignable uniquement depuis compute-01 via le réseau privé Hetzner
 
 ---
 
-## 1. Première mise en production
+## 1. Pipeline de déploiement
 
-### 1.1 Créer le projet dans Coolify
+`git push origin main` → webhook Coolify → build Docker → démarrage du conteneur.
 
-1. Ouvrir Coolify sur compute-01
-2. **New Resource → Application → GitHub (Public/Private)**
-3. Sélectionner le repo `mlgs45/mivl-booking`, branche `main`
-4. **Build pack → Dockerfile** (Coolify détecte automatiquement le `Dockerfile` à la racine)
-5. **Port exposé → 3000**
-6. **Domaine → `connect.mivl-orleans.fr`** (Let's Encrypt activé)
+Le `Dockerfile` (multi-stage, standalone Next.js) fait **deux choses au démarrage** (voir `CMD` en bas du Dockerfile) :
 
-### 1.2 Volumes persistants
+1. `prisma migrate deploy` — applique les migrations en attente (idempotent, no-op si rien à faire)
+2. `node server.js` — lance le serveur Next
 
-Dans **Storage → Volumes**, ajouter :
+**Aucune action manuelle n'est requise pour les migrations.** Si on doit vérifier l'état :
 
-| Source (hôte) | Destination (conteneur) |
-|---|---|
-| `/data/mivl-booking/uploads` | `/app/uploads` |
+```bash
+docker exec <container_id> ./migrator/node_modules/.bin/prisma migrate status
+```
 
-### 1.3 Variables d'environnement
+---
 
-Dans **Environment Variables**, renseigner toutes les variables (utiliser `Secret` pour les valeurs sensibles) :
+## 2. Première mise en production (historique — 20/04/2026)
+
+### 2.1 Coolify
+
+1. **New Resource → Application → GitHub** — repo `mlgs45/mivl-booking`, branche `main`
+2. **Build pack → Dockerfile** (détection auto à la racine)
+3. **Port → 3000**
+4. **Domain → `connect.mivl-orleans.fr`** + Let's Encrypt
+
+### 2.2 Volume persistant
+
+| Source (hôte)                     | Destination (conteneur) |
+|-----------------------------------|-------------------------|
+| `/data/mivl-booking/uploads`      | `/app/uploads`          |
+
+### 2.3 Variables d'environnement (Coolify → Environment Variables)
+
+Valeurs sensibles → champ `Secret`.
 
 ```env
-DATABASE_URL=postgresql://mivl_user:PASSWORD@data-01-private-ip:5432/mivl_booking
+DATABASE_URL=postgresql://mivl_user:PASSWORD@<data-01-private-ip>:5432/mivl_booking
 AUTH_SECRET=<openssl rand -base64 32>
 AUTH_URL=https://connect.mivl-orleans.fr
+AUTH_TRUST_HOST=true
 BREVO_API_KEY=<clé Brevo>
 BREVO_FROM_EMAIL=noreply@mivl-orleans.fr
 BREVO_FROM_NAME=MIVL Connect
@@ -49,39 +64,48 @@ STORAGE_DIR=/app/uploads
 NODE_ENV=production
 ```
 
-### 1.4 Migrations et seed initial
+### 2.4 Seed initial — **une seule fois après le 1er build**
 
-Après le premier déploiement, exécuter une seule fois depuis compute-01 :
+`prisma/seed-prod.ts` est idempotent (upsert) — il crée la `ConfigurationSalon` et le super admin sans toucher au reste.
 
 ```bash
-# Se connecter au conteneur en cours d'exécution
-docker exec -it <container_id> sh
-
-# À l'intérieur du conteneur
-node_modules/.bin/prisma migrate deploy
-node_modules/.bin/tsx prisma/seed.ts
+# Depuis compute-01
+docker exec -it \
+  -e SUPER_ADMIN_EMAIL=mathieu.langlois@centre.cci.fr \
+  -e SUPER_ADMIN_PASSWORD='<mot de passe choisi>' \
+  <container_id> node_modules/.bin/tsx prisma/seed-prod.ts
 ```
 
-> `migrate deploy` applique les migrations sans prompt interactif — idéal pour la prod.
-> Ne lancer le seed qu'une fois : il crée le compte super admin.
+> ⚠️ **Ne jamais lancer `prisma/seed.ts` en prod** — ce seed est destructif (fait `deleteMany` sur toutes les tables) et ne sert qu'à recréer l'environnement de dev local.
+
+### 2.5 Sécurité réseau data-01
+
+UFW ne filtre pas le trafic Docker (Docker insère ses règles **au-dessus** de celles d'UFW). La DB est donc protégée par `iptables` directement, dans la chaîne `DOCKER-USER` :
+
+```bash
+# Sur data-01
+iptables -I DOCKER-USER -p tcp --dport 5432 -s <ip-privée-compute-01> -j ACCEPT
+iptables -I DOCKER-USER -p tcp --dport 5432 -j DROP
+
+# Persister (package iptables-persistent)
+netfilter-persistent save
+```
+
+À vérifier après tout reboot de data-01 ou réinstallation OS.
 
 ---
 
-## 2. Déploiements suivants
+## 3. Déploiements suivants
 
-Chaque `git push` sur `main` déclenche automatiquement un nouveau build Coolify (si le webhook GitHub est configuré).
+Chaque `git push origin main` déclenche le webhook → build → restart → migrations auto.
 
-**Sans webhook**, déclencher manuellement depuis Coolify : **Deploy → Redeploy**.
+**Sans webhook** : Coolify → Deploy → Redeploy.
 
-Les migrations sont à appliquer manuellement après chaque déploiement incluant un changement de schéma :
-
-```bash
-docker exec -it <container_id> node_modules/.bin/prisma migrate deploy
-```
+Rien d'autre à faire côté DB. Si le build échoue, les logs sont dans Coolify → Logs.
 
 ---
 
-## 3. Base de données (data-01)
+## 4. Base de données (data-01)
 
 ### Connexion directe
 
@@ -104,36 +128,32 @@ gunzip -c backup_YYYYMMDD_HHMMSS.sql.gz | psql -U mivl_user mivl_booking
 
 ---
 
-## 4. Variables à ne jamais commiter
+## 5. Variables à ne jamais commiter
 
 - `AUTH_SECRET`
 - `DATABASE_URL` avec mot de passe
 - `BREVO_API_KEY`
 - `QR_SIGNING_SECRET`
+- `SUPER_ADMIN_PASSWORD` (uniquement passé à la main au seed initial)
 
-Ces variables sont gérées exclusivement dans l'interface Coolify (champs `Secret`).
-
----
-
-## 5. Rollback
-
-En cas de problème après un déploiement :
-
-1. Dans Coolify → **Deployments**, sélectionner la version précédente
-2. Cliquer **Redeploy this deployment**
-3. Si la migration a été appliquée et crée un problème : restaurer un backup DB
+Ces variables vivent dans l'interface Coolify (champs `Secret`).
 
 ---
 
-## 6. Checklist avant mise en prod (15 juin 2026)
+## 6. Rollback
 
-- [ ] `AUTH_SECRET` généré et configuré dans Coolify
-- [ ] `DATABASE_URL` pointant sur data-01 (réseau privé Hetzner)
-- [ ] Volume `/app/uploads` monté
-- [ ] DNS `connect.mivl-orleans.fr` → IP compute-01
-- [ ] Let's Encrypt activé dans Coolify
-- [ ] Webhook GitHub configuré (auto-deploy sur push main)
-- [ ] `pnpm db:migrate deploy` exécuté en prod
-- [ ] Seed initial exécuté (compte super admin créé)
-- [ ] Test connexion `/connexion/admin` avec `mathieu.langlois@centre.cci.fr`
-- [ ] Email Brevo fonctionnel (tester code OTP de connexion)
+1. Coolify → **Deployments** → sélectionner la version précédente → **Redeploy this deployment**
+2. Si une migration fautive a été appliquée : restaurer le dernier backup (`gunzip ... | psql ...`) puis redéployer la version précédente
+3. Prisma ne downgrade pas automatiquement — pour un rollback de schéma, il faut une migration inverse commitée dans le repo
+
+---
+
+## 7. Checklist d'un redéploiement sain
+
+- [ ] Typecheck + lint OK en local (`pnpm typecheck && pnpm lint`)
+- [ ] Aucune nouvelle variable d'env sans valeur définie dans Coolify
+- [ ] Si migration de schéma : dump DB avant push (`pg_dump ...`)
+- [ ] Push main → attendre fin du build Coolify (logs verts)
+- [ ] Vérifier `/connexion/admin` : login password OK
+- [ ] Vérifier `/connexion` : envoi OTP + réception Brevo + validation code OK
+- [ ] `docker exec <container> ./migrator/node_modules/.bin/prisma migrate status` = à jour
