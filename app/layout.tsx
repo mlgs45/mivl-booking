@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   description:
     "Plateforme de réservation des rendez-vous du salon Made In Val de Loire 2026 au CO'Met d'Orléans, le 15 octobre 2026.",
   metadataBase: new URL(
-    process.env.NEXTAUTH_URL ?? "https://booking.mivl-orleans.fr"
+    process.env.NEXTAUTH_URL ?? "https://connect.mivl-orleans.fr"
   ),
   appleWebApp: {
     capable: true,
