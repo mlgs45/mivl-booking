@@ -481,6 +481,40 @@ export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
         <FieldErrors errors={errors} field="consentementCommunication" />
       </Section>
 
+      {/* ── Mention RGPD ────────────────────────────────────────────── */}
+      <section className="rounded-lg border border-neutral-100 bg-neutral-50 p-4 text-xs text-neutral-700 leading-relaxed">
+        <p className="mb-2">
+          <strong className="text-neutral-900">Traitement de vos données.</strong>{" "}
+          Les informations renseignées sont traitées par la CCI Centre-Val de
+          Loire pour l'organisation du salon MIVL 2026, la validation de votre
+          participation et la mise en relation avec les visiteurs. Base légale :
+          exécution d'un contrat et consentement (case ci-dessus pour la
+          communication). Conservation : 2 ans après la fin du salon.
+        </p>
+        <p>
+          Vous pouvez exercer vos droits (accès, rectification, effacement,
+          opposition) en contactant la CCI. Plus d'informations dans nos{" "}
+          <a
+            href="/mentions-legales"
+            className="text-primary hover:underline underline-offset-2"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            mentions légales
+          </a>{" "}
+          et notre{" "}
+          <a
+            href="/confidentialite"
+            className="text-primary hover:underline underline-offset-2"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            politique de confidentialité
+          </a>
+          .
+        </p>
+      </section>
+
       {/* ── Actions ─────────────────────────────────────────────────── */}
       {!readonly && (
         <div className="sticky bottom-0 bg-white border-t border-neutral-100 py-4 -mx-4 sm:-mx-6 px-4 sm:px-6 flex flex-col sm:flex-row gap-3 sm:justify-end">
