@@ -42,12 +42,23 @@ export async function demanderOtp(
     where: { email },
     select: { role: true },
   });
-  const eligible =
-    user && user.role !== "SUPER_ADMIN" && user.role !== "GESTIONNAIRE";
 
-  if (eligible) {
-    await sendOtpByEmail(email);
+  if (!user) {
+    return {
+      ok: false,
+      error:
+        "Aucun compte n'est associé à cette adresse. Inscrivez-vous d'abord depuis la page d'accueil.",
+    };
   }
 
+  if (user.role === "SUPER_ADMIN" || user.role === "GESTIONNAIRE") {
+    return {
+      ok: false,
+      error:
+        "Les administrateurs se connectent via /connexion/admin avec leur mot de passe.",
+    };
+  }
+
+  await sendOtpByEmail(email);
   redirect(`/connexion/verifier?email=${encodeURIComponent(email)}`);
 }
