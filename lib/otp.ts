@@ -20,7 +20,7 @@ export function generateOtp(): string {
 export async function storeOtp(email: string, code: string): Promise<void> {
   const normalized = email.toLowerCase();
   await db.otpCode.deleteMany({
-    where: { email: normalized, usedAt: null },
+    where: { email: normalized, expiresAt: { lt: new Date() } },
   });
   await db.otpCode.create({
     data: {
@@ -40,41 +40,59 @@ export async function verifyOtp(
   code: string
 ): Promise<VerifyResult> {
   const normalized = email.toLowerCase();
-  const record = await db.otpCode.findFirst({
-    where: { email: normalized, usedAt: null },
-    orderBy: { createdAt: "desc" },
+  const attemptHash = hashCode(normalized, code);
+  const now = new Date();
+
+  const match = await db.otpCode.findFirst({
+    where: {
+      email: normalized,
+      codeHash: attemptHash,
+      usedAt: null,
+      expiresAt: { gt: now },
+      attempts: { lt: MAX_ATTEMPTS },
+    },
   });
 
-  if (!record) return { ok: false, reason: "invalid" };
-
-  if (record.attempts >= MAX_ATTEMPTS) {
-    return { ok: false, reason: "too_many_attempts" };
+  if (match) {
+    await db.otpCode.update({
+      where: { id: match.id },
+      data: { usedAt: new Date() },
+    });
+    return { ok: true };
   }
 
-  if (record.expiresAt < new Date()) {
+  const activeCount = await db.otpCode.count({
+    where: {
+      email: normalized,
+      usedAt: null,
+      expiresAt: { gt: now },
+    },
+  });
+
+  if (activeCount === 0) {
     return { ok: false, reason: "expired" };
   }
 
-  const attemptHash = hashCode(normalized, code);
-  const stored = Buffer.from(record.codeHash, "hex");
-  const attempt = Buffer.from(attemptHash, "hex");
-  const match = stored.length === attempt.length && timingSafeEqual(stored, attempt);
-
-  if (!match) {
-    await db.otpCode.update({
-      where: { id: record.id },
-      data: { attempts: { increment: 1 } },
-    });
-    const remaining = MAX_ATTEMPTS - (record.attempts + 1);
-    if (remaining <= 0) return { ok: false, reason: "too_many_attempts" };
-    return { ok: false, reason: "invalid" };
-  }
-
-  await db.otpCode.update({
-    where: { id: record.id },
-    data: { usedAt: new Date() },
+  await db.otpCode.updateMany({
+    where: {
+      email: normalized,
+      usedAt: null,
+      expiresAt: { gt: now },
+    },
+    data: { attempts: { increment: 1 } },
   });
-  return { ok: true };
+
+  const remaining = await db.otpCode.count({
+    where: {
+      email: normalized,
+      usedAt: null,
+      expiresAt: { gt: now },
+      attempts: { lt: MAX_ATTEMPTS },
+    },
+  });
+
+  if (remaining === 0) return { ok: false, reason: "too_many_attempts" };
+  return { ok: false, reason: "invalid" };
 }
 
 export async function sendOtpByEmail(email: string): Promise<void> {
