@@ -87,7 +87,14 @@ export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
 
   const errors = submitState.errors ?? saveState.errors ?? {};
   const message = submitState.message ?? saveState.message;
-  const readonly = exposant.statut === "VALIDE" || exposant.statut === "SOUMIS";
+  // SOUMIS : tout verrouillé (CCI en revue).
+  // VALIDE : champs structurels verrouillés (identité, offres, stand…),
+  //          champs "cosmétiques" modifiables (description, contact, site web,
+  //          logo, innovation desc, statut recrutement).
+  const fullLock = exposant.statut === "SOUMIS";
+  const structuralLock = fullLock || exposant.statut === "VALIDE";
+  const canSubmit =
+    exposant.statut === "BROUILLON" || exposant.statut === "REFUSE";
 
   const [offresState, setOffresState] = useState<string[]>(exposant.offres);
   const [innovationState, setInnovationState] = useState<boolean>(
@@ -127,7 +134,7 @@ export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
             type="text"
             name="raisonSociale"
             defaultValue={exposant.raisonSociale ?? ""}
-            disabled={readonly}
+            disabled={structuralLock}
             className={inputClass}
           />
         </Field>
@@ -142,7 +149,7 @@ export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
             type="text"
             name="siret"
             defaultValue={exposant.siret ?? ""}
-            disabled={readonly}
+            disabled={structuralLock}
             inputMode="numeric"
             maxLength={14}
             className={inputClass}
@@ -153,7 +160,7 @@ export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
           <textarea
             name="adresse"
             defaultValue={exposant.adresse ?? ""}
-            disabled={readonly}
+            disabled={structuralLock}
             rows={2}
             className={inputClass}
           />
@@ -165,7 +172,7 @@ export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
               type="text"
               name="ville"
               defaultValue={exposant.ville ?? ""}
-              disabled={readonly}
+              disabled={structuralLock}
               className={inputClass}
             />
           </Field>
@@ -174,7 +181,7 @@ export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
               type="text"
               name="codePostal"
               defaultValue={exposant.codePostal ?? ""}
-              disabled={readonly}
+              disabled={structuralLock}
               inputMode="numeric"
               maxLength={5}
               className={inputClass}
@@ -192,7 +199,7 @@ export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
             type="url"
             name="siteWeb"
             defaultValue={exposant.siteWeb ?? ""}
-            disabled={readonly}
+            disabled={fullLock}
             placeholder="https://..."
             className={inputClass}
           />
@@ -209,7 +216,7 @@ export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
             type="text"
             name="nomContact"
             defaultValue={exposant.nomContact ?? ""}
-            disabled={readonly}
+            disabled={fullLock}
             placeholder="Marie Dupont"
             className={inputClass}
           />
@@ -225,7 +232,7 @@ export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
               type="tel"
               name="telephoneContact"
               defaultValue={exposant.telephoneContact ?? ""}
-              disabled={readonly}
+              disabled={fullLock}
               className={inputClass}
             />
           </Field>
@@ -234,7 +241,7 @@ export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
               type="text"
               name="fonctionContact"
               defaultValue={exposant.fonctionContact ?? ""}
-              disabled={readonly}
+              disabled={fullLock}
               placeholder="DRH, dirigeant, responsable communication…"
               className={inputClass}
             />
@@ -251,7 +258,7 @@ export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
           name="secteurs"
           options={SECTEURS.map((s) => ({ code: s.code, label: s.label }))}
           defaultValues={exposant.secteurs}
-          disabled={readonly}
+          disabled={structuralLock}
           errors={errors}
         />
 
@@ -264,7 +271,7 @@ export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
             type="text"
             name="secteurAutre"
             defaultValue={exposant.secteurAutre ?? ""}
-            disabled={readonly}
+            disabled={structuralLock}
             placeholder="ex: fonderie, usinage CN…"
             className={inputClass}
           />
@@ -280,7 +287,7 @@ export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
           <textarea
             name="description"
             defaultValue={exposant.description ?? ""}
-            disabled={readonly}
+            disabled={fullLock}
             rows={5}
             className={inputClass}
           />
@@ -306,7 +313,7 @@ export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
                   name="offres"
                   value={code}
                   defaultChecked={checked}
-                  disabled={readonly}
+                  disabled={structuralLock}
                   onChange={(e) => toggleOffre(code, e.currentTarget.checked)}
                   className="mt-0.5"
                 />
@@ -335,7 +342,7 @@ export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
                   ([code, label]) => ({ code, label }),
                 )}
                 defaultValues={exposant.typesOpportunites}
-                disabled={readonly}
+                disabled={structuralLock}
                 errors={errors}
                 inline
               />
@@ -346,7 +353,7 @@ export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
         <div className="mt-4">
           <MetiersProposes
             defaultValues={exposant.metiersProposes}
-            disabled={readonly}
+            disabled={structuralLock}
           />
         </div>
       </Section>
@@ -360,7 +367,7 @@ export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
           name="elementsStand"
           options={ELEMENTS_STAND.map((e) => ({ code: e.code, label: e.label }))}
           defaultValues={exposant.elementsStand}
-          disabled={readonly}
+          disabled={structuralLock}
           errors={errors}
         />
 
@@ -373,7 +380,7 @@ export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
             type="text"
             name="elementsStandAutre"
             defaultValue={exposant.elementsStandAutre ?? ""}
-            disabled={readonly}
+            disabled={structuralLock}
             className={inputClass}
           />
         </Field>
@@ -388,7 +395,7 @@ export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
           name="animations"
           options={ANIMATIONS.map((a) => ({ code: a.code, label: a.label }))}
           defaultValues={exposant.animations}
-          disabled={readonly}
+          disabled={structuralLock}
           errors={errors}
         />
       </Section>
@@ -403,7 +410,7 @@ export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
             type="checkbox"
             name="innovationMiseEnAvant"
             defaultChecked={exposant.innovationMiseEnAvant}
-            disabled={readonly}
+            disabled={structuralLock}
             onChange={(e) => setInnovationState(e.currentTarget.checked)}
             className="mt-0.5"
           />
@@ -425,7 +432,7 @@ export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
               <textarea
                 name="descriptionInnovation"
                 defaultValue={exposant.descriptionInnovation ?? ""}
-                disabled={readonly}
+                disabled={fullLock}
                 rows={3}
                 className={inputClass}
               />
@@ -455,7 +462,7 @@ export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
                   name="statutRecrutement"
                   value={code}
                   defaultChecked={exposant.statutRecrutement === code}
-                  disabled={readonly}
+                  disabled={fullLock}
                 />
                 <span className="text-sm text-neutral-900">{label}</span>
               </label>
@@ -468,7 +475,7 @@ export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
             type="checkbox"
             name="consentementCommunication"
             defaultChecked={exposant.consentementCommunication}
-            disabled={readonly}
+            disabled={structuralLock}
             className="mt-0.5"
           />
           <span className="text-sm text-neutral-900">
@@ -516,20 +523,22 @@ export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
       </section>
 
       {/* ── Actions ─────────────────────────────────────────────────── */}
-      {!readonly && (
+      {!fullLock && (
         <div className="sticky bottom-0 bg-white border-t border-neutral-100 py-4 -mx-4 sm:-mx-6 px-4 sm:px-6 flex flex-col sm:flex-row gap-3 sm:justify-end">
           <SubmitButton
             formAction={saveAction}
-            variant="secondary"
-            label="Enregistrer le brouillon"
+            variant={canSubmit ? "secondary" : "primary"}
+            label={canSubmit ? "Enregistrer le brouillon" : "Enregistrer les modifications"}
             pendingLabel="Enregistrement…"
           />
-          <SubmitButton
-            formAction={submitAction}
-            variant="primary"
-            label="Soumettre à la CCI"
-            pendingLabel="Envoi…"
-          />
+          {canSubmit && (
+            <SubmitButton
+              formAction={submitAction}
+              variant="primary"
+              label="Soumettre à la CCI"
+              pendingLabel="Envoi…"
+            />
+          )}
         </div>
       )}
     </form>

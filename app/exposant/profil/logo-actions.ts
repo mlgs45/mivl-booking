@@ -53,8 +53,8 @@ export async function televerserLogo(
 ): Promise<LogoState> {
   const exposant = await getCurrentExposant();
   if (!exposant) return { ok: false, message: "Session expirée." };
-  if (exposant.statut === "VALIDE") {
-    return { ok: false, message: "Profil validé, logo non modifiable." };
+  if (exposant.statut === "SOUMIS") {
+    return { ok: false, message: "Fiche en cours de validation, logo non modifiable." };
   }
 
   const file = formData.get("logo");
@@ -94,8 +94,8 @@ export async function supprimerLogo(
 ): Promise<LogoState> {
   const exposant = await getCurrentExposant();
   if (!exposant) return { ok: false, message: "Session expirée." };
-  if (exposant.statut === "VALIDE") {
-    return { ok: false, message: "Profil validé, logo non modifiable." };
+  if (exposant.statut === "SOUMIS") {
+    return { ok: false, message: "Fiche en cours de validation, logo non modifiable." };
   }
 
   await removeFileIfExists(exposant.logoUrl);

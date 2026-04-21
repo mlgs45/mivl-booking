@@ -59,8 +59,7 @@ export default async function ExposantProfilPage() {
     );
   }
 
-  const readonly =
-    exposant.statut === "VALIDE" || exposant.statut === "SOUMIS";
+  const fullLock = exposant.statut === "SOUMIS";
 
   return (
     <>
@@ -85,16 +84,28 @@ export default async function ExposantProfilPage() {
           </p>
         </div>
 
-        {readonly && (
+        {exposant.statut === "SOUMIS" && (
           <div className="mb-6 rounded-lg border border-primary/30 bg-primary/5 p-4 text-sm text-primary">
-            {exposant.statut === "VALIDE"
-              ? "Votre profil est validé. Il n'est plus modifiable. Contactez la CCI pour tout changement."
-              : "Votre profil est en cours de validation. Vous pourrez le modifier à nouveau si la CCI le renvoie en brouillon."}
+            Votre fiche est en cours de validation par la CCI. Vous pourrez
+            la modifier à nouveau si elle vous est renvoyée en brouillon.
+          </div>
+        )}
+
+        {exposant.statut === "VALIDE" && (
+          <div className="mb-6 rounded-lg border border-success/30 bg-success/5 p-4 text-sm text-success">
+            <p className="font-semibold mb-1">Fiche validée par la CCI.</p>
+            <p className="text-success/90">
+              Vous pouvez mettre à jour à tout moment votre logo, description,
+              contact référent, site web et statut de recrutement. Les
+              informations structurelles (identité, adresse, secteurs, offres,
+              stand) sont verrouillées — contactez la CCI pour toute
+              modification.
+            </p>
           </div>
         )}
 
         <div className="mb-8">
-          <LogoUpload initialLogoUrl={exposant.logoUrl} disabled={readonly} />
+          <LogoUpload initialLogoUrl={exposant.logoUrl} disabled={fullLock} />
         </div>
 
         <ProfilForm exposant={exposant} />

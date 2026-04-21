@@ -83,7 +83,16 @@ async function getCurrentExposant() {
   return exposant;
 }
 
-/** Sauvegarde brouillon — tolérante, pas de validation stricte. */
+/**
+ * Sauvegarde brouillon — tolérante, pas de validation stricte.
+ *
+ * Statuts :
+ * - SOUMIS : tout verrouillé (CCI en cours de revue)
+ * - VALIDE : seuls les champs "cosmétiques" (logo, description, contact, site
+ *   web, innovation description, statut recrutement) sont mis à jour — les
+ *   champs structurels restent intouchables sans re-validation CCI
+ * - BROUILLON / REFUSE : édition complète
+ */
 export async function sauvegarderProfil(
   _prev: ProfilState,
   formData: FormData,
@@ -92,10 +101,10 @@ export async function sauvegarderProfil(
   if (!exposant) {
     return { ok: false, message: "Session expirée, reconnectez-vous." };
   }
-  if (exposant.statut === "VALIDE") {
+  if (exposant.statut === "SOUMIS") {
     return {
       ok: false,
-      message: "Profil déjà validé par la CCI, il n'est plus modifiable.",
+      message: "Fiche en cours de validation par la CCI, modification impossible pour le moment.",
     };
   }
 
@@ -106,6 +115,28 @@ export async function sauvegarderProfil(
   }
 
   const d = parsed.data;
+
+  if (exposant.statut === "VALIDE") {
+    // Mise à jour "cosmétique" uniquement — les champs validés par la CCI
+    // ne sont pas touchés.
+    await db.exposant.update({
+      where: { id: exposant.id },
+      data: {
+        description: d.description ?? undefined,
+        siteWeb: d.siteWeb && d.siteWeb.length > 0 ? d.siteWeb : null,
+        nomContact: d.nomContact ?? null,
+        telephoneContact: d.telephoneContact ?? null,
+        fonctionContact: d.fonctionContact ?? null,
+        descriptionInnovation: d.descriptionInnovation ?? null,
+        statutRecrutement: d.statutRecrutement,
+      },
+    });
+    revalidatePath("/exposant");
+    revalidatePath("/exposant/profil");
+    revalidatePath(`/exposants/${exposant.id}`);
+    return { ok: true, message: "Modifications enregistrées." };
+  }
+
   await db.exposant.update({
     where: { id: exposant.id },
     data: {
