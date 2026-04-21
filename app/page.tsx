@@ -17,8 +17,8 @@ const STATS = [
 const PARCOURS = [
   {
     heure: "9h – 12h",
-    titre: "Groupes scolaires",
-    desc: "4 rendez-vous de 20 min avec les exposants, organisés pour les classes de 4e, 3e, 2de et lycée.",
+    titre: "Groupe Collège et Lycée",
+    desc: "4 rendez-vous de 20 min avec les exposants, organisés pour les classes de 4e, 3e et 2de.",
     public: "Enseignants & élèves",
     iconPath:
       "M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253",
