@@ -21,7 +21,15 @@ COPY . .
 RUN pnpm prisma generate
 RUN pnpm build
 
-# ── Stage 3 : image de production ────────────────────────────────────────────
+# ── Stage 3 : CLI Prisma isolé pour les migrations runtime ───────────────────
+# Installation npm pour avoir un node_modules plat (pnpm crée des symlinks
+# qui ne se copient pas proprement entre stages Docker).
+FROM base AS migrator
+WORKDIR /migrator
+RUN npm init -y >/dev/null \
+ && npm install --omit=dev --no-audit --no-fund prisma@6.19.3
+
+# ── Stage 4 : image de production ────────────────────────────────────────────
 FROM base AS runner
 WORKDIR /app
 
@@ -36,9 +44,15 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
+# Prisma CLI + schéma pour `prisma migrate deploy` au démarrage
+COPY --from=migrator --chown=nextjs:nodejs /migrator/node_modules ./migrator/node_modules
+COPY --from=builder  --chown=nextjs:nodejs /app/prisma ./prisma
+
 RUN mkdir -p /app/uploads && chown nextjs:nodejs /app/uploads
 
 USER nextjs
 EXPOSE 3000
 
-CMD ["node", "server.js"]
+# Applique les migrations en attente puis démarre l'app.
+# `migrate deploy` est idempotent : no-op si la DB est déjà à jour.
+CMD ["sh", "-c", "./migrator/node_modules/.bin/prisma migrate deploy --schema=./prisma/schema.prisma && node server.js"]
