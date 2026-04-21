@@ -22,7 +22,7 @@ export type ProfilState = {
 function extractProfilFromFormData(formData: FormData) {
   const str = (k: string) => {
     const v = formData.get(k);
-    return typeof v === "string" && v.length > 0 ? v : undefined;
+    return typeof v === "string" ? v : "";
   };
   const all = (k: string) =>
     formData.getAll(k).filter((v): v is string => typeof v === "string");
@@ -54,7 +54,7 @@ function extractProfilFromFormData(formData: FormData) {
     innovationMiseEnAvant: bool("innovationMiseEnAvant"),
     descriptionInnovation: str("descriptionInnovation"),
 
-    statutRecrutement: str("statutRecrutement") ?? "NON",
+    statutRecrutement: str("statutRecrutement") || "NON",
 
     consentementCommunication: bool("consentementCommunication"),
   };
