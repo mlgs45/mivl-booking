@@ -11,7 +11,7 @@ import {
 } from "./actions";
 
 export function VerifierOtpForm({ email }: { email: string }) {
-  const [state, action] = useActionState<VerifierOtpState, FormData>(
+  const [state, action, isPending] = useActionState<VerifierOtpState, FormData>(
     verifierOtp,
     { ok: false },
   );
@@ -21,23 +21,38 @@ export function VerifierOtpForm({ email }: { email: string }) {
   );
   const formRef = useRef<HTMLFormElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const autoSubmittedRef = useRef(false);
 
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
+  useEffect(() => {
+    if (state.error) autoSubmittedRef.current = false;
+  }, [state]);
+
   const handleInput = (e: React.FormEvent<HTMLInputElement>) => {
     const input = e.currentTarget;
     const cleaned = input.value.replace(/\D/g, "").slice(0, 6);
     if (cleaned !== input.value) input.value = cleaned;
-    if (cleaned.length === 6) {
+    if (cleaned.length === 6 && !isPending && !autoSubmittedRef.current) {
+      autoSubmittedRef.current = true;
       formRef.current?.requestSubmit();
     }
   };
 
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    if (isPending) e.preventDefault();
+  };
+
   return (
     <div className="space-y-6">
-      <form ref={formRef} action={action} className="space-y-4">
+      <form
+        ref={formRef}
+        action={action}
+        onSubmit={handleSubmit}
+        className="space-y-4"
+      >
         <input type="hidden" name="email" value={email} />
         <div>
           <label
