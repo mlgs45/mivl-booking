@@ -5,6 +5,7 @@
 
 export type EmailTemplate =
   | "otp-code"
+  | "invitation-exposant-admin"
   | "confirmation-inscription-exposant"
   | "exposant-valide"
   | "exposant-refuse"
@@ -18,6 +19,11 @@ export type EmailTemplate =
 
 interface TemplateData {
   "otp-code": { code: string };
+  "invitation-exposant-admin": {
+    raisonSociale: string;
+    appUrl: string;
+    estPartenaire: boolean;
+  };
   "confirmation-inscription-exposant": { raisonSociale: string };
   "exposant-valide": { raisonSociale: string; appUrl: string };
   "exposant-refuse": { raisonSociale: string; motif: string };
@@ -85,6 +91,29 @@ export function renderEmail<K extends EmailTemplate>(
           <p style="font-size: 14px; color: #6B7280;">Si vous n'êtes pas à l'origine de cette demande, ignorez simplement cet email.</p>
         `),
         text: `Votre code de connexion MIVL Connect : ${d.code}\n\nSaisissez-le sur la page de connexion. Valable 10 minutes.`,
+      };
+    }
+    case "invitation-exposant-admin": {
+      const d = data as TemplateData["invitation-exposant-admin"];
+      const titre = d.estPartenaire
+        ? "Vous êtes invité en tant que partenaire"
+        : "Votre compte exposant a été créé";
+      const intro = d.estPartenaire
+        ? `La CCI Centre-Val de Loire a créé votre compte partenaire pour <strong>${d.raisonSociale}</strong> en vue du salon Made In Val de Loire 2026.`
+        : `La CCI Centre-Val de Loire a créé votre compte exposant pour <strong>${d.raisonSociale}</strong> en vue du salon Made In Val de Loire 2026.`;
+      return {
+        subject: `${titre} — MIVL Connect`,
+        html: baseLayout(`
+          <p>Bonjour,</p>
+          <p>${intro}</p>
+          <p>Pour <strong>finaliser votre inscription</strong>, connectez-vous à votre espace et complétez votre fiche (secteurs, offres, contact, équipe). Une fois soumise, la CCI la valide pour diffusion publique.</p>
+          <p style="margin: 32px 0;">
+            <a href="${d.appUrl}/connexion" style="background: #1B4DB5; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">Me connecter</a>
+          </p>
+          <p style="font-size: 14px; color: #6B7280;">La connexion se fait via un code à 6 chiffres envoyé par email (saisissez cette adresse sur la page de connexion).</p>
+          <p>À bientôt,<br>L'équipe MIVL</p>
+        `),
+        text: `${intro}\n\nConnectez-vous sur ${d.appUrl}/connexion pour compléter votre fiche.`,
       };
     }
     case "confirmation-inscription-exposant": {

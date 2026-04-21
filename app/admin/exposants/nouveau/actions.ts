@@ -5,6 +5,10 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
+import { sendEmail } from "@/lib/emails";
+
+const APP_URL =
+  process.env.NEXT_PUBLIC_APP_URL ?? "https://connect.mivl-orleans.fr";
 
 const schema = z.object({
   email: z.string().trim().toLowerCase().email("Email invalide."),
@@ -92,9 +96,7 @@ export async function creerExposant(
           description,
           secteurs: [],
           estPartenaire,
-          statut: "VALIDE",
-          valideParId: session!.user!.id,
-          valideA: new Date(),
+          statut: "BROUILLON",
         },
       },
     },
@@ -110,6 +112,16 @@ export async function creerExposant(
       payload: { estPartenaire },
     },
   });
+
+  try {
+    await sendEmail({
+      to: email,
+      template: "invitation-exposant-admin",
+      data: { raisonSociale, appUrl: APP_URL, estPartenaire },
+    });
+  } catch (error) {
+    console.error("[exposant.cree.admin] envoi invitation échoué :", error);
+  }
 
   revalidatePath("/admin/exposants");
   revalidatePath("/exposants");
