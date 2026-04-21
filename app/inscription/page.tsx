@@ -8,27 +8,31 @@ export const metadata = {
 
 const PROFILS = [
   {
-    titre: "Je suis exposant",
-    desc: "Entreprise industrielle qui souhaite participer au salon.",
+    titre: "Je suis une entreprise industrielle",
+    desc: "Je présente mon entreprise, mes métiers et mes opportunités aux jeunes talents de la région.",
     href: "/inscription/exposant",
+    cta: "Je veux un stand",
     accent: true,
   },
   {
-    titre: "Je suis enseignant",
-    desc: "Je souhaite inscrire une classe ou un groupe au parcours du matin.",
+    titre: "Je suis professeur en collège",
+    desc: "Je réserve des créneaux pour mon groupe et j'organise la visite de ma classe sur le salon.",
     href: "/inscription/enseignant",
+    cta: "Inscrire ma classe",
     accent: false,
   },
   {
-    titre: "Je suis jeune ou diplômé",
-    desc: "Je souhaite participer au speed dating de l'après-midi.",
+    titre: "Je suis lycéen ou jeune diplômé",
+    desc: "Je rencontre les industriels de la région et je découvre les opportunités de stages et d'alternance.",
     href: "/inscription/jeune",
+    cta: "Réserver mon parcours",
     accent: false,
   },
   {
     titre: "Je suis demandeur d'emploi",
-    desc: "Référé par France Travail pour le speed dating emploi.",
+    desc: "Je participe au speed dating emploi de l'après-midi et je rencontre des entreprises qui recrutent.",
     href: "/inscription/demandeur-emploi",
+    cta: "M'inscrire au speed dating",
     accent: false,
   },
 ];
@@ -57,30 +61,22 @@ export default function InscriptionPage() {
                 href={p.href}
                 className={`block rounded-xl border p-6 transition-all ${
                   p.accent
-                    ? "bg-primary border-primary text-white hover:bg-primary-dark"
+                    ? "bg-accent border-accent text-neutral-900 hover:bg-accent-dark"
                     : "bg-white border-neutral-100 hover:border-primary hover:shadow-sm"
                 }`}
               >
-                <h2
-                  className={`font-heading font-bold text-lg mb-2 ${
-                    p.accent ? "text-white" : "text-neutral-900"
-                  }`}
-                >
+                <h2 className="font-heading font-bold text-lg mb-2 text-neutral-900">
                   {p.titre}
                 </h2>
                 <p
                   className={`text-sm leading-relaxed ${
-                    p.accent ? "text-white/80" : "text-neutral-700"
+                    p.accent ? "text-neutral-800" : "text-neutral-700"
                   }`}
                 >
                   {p.desc}
                 </p>
-                <div
-                  className={`mt-4 inline-flex items-center text-sm font-semibold ${
-                    p.accent ? "text-white" : "text-primary"
-                  }`}
-                >
-                  S'inscrire →
+                <div className="mt-4 inline-flex items-center text-sm font-semibold text-primary">
+                  {p.cta} →
                 </div>
               </Link>
             ))}

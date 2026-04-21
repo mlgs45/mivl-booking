@@ -42,16 +42,16 @@ const PARCOURS = [
 
 const CTAS = [
   {
-    role: "Vous êtes exposant",
+    role: "Vous êtes une entreprise industrielle",
     desc: "Présentez votre entreprise, vos métiers et vos opportunités aux jeunes talents de la région.",
     href: "/inscription/exposant",
-    cta: "Inscrire mon entreprise",
+    cta: "Je veux un stand",
     accent: true,
     iconPath:
       "M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4",
   },
   {
-    role: "Vous êtes enseignant",
+    role: "Vous êtes professeur en collège",
     desc: "Réservez des créneaux pour votre groupe et organisez la visite de votre classe sur le salon.",
     href: "/inscription/enseignant",
     cta: "Inscrire ma classe",
@@ -60,7 +60,7 @@ const CTAS = [
       "M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253",
   },
   {
-    role: "Vous êtes jeune ou diplômé",
+    role: "Vous êtes lycéen ou jeune diplômé",
     desc: "Rencontrez les industriels de la région et découvrez les opportunités de stages et d'alternance.",
     href: "/inscription/jeune",
     cta: "Réserver mon parcours",
@@ -219,13 +219,15 @@ export default function LandingPage() {
                 key={c.role}
                 className={`rounded-xl border p-7 flex flex-col ${
                   c.accent
-                    ? "bg-primary text-white border-primary"
+                    ? "bg-accent text-neutral-900 border-accent"
                     : "bg-white text-neutral-900 border-neutral-100"
                 }`}
               >
                 <div
                   className={`w-14 h-14 rounded-xl flex items-center justify-center mb-5 ${
-                    c.accent ? "bg-white/15 text-white" : "bg-primary/10 text-primary"
+                    c.accent
+                      ? "bg-neutral-900/10 text-neutral-900"
+                      : "bg-primary/10 text-primary"
                   }`}
                 >
                   <svg
@@ -243,27 +245,19 @@ export default function LandingPage() {
                     />
                   </svg>
                 </div>
-                <h3
-                  className={`text-base font-heading font-bold mb-3 ${
-                    c.accent ? "text-white" : "text-neutral-900"
-                  }`}
-                >
+                <h3 className="text-base font-heading font-bold mb-3 text-neutral-900">
                   {c.role}
                 </h3>
                 <p
                   className={`text-sm leading-relaxed mb-6 flex-1 ${
-                    c.accent ? "text-white/80" : "text-neutral-700"
+                    c.accent ? "text-neutral-800" : "text-neutral-700"
                   }`}
                 >
                   {c.desc}
                 </p>
                 <Link
                   href={c.href}
-                  className={`inline-flex items-center justify-center text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors ${
-                    c.accent
-                      ? "bg-white text-primary hover:bg-neutral-100"
-                      : "bg-primary text-white hover:bg-primary-dark"
-                  }`}
+                  className="inline-flex items-center justify-center text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors bg-primary text-white hover:bg-primary-dark"
                 >
                   {c.cta}
                 </Link>
