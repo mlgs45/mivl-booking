@@ -25,8 +25,8 @@ const PARCOURS = [
   },
   {
     heure: "14h – 18h",
-    titre: "Speed dating emploi",
-    desc: "6 rendez-vous express de 5 min pour découvrir des entreprises et leurs offres (stages, alternances, CDI).",
+    titre: "Speed dating Talents & Emploi",
+    desc: "6 rendez-vous express de 5 min pour découvrir des entreprises et leurs offres (stages, alternances, CDI) et dénicher les nouveaux talents.",
     public: "Jeunes diplômés & demandeurs d'emploi",
     iconPath: "M13 10V3L4 14h7v7l9-11h-7z",
   },
