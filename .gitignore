@@ -39,7 +39,7 @@ yarn-error.log*
 # vercel
 .vercel
 
-# uploads générés (badges PDF, plannings)
+# uploads générés (badges PDF, plannings, logos exposants)
 /uploads
 
 # typescript

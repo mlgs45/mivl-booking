@@ -44,6 +44,13 @@ docker exec <container_id> ./migrator/node_modules/.bin/prisma migrate status
 |-----------------------------------|-------------------------|
 | `/data/mivl-booking/uploads`      | `/app/uploads`          |
 
+Contient :
+
+- `/app/uploads/logos/` — logos des exposants téléversés depuis `/exposant/profil` (servis via la route `/api/logos/[filename]`).
+- Emplacements futurs pour badges PDF, plannings générés, etc.
+
+**Sans ce volume, les logos sont perdus à chaque redéploiement.**
+
 ### 2.3 Variables d'environnement (Coolify → Environment Variables)
 
 Valeurs sensibles → champ `Secret`.

@@ -9,6 +9,12 @@ const eslintConfig = defineConfig([
     // Contenus FR : les apostrophes en texte JSX ne sont pas un bug.
     rules: {
       "react/no-unescaped-entities": "off",
+      // Les server actions ont une signature (_prev, formData) imposée par useActionState :
+      // on autorise l'underscore préfixé comme marqueur d'inutilisation intentionnelle.
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
+      ],
     },
   },
   // Override default ignores of eslint-config-next.

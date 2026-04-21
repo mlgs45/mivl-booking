@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { AppHeader } from "@/components/layout/app-header";
 import { ProfilForm } from "./profil-form";
+import { LogoUpload } from "./logo-upload";
 
 export const metadata = { title: "Mon profil exposant — MIVL Connect" };
 
@@ -20,6 +21,7 @@ export default async function ExposantProfilPage() {
       ville: true,
       codePostal: true,
       siteWeb: true,
+      logoUrl: true,
       nomContact: true,
       telephoneContact: true,
       fonctionContact: true,
@@ -90,6 +92,10 @@ export default async function ExposantProfilPage() {
               : "Votre profil est en cours de validation. Vous pourrez le modifier à nouveau si la CCI le renvoie en brouillon."}
           </div>
         )}
+
+        <div className="mb-8">
+          <LogoUpload initialLogoUrl={exposant.logoUrl} disabled={readonly} />
+        </div>
 
         <ProfilForm exposant={exposant} />
       </main>
