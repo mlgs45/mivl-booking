@@ -8,5 +8,4 @@ node_modules
 .env*.local
 docker-compose*.yml
 docs
-prisma/migrations
 tsconfig.tsbuildinfo
