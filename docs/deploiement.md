@@ -7,7 +7,7 @@
 | compute-01 | 135.181.45.69 | Coolify + app Docker |
 | data-01 | *(privé)* | PostgreSQL 16 — base `mivl_booking` |
 
-L'application est exposée sur `https://booking.mivl-orleans.fr`.
+L'application est exposée sur `https://connect.mivl-orleans.fr`.
 
 ---
 
@@ -20,7 +20,7 @@ L'application est exposée sur `https://booking.mivl-orleans.fr`.
 3. Sélectionner le repo `mlgs45/mivl-booking`, branche `main`
 4. **Build pack → Dockerfile** (Coolify détecte automatiquement le `Dockerfile` à la racine)
 5. **Port exposé → 3000**
-6. **Domaine → `booking.mivl-orleans.fr`** (Let's Encrypt activé)
+6. **Domaine → `connect.mivl-orleans.fr`** (Let's Encrypt activé)
 
 ### 1.2 Volumes persistants
 
@@ -37,13 +37,13 @@ Dans **Environment Variables**, renseigner toutes les variables (utiliser `Secre
 ```env
 DATABASE_URL=postgresql://mivl_user:PASSWORD@data-01-private-ip:5432/mivl_booking
 AUTH_SECRET=<openssl rand -base64 32>
-AUTH_URL=https://booking.mivl-orleans.fr
+AUTH_URL=https://connect.mivl-orleans.fr
 BREVO_API_KEY=<clé Brevo>
 BREVO_FROM_EMAIL=noreply@mivl-orleans.fr
 BREVO_FROM_NAME=MIVL Connect
 EMAIL_PROVIDER=brevo
 QR_SIGNING_SECRET=<openssl rand -base64 32>
-NEXT_PUBLIC_APP_URL=https://booking.mivl-orleans.fr
+NEXT_PUBLIC_APP_URL=https://connect.mivl-orleans.fr
 SUPER_ADMIN_EMAIL=mathieu.langlois@centre.cci.fr
 STORAGE_DIR=/app/uploads
 NODE_ENV=production
@@ -130,10 +130,10 @@ En cas de problème après un déploiement :
 - [ ] `AUTH_SECRET` généré et configuré dans Coolify
 - [ ] `DATABASE_URL` pointant sur data-01 (réseau privé Hetzner)
 - [ ] Volume `/app/uploads` monté
-- [ ] DNS `booking.mivl-orleans.fr` → IP compute-01
+- [ ] DNS `connect.mivl-orleans.fr` → IP compute-01
 - [ ] Let's Encrypt activé dans Coolify
 - [ ] Webhook GitHub configuré (auto-deploy sur push main)
 - [ ] `pnpm db:migrate deploy` exécuté en prod
 - [ ] Seed initial exécuté (compte super admin créé)
 - [ ] Test connexion `/connexion/admin` avec `mathieu.langlois@centre.cci.fr`
-- [ ] Email Brevo fonctionnel (tester magic link)
+- [ ] Email Brevo fonctionnel (tester code OTP de connexion)

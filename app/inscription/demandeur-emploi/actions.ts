@@ -1,7 +1,8 @@
 "use server";
 
+import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
-import { signIn } from "@/auth";
+import { sendOtpByEmail } from "@/lib/otp";
 import { inscriptionDEschema } from "@/lib/validation/visiteur";
 
 export type InscriptionDEState = {
@@ -56,6 +57,6 @@ export async function inscrireDemandeurEmploi(
     },
   });
 
-  await signIn("nodemailer", { email, redirectTo: "/visiteur" });
-  return { ok: true };
+  await sendOtpByEmail(email);
+  redirect(`/connexion/verifier?email=${encodeURIComponent(email)}`);
 }

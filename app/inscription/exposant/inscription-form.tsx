@@ -80,7 +80,7 @@ export function InscriptionExposantForm() {
           className="w-full rounded-lg border border-neutral-100 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary disabled:opacity-60"
         />
         <p className="mt-1.5 text-xs text-neutral-700">
-          Vous recevrez un lien de connexion sécurisé à cette adresse.
+          Vous recevrez un code de connexion à 6 chiffres à cette adresse.
         </p>
         <FieldError errors={state.errors?.email} />
       </div>

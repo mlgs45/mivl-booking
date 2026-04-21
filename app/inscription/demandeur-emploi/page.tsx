@@ -39,7 +39,7 @@ export default function InscriptionDemandeurEmploiPage() {
             <div className="mb-8 rounded-lg bg-primary/5 border border-primary/10 p-4 text-sm text-neutral-900">
               <strong className="font-semibold">Prochaines étapes :</strong>
               <ol className="mt-2 space-y-1 text-neutral-700 list-decimal list-inside">
-                <li>Réception d'un lien de connexion par email</li>
+                <li>Réception d'un code de connexion par email</li>
                 <li>Consultation des offres et recrutements</li>
                 <li>Sélection de 1 à 6 rendez-vous</li>
                 <li>Planning confirmé par email</li>

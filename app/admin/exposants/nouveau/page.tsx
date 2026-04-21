@@ -33,7 +33,7 @@ export default async function AdminNouvelExposantPage() {
         <p className="text-sm text-neutral-700 mb-8">
           Crée directement un exposant validé (utile pour les partenaires et
           institutionnels connus d&#39;avance). Le contact pourra se connecter
-          via lien magique pour compléter son profil.
+          via code email pour compléter son profil.
         </p>
 
         <div className="bg-white rounded-xl border border-neutral-100 p-6 sm:p-8">

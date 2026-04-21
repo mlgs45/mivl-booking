@@ -4,7 +4,7 @@
  */
 
 export type EmailTemplate =
-  | "magic-link"
+  | "otp-code"
   | "confirmation-inscription-exposant"
   | "exposant-valide"
   | "exposant-refuse"
@@ -17,7 +17,7 @@ export type EmailTemplate =
   | "annulation-rdv";
 
 interface TemplateData {
-  "magic-link": { url: string; appUrl: string };
+  "otp-code": { code: string };
   "confirmation-inscription-exposant": { raisonSociale: string };
   "exposant-valide": { raisonSociale: string; appUrl: string };
   "exposant-refuse": { raisonSociale: string; motif: string };
@@ -46,13 +46,15 @@ export interface RenderedEmail {
   text: string;
 }
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://connect.mivl-orleans.fr";
+
 const baseLayout = (contenu: string) => `
 <!DOCTYPE html>
 <html lang="fr">
 <head><meta charset="UTF-8"><title>MIVL Connect</title></head>
 <body style="font-family: -apple-system, system-ui, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; color: #2D2D2D;">
   <div style="border-top: 6px solid #1B4DB5; padding-top: 24px;">
-    <h1 style="color: #1B4DB5; font-size: 24px; margin: 0 0 16px;">MIVL Connect</h1>
+    <img src="${APP_URL}/images/logo-mivl.png" alt="MIVL Connect" width="160" style="display: block; width: 160px; height: auto; margin: 0 0 20px;">
     ${contenu}
     <hr style="margin: 32px 0; border: none; border-top: 1px solid #E9EDF2;">
     <p style="color: #6B7280; font-size: 12px; line-height: 1.5;">
@@ -69,19 +71,20 @@ export function renderEmail<K extends EmailTemplate>(
   data: TemplateData[K]
 ): RenderedEmail {
   switch (template) {
-    case "magic-link": {
-      const d = data as TemplateData["magic-link"];
+    case "otp-code": {
+      const d = data as TemplateData["otp-code"];
       return {
-        subject: "Votre lien de connexion — MIVL Connect",
+        subject: `Votre code de connexion : ${d.code} — MIVL Connect`,
         html: baseLayout(`
           <p>Bonjour,</p>
-          <p>Cliquez sur le bouton ci-dessous pour vous connecter à votre espace MIVL Connect :</p>
-          <p style="margin: 32px 0;">
-            <a href="${d.url}" style="background: #E63946; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">Me connecter</a>
+          <p>Voici votre code de connexion à votre espace MIVL Connect :</p>
+          <p style="margin: 32px 0; text-align: center;">
+            <span style="display: inline-block; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 32px; letter-spacing: 8px; font-weight: 700; color: #1B4DB5; background: #F3F6FC; padding: 18px 28px; border-radius: 10px; border: 1px solid #E9EDF2;">${d.code}</span>
           </p>
-          <p style="font-size: 14px; color: #6B7280;">Ce lien est valable 15 minutes. Si vous n'êtes pas à l'origine de cette demande, ignorez simplement cet email.</p>
+          <p style="font-size: 14px; color: #6B7280;">Saisissez ce code sur la page de connexion pour accéder à votre espace. Il est valable 10 minutes et ne peut être utilisé qu'une seule fois.</p>
+          <p style="font-size: 14px; color: #6B7280;">Si vous n'êtes pas à l'origine de cette demande, ignorez simplement cet email.</p>
         `),
-        text: `Connectez-vous à MIVL Connect : ${d.url} (valable 15 minutes)`,
+        text: `Votre code de connexion MIVL Connect : ${d.code}\n\nSaisissez-le sur la page de connexion. Valable 10 minutes.`,
       };
     }
     case "confirmation-inscription-exposant": {

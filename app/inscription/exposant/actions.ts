@@ -1,7 +1,8 @@
 "use server";
 
+import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
-import { signIn } from "@/auth";
+import { sendOtpByEmail } from "@/lib/otp";
 import { inscriptionExposantSchema } from "@/lib/validation/exposant";
 
 export type InscriptionState = {
@@ -69,10 +70,6 @@ export async function inscrireExposant(
     },
   });
 
-  await signIn("nodemailer", {
-    email,
-    redirectTo: "/exposant",
-  });
-
-  return { ok: true };
+  await sendOtpByEmail(email);
+  redirect(`/connexion/verifier?email=${encodeURIComponent(email)}`);
 }

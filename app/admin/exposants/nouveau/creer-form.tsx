@@ -17,7 +17,7 @@ export function CreerExposantForm() {
         name="email"
         type="email"
         required
-        help="Le compte sera créé avec cet email ; le contact pourra ensuite se connecter via un lien magique."
+        help="Le compte sera créé avec cet email ; le contact pourra ensuite se connecter via un code à 6 chiffres envoyé par email."
         error={state.errors?.email?.[0]}
       />
       <Field

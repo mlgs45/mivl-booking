@@ -10,7 +10,7 @@ const MESSAGES: Record<string, string> = {
   AccessDenied:
     "L'accès vous a été refusé. Vérifiez que votre compte est activé.",
   Verification:
-    "Le lien de connexion est expiré ou a déjà été utilisé. Demandez-en un nouveau.",
+    "Le code de connexion est expiré ou a déjà été utilisé. Demandez-en un nouveau.",
   Default: "Une erreur s'est produite. Merci de réessayer dans un instant.",
 };
 

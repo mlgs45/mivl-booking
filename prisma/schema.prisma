@@ -564,10 +564,27 @@ model Session {
   @@index([userId])
 }
 
-model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
+// ═══════════════════════════════════════════════════════════════════════════
+// AUTH OTP (code email 6 chiffres, remplace les magic links)
+// ═══════════════════════════════════════════════════════════════════════════
 
-  @@unique([identifier, token])
+model OtpCode {
+  id        String    @id @default(cuid())
+  email     String
+  codeHash  String
+  expiresAt DateTime
+  attempts  Int       @default(0)
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([email])
+  @@index([expiresAt])
+}
+
+model OtpRateLimit {
+  key         String   @id
+  windowStart DateTime
+  count       Int      @default(1)
+
+  @@index([windowStart])
 }

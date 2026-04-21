@@ -30,7 +30,7 @@ export function InscriptionJeuneForm() {
         type="email"
         autoComplete="email"
         required
-        hint="Un lien de connexion sera envoyé à cette adresse."
+        hint="Un code de connexion à 6 chiffres sera envoyé à cette adresse."
         errors={state.errors?.email}
         disabled={pending}
       />

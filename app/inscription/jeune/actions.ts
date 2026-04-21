@@ -1,7 +1,8 @@
 "use server";
 
+import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
-import { signIn } from "@/auth";
+import { sendOtpByEmail } from "@/lib/otp";
 import { inscriptionJeuneSchema } from "@/lib/validation/visiteur";
 
 export type InscriptionJeuneState = {
@@ -60,6 +61,6 @@ export async function inscrireJeune(
     },
   });
 
-  await signIn("nodemailer", { email, redirectTo: "/visiteur" });
-  return { ok: true };
+  await sendOtpByEmail(email);
+  redirect(`/connexion/verifier?email=${encodeURIComponent(email)}`);
 }

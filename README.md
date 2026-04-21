@@ -10,7 +10,7 @@ Organisé par la CCI Centre-Val de Loire.
 | Couche | Technologie |
 |---|---|
 | Framework | Next.js 16 (App Router, TypeScript strict) |
-| Auth | Auth.js v5 (magic link + credentials) |
+| Auth | Auth.js v5 (code OTP 6 chiffres par email + credentials admin) |
 | Base de données | PostgreSQL 16 + Prisma 6 |
 | UI | Tailwind CSS 4 + shadcn/ui |
 | Email | Brevo (prod) / console (dev) |
@@ -55,7 +55,7 @@ L'application est disponible sur [http://localhost:3000](http://localhost:3000).
 |---|---|---|
 | mathieu.langlois@centre.cci.fr | ChangeMe123! | Super Admin |
 | gestionnaire@cci-centre.fr | ChangeMe123! | Gestionnaire |
-| Autres utilisateurs seed | — | Magic link (log console) |
+| Autres utilisateurs seed | — | Code OTP (log console, voir `tmp/emails-dev.log`) |
 
 ## Scripts
 

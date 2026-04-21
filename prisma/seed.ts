@@ -706,7 +706,7 @@ async function main() {
   console.log(`\n🔑 Identifiants dev :`);
   console.log(`   Super admin : ${SUPER_ADMIN_EMAIL} / ${DEV_PASSWORD}`);
   console.log(`   Gestionnaire : gestionnaire@cci-centre.fr / ${DEV_PASSWORD}`);
-  console.log(`   Exposants / visiteurs → magic link (à brancher en Phase 5)\n`);
+  console.log(`   Exposants / visiteurs → code OTP par email (voir tmp/emails-dev.log en dev)\n`);
   // Silence unused var warnings
   void gestionnaire;
   void groupe3eA;

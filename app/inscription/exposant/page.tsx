@@ -45,7 +45,7 @@ export default function InscriptionExposantPage() {
             <div className="mb-8 rounded-lg bg-primary/5 border border-primary/10 p-4 text-sm text-neutral-900">
               <strong className="font-semibold">Prochaines étapes :</strong>
               <ol className="mt-2 space-y-1 text-neutral-700 list-decimal list-inside">
-                <li>Réception d'un lien de connexion par email</li>
+                <li>Réception d'un code de connexion par email</li>
                 <li>Complétion de votre fiche entreprise</li>
                 <li>Soumission à la CCI pour validation</li>
                 <li>Accès aux inscriptions visiteurs dès le 1er septembre</li>

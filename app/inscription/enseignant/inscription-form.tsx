@@ -30,7 +30,7 @@ export function InscriptionEnseignantForm() {
         type="email"
         autoComplete="email"
         required
-        hint="Vous recevrez un lien de connexion sécurisé."
+        hint="Vous recevrez un code de connexion à 6 chiffres."
         errors={state.errors?.email}
         disabled={pending}
       />

@@ -1,7 +1,8 @@
 "use server";
 
+import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
-import { signIn } from "@/auth";
+import { sendOtpByEmail } from "@/lib/otp";
 import { inscriptionEnseignantSchema } from "@/lib/validation/enseignant";
 import { sendEmail } from "@/lib/emails";
 
@@ -69,6 +70,6 @@ export async function inscrireEnseignant(
     data: { prenom, etablissement },
   });
 
-  await signIn("nodemailer", { email, redirectTo: "/enseignant" });
-  return { ok: true };
+  await sendOtpByEmail(email);
+  redirect(`/connexion/verifier?email=${encodeURIComponent(email)}`);
 }
