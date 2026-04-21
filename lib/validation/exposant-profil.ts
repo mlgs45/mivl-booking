@@ -54,6 +54,7 @@ export const profilExposantDraftSchema = z.object({
     .optional()
     .or(z.literal("")),
   siteWeb: z.string().trim().url("URL invalide").optional().or(z.literal("")),
+  nomContact: z.string().trim().max(120).optional(),
   telephoneContact: z.string().trim().max(30).optional(),
   fonctionContact: z.string().trim().max(100).optional(),
 
@@ -101,6 +102,11 @@ export const profilExposantSubmitSchema = profilExposantDraftSchema
     raisonSociale: z.string().trim().min(2, "Raison sociale requise").max(200),
     adresse: z.string().trim().min(5, "Adresse requise").max(500),
     ville: z.string().trim().min(1, "Ville requise").max(100),
+    nomContact: z
+      .string()
+      .trim()
+      .min(2, "Prénom et nom du référent requis")
+      .max(120),
     telephoneContact: z
       .string()
       .trim()

@@ -20,6 +20,7 @@ export default async function ExposantProfilPage() {
       ville: true,
       codePostal: true,
       siteWeb: true,
+      nomContact: true,
       telephoneContact: true,
       fonctionContact: true,
       description: true,

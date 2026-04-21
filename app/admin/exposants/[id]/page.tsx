@@ -165,6 +165,7 @@ export default async function AdminExposantDetailPage({
             <Row label="SIRET" value={exposant.siret} />
             <Row label="Adresse" value={exposant.adresse} />
             <Row label="Site web" value={exposant.siteWeb} link />
+            <Row label="Référent stand" value={exposant.nomContact} />
             <Row label="Contact" value={
               [exposant.fonctionContact, exposant.telephoneContact]
                 .filter(Boolean).join(" · ") || null

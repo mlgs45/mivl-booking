@@ -35,6 +35,7 @@ function extractProfilFromFormData(formData: FormData) {
     ville: str("ville"),
     codePostal: str("codePostal") ?? "",
     siteWeb: str("siteWeb") ?? "",
+    nomContact: str("nomContact"),
     telephoneContact: str("telephoneContact"),
     fonctionContact: str("fonctionContact"),
 
@@ -114,6 +115,7 @@ export async function sauvegarderProfil(
       ville: d.ville ?? undefined,
       codePostal: d.codePostal && d.codePostal.length > 0 ? d.codePostal : null,
       siteWeb: d.siteWeb && d.siteWeb.length > 0 ? d.siteWeb : null,
+      nomContact: d.nomContact ?? null,
       telephoneContact: d.telephoneContact ?? null,
       fonctionContact: d.fonctionContact ?? null,
       secteurs: d.secteurs,
@@ -179,6 +181,7 @@ export async function soumettreProfil(
       ville: d.ville,
       codePostal: d.codePostal && d.codePostal.length > 0 ? d.codePostal : null,
       siteWeb: d.siteWeb && d.siteWeb.length > 0 ? d.siteWeb : null,
+      nomContact: d.nomContact,
       telephoneContact: d.telephoneContact,
       fonctionContact: d.fonctionContact,
       secteurs: d.secteurs,

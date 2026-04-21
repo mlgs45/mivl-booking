@@ -98,6 +98,7 @@ async function main() {
       ville: "Orléans",
       codePostal: "45000",
       adresse: "12 rue de la Source, 45100 Orléans",
+      nomContact: "Julien Chauvin",
       telephoneContact: "02 38 00 00 01",
       fonctionContact: "Responsable communication",
       description:
@@ -140,6 +141,7 @@ async function main() {
       ville: "Chartres",
       codePostal: "28000",
       adresse: "ZI de Chartres-Est, 28000 Chartres",
+      nomContact: "Karine Boisseau",
       telephoneContact: "02 37 00 00 02",
       fonctionContact: "DRH",
       description:
@@ -175,6 +177,7 @@ async function main() {
       ville: "Blois",
       codePostal: "41000",
       adresse: "Parc d'activités du Val de Cher, 41000 Blois",
+      nomContact: "Olivier Moreau",
       telephoneContact: "02 54 00 00 03",
       fonctionContact: "Dirigeant",
       description:
@@ -210,6 +213,7 @@ async function main() {
       codePostal: "18000",
       adresse: "ZAC de la Voie Romaine, 18000 Bourges",
       secteurAutre: "Fonderie d'aluminium",
+      nomContact: "Catherine Lefèvre",
       telephoneContact: "02 48 00 00 04",
       fonctionContact: "Responsable RH",
       description:
@@ -244,6 +248,7 @@ async function main() {
       ville: "Tours",
       codePostal: "37000",
       adresse: "Tech-Loire, 37000 Tours",
+      nomContact: "Sébastien Gautier",
       telephoneContact: "02 47 00 00 05",
       fonctionContact: "CTO",
       description:
@@ -303,6 +308,7 @@ async function main() {
         ville: ex.ville,
         codePostal: ex.codePostal,
         adresse: ex.adresse,
+        nomContact: ex.nomContact,
         telephoneContact: ex.telephoneContact,
         fonctionContact: ex.fonctionContact,
         description: ex.description,

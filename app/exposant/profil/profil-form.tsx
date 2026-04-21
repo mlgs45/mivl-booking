@@ -21,6 +21,7 @@ type ExposantProfil = Pick<
   | "ville"
   | "codePostal"
   | "siteWeb"
+  | "nomContact"
   | "telephoneContact"
   | "fonctionContact"
   | "description"
@@ -203,6 +204,16 @@ export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
         title="Référent présent sur le stand"
         description="La personne qui coordonne l'équipe le jour du salon."
       >
+        <Field label="Prénom et nom" name="nomContact" required errors={errors}>
+          <input
+            type="text"
+            name="nomContact"
+            defaultValue={exposant.nomContact ?? ""}
+            disabled={readonly}
+            placeholder="Marie Dupont"
+            className={inputClass}
+          />
+        </Field>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field
             label="Téléphone"

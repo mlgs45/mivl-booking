@@ -158,6 +158,8 @@ model Exposant {
   siteWeb                      String?
   logoUrl                      String?
 
+  /// Prénom + nom du référent qui sera présent sur le stand
+  nomContact                   String?
   /// Téléphone du référent qui sera présent sur le stand
   telephoneContact             String?
   /// Fonction du référent (DRH, dirigeant, responsable communication…)
