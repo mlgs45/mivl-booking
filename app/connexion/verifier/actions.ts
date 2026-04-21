@@ -3,7 +3,7 @@
 import { AuthError } from "next-auth";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { auth, signIn } from "@/auth";
+import { signIn } from "@/auth";
 import { homePathForRole } from "@/lib/auth-redirect";
 import { sendOtpByEmail } from "@/lib/otp";
 import { checkOtpSendRateLimit } from "@/lib/rate-limit";
@@ -35,6 +35,25 @@ export async function verifierOtp(
     };
   }
 
+  const user = await db.user.findUnique({
+    where: { email: parsed.data.email },
+    select: { role: true },
+  });
+
+  if (!user) {
+    return {
+      ok: false,
+      error: "Aucun compte associé à cette adresse.",
+    };
+  }
+
+  if (user.role === "SUPER_ADMIN" || user.role === "GESTIONNAIRE") {
+    return {
+      ok: false,
+      error: "Les administrateurs se connectent via /connexion/admin.",
+    };
+  }
+
   try {
     await signIn("otp", {
       email: parsed.data.email,
@@ -51,15 +70,7 @@ export async function verifierOtp(
     throw error;
   }
 
-  const session = await auth();
-  if (!session?.user?.role) {
-    return {
-      ok: false,
-      error: "Une erreur s'est produite. Réessayez.",
-    };
-  }
-
-  redirect(homePathForRole(session.user.role));
+  redirect(homePathForRole(user.role));
 }
 
 export type RenvoyerOtpState = {
