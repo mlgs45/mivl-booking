@@ -37,7 +37,7 @@ export default async function ExposantsPage() {
       <main>
         <section className="bg-primary text-white py-14">
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
-            <h1 className="text-3xl sm:text-4xl font-heading font-bold mb-3">
+            <h1 className="text-3xl sm:text-4xl font-heading font-bold mb-3 text-white">
               Exposants participants
             </h1>
             <p className="text-white/80 max-w-xl">
