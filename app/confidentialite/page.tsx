@@ -25,8 +25,15 @@ export default function ConfidentialitePage() {
               organisatrice du salon Made In Val de Loire 2026.
             </p>
             <p>
-              Contact délégué à la protection des données (DPO)&nbsp;: [email
-              à compléter].
+              Déléguée à la protection des données (DPO)&nbsp;: Carine
+              AIGRET —{" "}
+              <a
+                href="mailto:carine.aigret@centre.cci.fr"
+                className="text-primary hover:underline underline-offset-2"
+              >
+                carine.aigret@centre.cci.fr
+              </a>
+              .
             </p>
           </Section>
 
@@ -126,9 +133,15 @@ export default function ConfidentialitePage() {
               <li>droit de retirer votre consentement à tout moment.</li>
             </ul>
             <p>
-              Pour exercer ces droits, contactez la CCI à&nbsp;: [email à
-              compléter]. Une réponse vous sera apportée dans un délai d'un
-              mois maximum.
+              Pour exercer ces droits, contactez la DPO de la CCI à&nbsp;:{" "}
+              <a
+                href="mailto:carine.aigret@centre.cci.fr"
+                className="text-primary hover:underline underline-offset-2"
+              >
+                carine.aigret@centre.cci.fr
+              </a>
+              . Une réponse vous sera apportée dans un délai d'un mois
+              maximum.
             </p>
             <p>
               Vous disposez également d'un droit de réclamation auprès de la
