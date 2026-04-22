@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { SignOutButton } from "@/components/auth/signout-button";
 import type { Session } from "next-auth";
@@ -15,11 +16,17 @@ export function AppHeader({ session }: { session: Session }) {
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-neutral-100 h-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-full flex items-center justify-between">
-        <Link
-          href="/"
-          className="font-heading font-bold text-primary text-xl"
-        >
-          MIVL Connect
+        <Link href="/" className="flex items-center gap-3">
+          <Image
+            src="/images/logo-mivl.png"
+            alt="Made In Val de Loire"
+            width={40}
+            height={40}
+            className="object-contain"
+          />
+          <span className="font-heading font-bold text-primary text-lg leading-tight hidden sm:block">
+            MIVL Connect
+          </span>
         </Link>
         <div className="flex items-center gap-4">
           <div className="text-right hidden sm:block">
