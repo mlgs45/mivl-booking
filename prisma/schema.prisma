@@ -103,6 +103,11 @@ enum StatutEmail {
   ERREUR
 }
 
+enum TypeAdminToken {
+  INVITATION
+  RESET
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // UTILISATEURS & RÔLES
 // ═══════════════════════════════════════════════════════════════════════════
@@ -130,7 +135,8 @@ model User {
   jeune           Jeune?
   demandeurEmploi DemandeurEmploi?
 
-  auditLogs AuditLog[]
+  auditLogs    AuditLog[]
+  adminTokens  AdminToken[]
 
   @@index([role])
 }
@@ -580,6 +586,26 @@ model OtpCode {
   createdAt DateTime  @default(now())
 
   @@index([email])
+  @@index([expiresAt])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TOKENS D'INVITATION / RESET MOT DE PASSE ADMIN
+// Usage unique, expirent sous 7 jours. tokenHash = SHA-256 du token en clair.
+// ═══════════════════════════════════════════════════════════════════════════
+
+model AdminToken {
+  id        String         @id @default(cuid())
+  userId    String
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      TypeAdminToken
+  tokenHash String         @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  creeParId String?
+  createdAt DateTime       @default(now())
+
+  @@index([userId])
   @@index([expiresAt])
 }
 

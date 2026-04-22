@@ -6,6 +6,8 @@
 export type EmailTemplate =
   | "otp-code"
   | "invitation-exposant-admin"
+  | "invitation-admin"
+  | "reset-mdp-admin"
   | "confirmation-inscription-exposant"
   | "exposant-valide"
   | "exposant-refuse"
@@ -23,6 +25,16 @@ interface TemplateData {
     raisonSociale: string;
     appUrl: string;
     estPartenaire: boolean;
+  };
+  "invitation-admin": {
+    nomInvite: string;
+    role: "SUPER_ADMIN" | "GESTIONNAIRE";
+    lienActivation: string;
+    invitePar: string;
+  };
+  "reset-mdp-admin": {
+    nomUtilisateur: string;
+    lienReset: string;
   };
   "confirmation-inscription-exposant": { raisonSociale: string };
   "exposant-valide": { raisonSociale: string; appUrl: string };
@@ -91,6 +103,42 @@ export function renderEmail<K extends EmailTemplate>(
           <p style="font-size: 14px; color: #6B7280;">Si vous n'êtes pas à l'origine de cette demande, ignorez simplement cet email.</p>
         `),
         text: `Votre code de connexion MIVL Connect : ${d.code}\n\nSaisissez-le sur la page de connexion. Valable 10 minutes.`,
+      };
+    }
+    case "invitation-admin": {
+      const d = data as TemplateData["invitation-admin"];
+      const roleLabel =
+        d.role === "SUPER_ADMIN" ? "Super administrateur" : "Administrateur";
+      return {
+        subject: `Invitation : administrer MIVL Connect`,
+        html: baseLayout(`
+          <p>Bonjour ${d.nomInvite},</p>
+          <p>${d.invitePar} vous invite à rejoindre l'équipe d'administration de la plateforme <strong>MIVL Connect</strong> (salon Made In Val de Loire 2026), en tant que <strong>${roleLabel}</strong>.</p>
+          <p>À ce titre, vous aurez accès au back-office pour consulter les inscrits, valider les candidatures exposants et enseignants, et suivre le déroulé du salon.</p>
+          <p style="margin: 32px 0;">
+            <a href="${d.lienActivation}" style="background: #1B4DB5; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">Activer mon compte</a>
+          </p>
+          <p style="font-size: 14px; color: #6B7280;">Ce lien est valable 7 jours. Il vous permettra de choisir votre mot de passe.</p>
+          <p>Si vous n'attendiez pas cette invitation, ignorez simplement ce mail.</p>
+          <p>À bientôt,<br>L'équipe MIVL</p>
+        `),
+        text: `${d.invitePar} vous invite comme ${roleLabel} sur MIVL Connect. Activez votre compte : ${d.lienActivation} (lien valable 7 jours).`,
+      };
+    }
+    case "reset-mdp-admin": {
+      const d = data as TemplateData["reset-mdp-admin"];
+      return {
+        subject: "Réinitialisation de votre mot de passe — MIVL Connect",
+        html: baseLayout(`
+          <p>Bonjour ${d.nomUtilisateur},</p>
+          <p>Vous avez demandé à réinitialiser votre mot de passe administrateur MIVL Connect.</p>
+          <p style="margin: 32px 0;">
+            <a href="${d.lienReset}" style="background: #1B4DB5; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">Choisir un nouveau mot de passe</a>
+          </p>
+          <p style="font-size: 14px; color: #6B7280;">Ce lien est valable 7 jours et ne peut être utilisé qu'une seule fois.</p>
+          <p style="font-size: 14px; color: #6B7280;">Si vous n'êtes pas à l'origine de cette demande, ignorez simplement ce mail : votre mot de passe actuel reste inchangé.</p>
+        `),
+        text: `Réinitialisez votre mot de passe MIVL Connect : ${d.lienReset} (valable 7 jours).`,
       };
     }
     case "invitation-exposant-admin": {

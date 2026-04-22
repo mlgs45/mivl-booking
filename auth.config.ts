@@ -27,6 +27,8 @@ export const authConfig = {
         "/exposants",
         "/inscription",
         "/connexion",
+        "/mot-de-passe-oublie",
+        "/definir-mot-de-passe",
         "/mentions-legales",
         "/confidentialite",
       ];

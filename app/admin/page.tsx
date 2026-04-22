@@ -113,6 +113,13 @@ export default async function AdminDashboard() {
             title="Live jour J"
             description="Compteurs d'arrivées, RDV honorés, walk-ins — auto-refresh 30s."
           />
+          {session.user.role === "SUPER_ADMIN" && (
+            <ActionCard
+              href="/admin/utilisateurs"
+              title="Gérer les administrateurs"
+              description="Inviter, modifier ou retirer les administrateurs CCI et partenaires."
+            />
+          )}
         </div>
       </main>
     </>
