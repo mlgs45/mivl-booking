@@ -52,6 +52,14 @@ export default function MentionsLegalesPage() {
             </p>
           </Section>
 
+          <Section title="Organisation du salon">
+            <p>
+              Le Salon Made In Val de Loire est porté par les partenaires
+              dont la CCI Centre-Val de Loire est cheffe de projet pour
+              l'organisation du salon en 2026 à Orléans.
+            </p>
+          </Section>
+
           <Section title="Hébergeur">
             <p>
               Hetzner Online GmbH
