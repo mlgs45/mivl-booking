@@ -14,26 +14,41 @@ export default function MentionsLegalesPage() {
           Mentions légales
         </h1>
         <p className="text-sm text-neutral-700 mb-10">
-          Dernière mise à jour&nbsp;: 21 avril 2026
+          Dernière mise à jour&nbsp;: 22 avril 2026
         </p>
 
         <article className="prose-like space-y-8 text-neutral-900">
           <Section title="Éditeur du site">
             <p>
-              <strong>CCI Centre-Val de Loire</strong>
+              <strong>Chambre de Commerce et d'Industrie Centre-Val de Loire</strong>
               <br />
-              Établissement public administratif
+              Établissement public, organisme consulaire
               <br />
-              [Adresse complète à compléter]
+              1 place Rivierre Casalis — CS 90613
               <br />
-              Téléphone&nbsp;: [à compléter]
+              45404 Fleury-les-Aubrais Cedex
               <br />
-              Email&nbsp;: [à compléter]
+              Téléphone&nbsp;:{" "}
+              <a
+                href="tel:+33238252525"
+                className="text-primary hover:underline underline-offset-2"
+              >
+                02 38 25 25 25
+              </a>
+              <br />
+              Email&nbsp;:{" "}
+              <a
+                href="mailto:info@centre.cci.fr"
+                className="text-primary hover:underline underline-offset-2"
+              >
+                info@centre.cci.fr
+              </a>
             </p>
             <p>
-              SIRET&nbsp;: [à compléter]
+              SIRET&nbsp;: 184 500 114 00261
               <br />
-              Directeur de la publication&nbsp;: [nom et fonction à compléter]
+              Directeur de la publication&nbsp;: Jacques Martinet, Président
+              de la CCI Centre-Val de Loire
             </p>
           </Section>
 
@@ -75,8 +90,25 @@ export default function MentionsLegalesPage() {
 
           <Section title="Contact">
             <p>
-              Pour toute question relative à la plateforme ou à vos données
-              personnelles&nbsp;: [email à compléter].
+              Pour toute question relative à la plateforme&nbsp;:{" "}
+              <a
+                href="mailto:info@centre.cci.fr"
+                className="text-primary hover:underline underline-offset-2"
+              >
+                info@centre.cci.fr
+              </a>
+              .
+            </p>
+            <p>
+              Pour toute question relative à vos données personnelles,
+              contactez la DPO, Carine Aigret&nbsp;:{" "}
+              <a
+                href="mailto:carine.aigret@centre.cci.fr"
+                className="text-primary hover:underline underline-offset-2"
+              >
+                carine.aigret@centre.cci.fr
+              </a>
+              .
             </p>
           </Section>
         </article>
