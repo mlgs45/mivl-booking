@@ -8,7 +8,6 @@ import type { NextAuthConfig } from "next-auth";
 export const authConfig = {
   pages: {
     signIn: "/connexion",
-    verifyRequest: "/connexion/verifier",
     error: "/connexion/erreur",
   },
   session: {

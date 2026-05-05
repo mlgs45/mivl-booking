@@ -66,8 +66,7 @@ export async function definirMotDePasse(
   await consommerAdminToken(info.id);
 
   const message =
-    info.type === "INVITATION"
-      ? "compte-active"
-      : "mot-de-passe-mis-a-jour";
-  redirect(`/connexion/admin?ok=${message}`);
+    info.type === "INVITATION" ? "compte-active" : "mot-de-passe-mis-a-jour";
+  const isAdmin = info.role === "SUPER_ADMIN" || info.role === "GESTIONNAIRE";
+  redirect(`${isAdmin ? "/connexion/admin" : "/connexion"}?ok=${message}`);
 }

@@ -43,22 +43,13 @@ export async function demanderResetMdp(
 
   const user = await db.user.findUnique({
     where: { email },
-    select: { id: true, name: true, role: true },
+    select: { id: true, name: true },
   });
 
   if (!user) {
     return {
       ok: false,
-      error:
-        "Aucun compte administrateur n'est associé à cette adresse. Contactez un super administrateur.",
-    };
-  }
-
-  if (user.role !== "SUPER_ADMIN" && user.role !== "GESTIONNAIRE") {
-    return {
-      ok: false,
-      error:
-        "Cette adresse n'est pas un compte administrateur. Les visiteurs se connectent via /connexion avec un code email à 6 chiffres.",
+      error: "Aucun compte n'est associé à cette adresse email.",
     };
   }
 

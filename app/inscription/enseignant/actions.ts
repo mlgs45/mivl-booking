@@ -1,8 +1,10 @@
 "use server";
 
+import { AuthError } from "next-auth";
 import { redirect } from "next/navigation";
+import { hash } from "@node-rs/argon2";
 import { db } from "@/lib/db";
-import { sendOtpByEmail } from "@/lib/otp";
+import { signIn } from "@/auth";
 import { inscriptionEnseignantSchema } from "@/lib/validation/enseignant";
 import { sendEmail } from "@/lib/emails";
 
@@ -25,6 +27,8 @@ export async function inscrireEnseignant(
     matiere: formData.get("matiere") ?? "",
     niveau: formData.get("niveau") || undefined,
     rgpdConsent: formData.get("rgpdConsent"),
+    motDePasse: formData.get("motDePasse"),
+    confirmation: formData.get("confirmation"),
   });
 
   if (!parsed.success) {
@@ -36,7 +40,7 @@ export async function inscrireEnseignant(
     return { ok: false, errors: fieldErrors };
   }
 
-  const { email, prenom, nom, etablissement, ville, matiere, niveau } = parsed.data;
+  const { email, prenom, nom, etablissement, ville, matiere, niveau, motDePasse } = parsed.data;
 
   const existing = await db.user.findUnique({ where: { email }, select: { id: true } });
   if (existing) {
@@ -46,11 +50,14 @@ export async function inscrireEnseignant(
     };
   }
 
+  const hashedPassword = await hash(motDePasse);
+
   await db.user.create({
     data: {
       email,
       name: `${prenom} ${nom}`.trim(),
       role: "ENSEIGNANT",
+      hashedPassword,
       enseignant: {
         create: {
           prenom,
@@ -70,6 +77,13 @@ export async function inscrireEnseignant(
     data: { prenom, etablissement },
   });
 
-  await sendOtpByEmail(email);
-  redirect(`/connexion/verifier?email=${encodeURIComponent(email)}`);
+  try {
+    await signIn("credentials", { email, password: motDePasse, redirectTo: "/enseignant" });
+  } catch (error) {
+    if (error instanceof AuthError) {
+      redirect("/connexion?ok=compte-cree");
+    }
+    throw error;
+  }
+  return { ok: true };
 }

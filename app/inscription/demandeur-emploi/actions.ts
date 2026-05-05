@@ -1,8 +1,10 @@
 "use server";
 
+import { AuthError } from "next-auth";
 import { redirect } from "next/navigation";
+import { hash } from "@node-rs/argon2";
 import { db } from "@/lib/db";
-import { sendOtpByEmail } from "@/lib/otp";
+import { signIn } from "@/auth";
 import { inscriptionDEschema } from "@/lib/validation/visiteur";
 
 export type InscriptionDEState = {
@@ -21,6 +23,8 @@ export async function inscrireDemandeurEmploi(
     nom: formData.get("nom"),
     agencePoleEmploi: formData.get("agencePoleEmploi") ?? "",
     rgpdConsent: formData.get("rgpdConsent"),
+    motDePasse: formData.get("motDePasse"),
+    confirmation: formData.get("confirmation"),
   });
 
   if (!parsed.success) {
@@ -32,7 +36,7 @@ export async function inscrireDemandeurEmploi(
     return { ok: false, errors: fieldErrors };
   }
 
-  const { email, prenom, nom, agencePoleEmploi } = parsed.data;
+  const { email, prenom, nom, agencePoleEmploi, motDePasse } = parsed.data;
 
   const existing = await db.user.findUnique({ where: { email }, select: { id: true } });
   if (existing) {
@@ -42,11 +46,14 @@ export async function inscrireDemandeurEmploi(
     };
   }
 
+  const hashedPassword = await hash(motDePasse);
+
   await db.user.create({
     data: {
       email,
       name: `${prenom} ${nom}`.trim(),
       role: "DEMANDEUR_EMPLOI",
+      hashedPassword,
       demandeurEmploi: {
         create: {
           prenom,
@@ -57,6 +64,13 @@ export async function inscrireDemandeurEmploi(
     },
   });
 
-  await sendOtpByEmail(email);
-  redirect(`/connexion/verifier?email=${encodeURIComponent(email)}`);
+  try {
+    await signIn("credentials", { email, password: motDePasse, redirectTo: "/visiteur" });
+  } catch (error) {
+    if (error instanceof AuthError) {
+      redirect("/connexion?ok=compte-cree");
+    }
+    throw error;
+  }
+  return { ok: true };
 }

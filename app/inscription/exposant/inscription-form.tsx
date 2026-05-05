@@ -79,9 +79,6 @@ export function InscriptionExposantForm() {
           disabled={isPending}
           className="w-full rounded-lg border border-neutral-100 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary disabled:opacity-60"
         />
-        <p className="mt-1.5 text-xs text-neutral-700">
-          Vous recevrez un code de connexion à 6 chiffres à cette adresse.
-        </p>
         <FieldError errors={state.errors?.email} />
       </div>
 
@@ -142,6 +139,46 @@ export function InscriptionExposantForm() {
             className="w-full rounded-lg border border-neutral-100 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary disabled:opacity-60"
           />
           <FieldError errors={state.errors?.codePostal} />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label
+            htmlFor="motDePasse"
+            className="block text-sm font-medium text-neutral-900 mb-1.5"
+          >
+            Mot de passe <span className="text-danger">*</span>
+          </label>
+          <input
+            id="motDePasse"
+            name="motDePasse"
+            type="password"
+            autoComplete="new-password"
+            required
+            disabled={isPending}
+            className="w-full rounded-lg border border-neutral-100 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary disabled:opacity-60"
+          />
+          <p className="mt-1.5 text-xs text-neutral-700">10 caractères minimum.</p>
+          <FieldError errors={state.errors?.motDePasse} />
+        </div>
+        <div>
+          <label
+            htmlFor="confirmation"
+            className="block text-sm font-medium text-neutral-900 mb-1.5"
+          >
+            Confirmation <span className="text-danger">*</span>
+          </label>
+          <input
+            id="confirmation"
+            name="confirmation"
+            type="password"
+            autoComplete="new-password"
+            required
+            disabled={isPending}
+            className="w-full rounded-lg border border-neutral-100 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary disabled:opacity-60"
+          />
+          <FieldError errors={state.errors?.confirmation} />
         </div>
       </div>
 

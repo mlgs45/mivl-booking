@@ -30,7 +30,6 @@ export function InscriptionEnseignantForm() {
         type="email"
         autoComplete="email"
         required
-        hint="Vous recevrez un code de connexion à 6 chiffres."
         errors={state.errors?.email}
         disabled={pending}
       />
@@ -67,6 +66,28 @@ export function InscriptionEnseignantForm() {
         errors={state.errors?.matiere}
         disabled={pending}
       />
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Field
+          label="Mot de passe"
+          name="motDePasse"
+          type="password"
+          autoComplete="new-password"
+          required
+          hint="10 caractères minimum."
+          errors={state.errors?.motDePasse}
+          disabled={pending}
+        />
+        <Field
+          label="Confirmation"
+          name="confirmation"
+          type="password"
+          autoComplete="new-password"
+          required
+          errors={state.errors?.confirmation}
+          disabled={pending}
+        />
+      </div>
 
       <label className="flex items-start gap-3 rounded-lg border border-neutral-100 bg-neutral-50 p-4 cursor-pointer">
         <input

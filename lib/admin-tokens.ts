@@ -50,6 +50,7 @@ export type TokenInfo = {
   type: TypeAdminToken;
   email: string;
   name: string | null;
+  role: string;
 };
 
 /**
@@ -62,7 +63,7 @@ export async function verifierAdminToken(token: string): Promise<TokenInfo | nul
 
   const row = await db.adminToken.findUnique({
     where: { tokenHash },
-    include: { user: { select: { id: true, email: true, name: true } } },
+    include: { user: { select: { id: true, email: true, name: true, role: true } } },
   });
 
   if (!row) return null;
@@ -75,6 +76,7 @@ export async function verifierAdminToken(token: string): Promise<TokenInfo | nul
     type: row.type,
     email: row.user.email,
     name: row.user.name,
+    role: row.user.role,
   };
 }
 

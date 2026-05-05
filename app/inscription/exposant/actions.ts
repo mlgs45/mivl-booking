@@ -1,8 +1,10 @@
 "use server";
 
+import { AuthError } from "next-auth";
 import { redirect } from "next/navigation";
+import { hash } from "@node-rs/argon2";
 import { db } from "@/lib/db";
-import { sendOtpByEmail } from "@/lib/otp";
+import { signIn } from "@/auth";
 import { inscriptionExposantSchema } from "@/lib/validation/exposant";
 
 export type InscriptionState = {
@@ -23,6 +25,8 @@ export async function inscrireExposant(
     ville: formData.get("ville"),
     codePostal: formData.get("codePostal") ?? "",
     rgpdConsent: formData.get("rgpdConsent"),
+    motDePasse: formData.get("motDePasse"),
+    confirmation: formData.get("confirmation"),
   });
 
   if (!parsed.success) {
@@ -35,7 +39,7 @@ export async function inscrireExposant(
     return { ok: false, errors: fieldErrors };
   }
 
-  const { email, prenom, nom, raisonSociale, ville, codePostal } = parsed.data;
+  const { email, prenom, nom, raisonSociale, ville, codePostal, motDePasse } = parsed.data;
 
   const existing = await db.user.findUnique({
     where: { email },
@@ -45,18 +49,19 @@ export async function inscrireExposant(
     return {
       ok: false,
       errors: {
-        email: [
-          "Cette adresse email est déjà utilisée. Connectez-vous plutôt.",
-        ],
+        email: ["Cette adresse email est déjà utilisée. Connectez-vous plutôt."],
       },
     };
   }
+
+  const hashedPassword = await hash(motDePasse);
 
   await db.user.create({
     data: {
       email,
       name: `${prenom} ${nom}`.trim(),
       role: "EXPOSANT",
+      hashedPassword,
       exposant: {
         create: {
           raisonSociale,
@@ -70,6 +75,13 @@ export async function inscrireExposant(
     },
   });
 
-  await sendOtpByEmail(email);
-  redirect(`/connexion/verifier?email=${encodeURIComponent(email)}`);
+  try {
+    await signIn("credentials", { email, password: motDePasse, redirectTo: "/exposant" });
+  } catch (error) {
+    if (error instanceof AuthError) {
+      redirect("/connexion?ok=compte-cree");
+    }
+    throw error;
+  }
+  return { ok: true };
 }

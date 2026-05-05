@@ -1,8 +1,10 @@
 "use server";
 
+import { AuthError } from "next-auth";
 import { redirect } from "next/navigation";
+import { hash } from "@node-rs/argon2";
 import { db } from "@/lib/db";
-import { sendOtpByEmail } from "@/lib/otp";
+import { signIn } from "@/auth";
 import { inscriptionJeuneSchema } from "@/lib/validation/visiteur";
 
 export type InscriptionJeuneState = {
@@ -23,6 +25,8 @@ export async function inscrireJeune(
     etablissement: formData.get("etablissement") ?? "",
     dateNaissance: formData.get("dateNaissance"),
     rgpdConsent: formData.get("rgpdConsent"),
+    motDePasse: formData.get("motDePasse"),
+    confirmation: formData.get("confirmation"),
   });
 
   if (!parsed.success) {
@@ -34,7 +38,7 @@ export async function inscrireJeune(
     return { ok: false, errors: fieldErrors };
   }
 
-  const { email, prenom, nom, niveauEtudes, etablissement, dateNaissance } = parsed.data;
+  const { email, prenom, nom, niveauEtudes, etablissement, dateNaissance, motDePasse } = parsed.data;
 
   const existing = await db.user.findUnique({ where: { email }, select: { id: true } });
   if (existing) {
@@ -44,11 +48,14 @@ export async function inscrireJeune(
     };
   }
 
+  const hashedPassword = await hash(motDePasse);
+
   await db.user.create({
     data: {
       email,
       name: `${prenom} ${nom}`.trim(),
       role: "JEUNE",
+      hashedPassword,
       jeune: {
         create: {
           prenom,
@@ -61,6 +68,13 @@ export async function inscrireJeune(
     },
   });
 
-  await sendOtpByEmail(email);
-  redirect(`/connexion/verifier?email=${encodeURIComponent(email)}`);
+  try {
+    await signIn("credentials", { email, password: motDePasse, redirectTo: "/visiteur" });
+  } catch (error) {
+    if (error instanceof AuthError) {
+      redirect("/connexion?ok=compte-cree");
+    }
+    throw error;
+  }
+  return { ok: true };
 }

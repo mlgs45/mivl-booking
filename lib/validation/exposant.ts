@@ -36,6 +36,14 @@ export const inscriptionExposantSchema = z.object({
   rgpdConsent: z.literal("on", {
     message: "Vous devez accepter la politique de confidentialité",
   }),
+  motDePasse: z
+    .string()
+    .min(10, "Le mot de passe doit contenir au moins 10 caractères.")
+    .max(200, "Mot de passe trop long."),
+  confirmation: z.string().min(1, "Confirmation requise."),
+}).refine((v) => v.motDePasse === v.confirmation, {
+  path: ["confirmation"],
+  message: "Les deux mots de passe ne correspondent pas.",
 });
 
 export type InscriptionExposantInput = z.infer<typeof inscriptionExposantSchema>;
