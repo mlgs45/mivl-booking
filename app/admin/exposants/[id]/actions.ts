@@ -229,6 +229,48 @@ export async function supprimerExposant(
   redirect(`/admin/exposants?supprime=${encodeURIComponent(exposant.raisonSociale)}`);
 }
 
+export async function remettreEnAttente(
+  _prev: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  const session = await getAdminSession();
+  if (!session?.user) return { ok: false, message: "Non autorisé." };
+
+  const id = formData.get("exposantId");
+  if (typeof id !== "string") return { ok: false, message: "ID manquant." };
+
+  const exposant = await db.exposant.findUnique({
+    where: { id },
+    select: { id: true, statut: true, raisonSociale: true },
+  });
+  if (!exposant) return { ok: false, message: "Exposant introuvable." };
+  if (exposant.statut !== "VALIDE") {
+    return { ok: false, message: "Seuls les exposants validés peuvent être remis en attente." };
+  }
+
+  await db.exposant.update({
+    where: { id },
+    data: {
+      statut: "SOUMIS",
+      valideParId: null,
+      valideA: null,
+    },
+  });
+
+  await db.auditLog.create({
+    data: {
+      userId: session.user.id,
+      action: "exposant.remis_en_attente",
+      entite: "Exposant",
+      entiteId: id,
+    },
+  });
+
+  revalidatePath("/admin/exposants");
+  revalidatePath(`/admin/exposants/${id}`);
+  return { ok: true, message: "Exposant remis en attente de validation." };
+}
+
 export async function togglePartenaire(
   _prev: AdminActionState,
   formData: FormData,

@@ -14,6 +14,7 @@ import { ValiderForm } from "./valider-form";
 import { AttribuerStandForm } from "./attribuer-stand-form";
 import { PartenaireToggle } from "./partenaire-toggle";
 import { SupprimerForm } from "./supprimer-form";
+import { RemettreEnAttenteForm } from "./remettre-en-attente-form";
 import type { TypeOffre, TypeOpportunite } from "@prisma/client";
 
 const OFFRE_LABELS: Record<TypeOffre, string> = {
@@ -136,10 +137,13 @@ export default async function AdminExposantDetailPage({
         {exposant.statut === "VALIDE" && (
           <>
             <div className="mb-4 rounded-xl border border-neutral-100 bg-white p-5">
-              <PartenaireToggle
-                exposantId={exposant.id}
-                estPartenaire={exposant.estPartenaire}
-              />
+              <div className="flex items-center justify-between gap-4">
+                <PartenaireToggle
+                  exposantId={exposant.id}
+                  estPartenaire={exposant.estPartenaire}
+                />
+                <RemettreEnAttenteForm exposantId={exposant.id} />
+              </div>
             </div>
             <div className="mb-8 rounded-xl border border-neutral-100 bg-neutral-50 p-5">
               <div className="flex items-center justify-between gap-4 mb-3">
