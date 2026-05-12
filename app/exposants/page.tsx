@@ -55,7 +55,7 @@ export default async function ExposantsPage() {
                 Les exposants seront annoncés prochainement.
               </p>
               <p className="text-sm">
-                Les inscriptions exposants ouvrent le 1er juillet 2026.
+                Les inscriptions exposants ouvrent le 1er mai 2026.
               </p>
             </div>
           </section>
