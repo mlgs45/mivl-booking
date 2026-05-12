@@ -34,6 +34,8 @@ export function InscriptionJeuneForm() {
         disabled={pending}
       />
 
+      <hr className="border-neutral-100" />
+
       <Field
         label="Date de naissance"
         name="dateNaissance"
@@ -60,6 +62,8 @@ export function InscriptionJeuneForm() {
         disabled={pending}
       />
 
+      <hr className="border-neutral-100" />
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Field
           label="Mot de passe"
@@ -81,6 +85,8 @@ export function InscriptionJeuneForm() {
           disabled={pending}
         />
       </div>
+
+      <hr className="border-neutral-100" />
 
       <label className="flex items-start gap-3 rounded-lg border border-neutral-100 bg-neutral-50 p-4 cursor-pointer">
         <input

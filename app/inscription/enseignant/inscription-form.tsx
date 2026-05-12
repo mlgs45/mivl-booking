@@ -34,6 +34,8 @@ export function InscriptionEnseignantForm() {
         disabled={pending}
       />
 
+      <hr className="border-neutral-100" />
+
       <Field
         label="Établissement"
         name="etablissement"
@@ -67,6 +69,8 @@ export function InscriptionEnseignantForm() {
         disabled={pending}
       />
 
+      <hr className="border-neutral-100" />
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Field
           label="Mot de passe"
@@ -88,6 +92,8 @@ export function InscriptionEnseignantForm() {
           disabled={pending}
         />
       </div>
+
+      <hr className="border-neutral-100" />
 
       <label className="flex items-start gap-3 rounded-lg border border-neutral-100 bg-neutral-50 p-4 cursor-pointer">
         <input
