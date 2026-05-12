@@ -9,10 +9,12 @@ export default async function AdminDashboard() {
   const session = await auth();
   if (!session?.user) return null;
 
-  const [exposantStats, enseignantStats, userCount] = await Promise.all([
+  const [exposantStats, enseignantStats, jeuneCount, deCount, visiteurCount] = await Promise.all([
     db.exposant.groupBy({ by: ["statut"], _count: { _all: true } }),
     db.enseignant.groupBy({ by: ["statut"], _count: { _all: true } }),
-    db.user.count(),
+    db.jeune.count(),
+    db.demandeurEmploi.count(),
+    db.visiteur.count(),
   ]);
 
   const byStatut = Object.fromEntries(
@@ -78,7 +80,7 @@ export default async function AdminDashboard() {
           <StatCard label="Total" value={totalExposants} href="/admin/exposants" />
           <StatCard label="Validés" value={valideCount} href="/admin/exposants?statut=VALIDE" accent="success" />
           <StatCard label="À traiter" value={soumisCount} href="/admin/exposants?statut=SOUMIS" accent={soumisCount > 0 ? "primary" : undefined} />
-          <StatCard label="Inscrits (tous rôles)" value={userCount} />
+          <StatCard label="Visiteurs inscrits" value={visiteurCount} href="/admin/visiteurs" />
         </div>
 
         {/* Stats enseignants */}
@@ -102,6 +104,24 @@ export default async function AdminDashboard() {
             title="Gérer les enseignants"
             description="Valider les inscriptions des référents enseignants avant leurs réservations."
             badge={enseignantsSoumis > 0 ? `${enseignantsSoumis} en attente` : undefined}
+          />
+          <ActionCard
+            href="/admin/jeunes"
+            title="Jeunes / diplômés"
+            description="Consulter et gérer les inscriptions au speed dating de l'après-midi."
+            badge={jeuneCount > 0 ? `${jeuneCount} inscrits` : undefined}
+          />
+          <ActionCard
+            href="/admin/demandeurs-emploi"
+            title="Demandeurs d'emploi"
+            description="Consulter et gérer les inscriptions au speed dating emploi."
+            badge={deCount > 0 ? `${deCount} inscrits` : undefined}
+          />
+          <ActionCard
+            href="/admin/visiteurs"
+            title="Visiteurs"
+            description="Consulter et gérer les inscriptions visiteurs libres."
+            badge={visiteurCount > 0 ? `${visiteurCount} inscrits` : undefined}
           />
           <ActionCard
             href="/admin/scan"

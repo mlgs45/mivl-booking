@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { AppHeader } from "@/components/layout/app-header";
 import { ValiderForm } from "./valider-form";
 import { RefuserForm } from "./refuser-form";
+import { SupprimerForm } from "./supprimer-form";
 import type { NiveauGroupe } from "@prisma/client";
 
 const STATUT_CONFIG = {
@@ -109,6 +110,13 @@ export default async function AdminEnseignantDetailPage({
             <p className="text-sm text-neutral-900">{enseignant.motifRefus}</p>
           </div>
         )}
+
+        <div className="mb-8 flex justify-end">
+          <SupprimerForm
+            enseignantId={enseignant.id}
+            nom={`${enseignant.prenom} ${enseignant.nom}`}
+          />
+        </div>
 
         <div className="space-y-8">
           <Section title="Profil">

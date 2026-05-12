@@ -125,3 +125,35 @@ export async function refuserEnseignant(
   revalidatePath(`/admin/enseignants/${enseignantId}`);
   redirect(`/admin/enseignants?refuse=${encodeURIComponent(`${enseignant.prenom} ${enseignant.nom}`)}`);
 }
+
+export async function supprimerEnseignant(
+  _prev: AdminEnseignantActionState,
+  formData: FormData,
+): Promise<AdminEnseignantActionState> {
+  const session = await getAdminSession();
+  if (!session?.user) return { ok: false, message: "Non autorisé." };
+
+  const id = formData.get("enseignantId");
+  if (typeof id !== "string") return { ok: false, message: "ID manquant." };
+
+  const enseignant = await db.enseignant.findUnique({
+    where: { id },
+    select: { id: true, prenom: true, nom: true, userId: true },
+  });
+  if (!enseignant) return { ok: false, message: "Enseignant introuvable." };
+
+  await db.auditLog.create({
+    data: {
+      userId: session.user.id,
+      action: "enseignant.supprime",
+      entite: "Enseignant",
+      entiteId: id,
+      payload: { nom: `${enseignant.prenom} ${enseignant.nom}` },
+    },
+  });
+
+  await db.user.delete({ where: { id: enseignant.userId } });
+
+  revalidatePath("/admin/enseignants");
+  redirect(`/admin/enseignants?supprime=${encodeURIComponent(`${enseignant.prenom} ${enseignant.nom}`)}`);
+}

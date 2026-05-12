@@ -26,7 +26,7 @@ const NIVEAU_LABELS: Record<NiveauGroupe, string> = {
 export default async function AdminEnseignantsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ valide?: string; refuse?: string; statut?: string }>;
+  searchParams: Promise<{ valide?: string; refuse?: string; supprime?: string; statut?: string }>;
 }) {
   const session = await auth();
   if (!session?.user) return null;
@@ -92,6 +92,11 @@ export default async function AdminEnseignantsPage({
         {params.refuse && (
           <div className="mb-4 rounded-lg border border-danger/30 bg-danger/10 text-danger p-3 text-sm">
             ✗ <strong>{params.refuse}</strong> refusé — email envoyé.
+          </div>
+        )}
+        {params.supprime && (
+          <div className="mb-4 rounded-lg border border-neutral-200 bg-neutral-100 text-neutral-700 p-3 text-sm">
+            Dossier <strong>{params.supprime}</strong> supprimé définitivement.
           </div>
         )}
 
