@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { PublicHeader } from "@/components/layout/public-header";
 import { PublicFooter } from "@/components/layout/public-footer";
-import { InscriptionVisiteurForm } from "./visiteur-form";
 
 export const metadata = {
   title: "Inscription — MIVL Connect",
@@ -14,6 +13,7 @@ const PROFILS = [
     href: "/inscription/exposant",
     cta: "Je veux un stand",
     accent: true,
+    wide: false,
   },
   {
     titre: "Je suis professeur en collège",
@@ -21,6 +21,7 @@ const PROFILS = [
     href: "/inscription/enseignant",
     cta: "Inscrire ma classe",
     accent: false,
+    wide: false,
   },
   {
     titre: "Je suis lycéen ou jeune diplômé",
@@ -28,6 +29,7 @@ const PROFILS = [
     href: "/inscription/jeune",
     cta: "Réserver mon parcours",
     accent: false,
+    wide: false,
   },
   {
     titre: "Je suis demandeur d'emploi",
@@ -35,6 +37,15 @@ const PROFILS = [
     href: "/inscription/demandeur-emploi",
     cta: "M'inscrire au speed dating",
     accent: false,
+    wide: false,
+  },
+  {
+    titre: "Je suis simple visiteur",
+    desc: "Je viens découvrir librement les entreprises industrielles de la région et leurs métiers. Entrée libre et gratuite.",
+    href: "/inscription/visiteur",
+    cta: "M'inscrire comme visiteur",
+    accent: false,
+    wide: true,
   },
 ];
 
@@ -60,7 +71,7 @@ export default function InscriptionPage() {
               <Link
                 key={p.titre}
                 href={p.href}
-                className={`block rounded-xl border p-6 transition-all ${
+                className={`block rounded-xl border p-6 transition-all ${p.wide ? "sm:col-span-2" : ""} ${
                   p.accent
                     ? "bg-accent border-accent text-neutral-900 hover:bg-accent-dark"
                     : "bg-white border-neutral-100 hover:border-primary hover:shadow-sm"
@@ -83,19 +94,7 @@ export default function InscriptionPage() {
             ))}
           </div>
 
-          <div className="mt-10 border-t border-neutral-200 pt-10">
-            <div className="mb-6">
-              <h2 className="text-xl font-heading font-bold text-neutral-900 mb-1">
-                Je suis un simple visiteur
-              </h2>
-              <p className="text-sm text-neutral-700">
-                Je viens découvrir le salon librement. Inscrivez-vous pour recevoir un email de confirmation et les informations pratiques avant le 15 octobre.
-              </p>
-            </div>
-            <InscriptionVisiteurForm />
-          </div>
-
-          <p className="mt-8 text-center text-sm text-neutral-700">
+          <p className="mt-10 text-center text-sm text-neutral-700">
             Déjà inscrit ?{" "}
             <Link
               href="/connexion"

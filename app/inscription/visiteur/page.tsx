@@ -1,0 +1,44 @@
+import Image from "next/image";
+import Link from "next/link";
+import { PublicHeader } from "@/components/layout/public-header";
+import { PublicFooter } from "@/components/layout/public-footer";
+import { InscriptionVisiteurForm } from "./inscription-form";
+
+export const metadata = { title: "Inscription visiteur — MIVL Connect" };
+
+export default function InscriptionVisiteurPage() {
+  return (
+    <>
+      <PublicHeader />
+      <main className="bg-neutral-50 py-16">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6">
+          <nav className="mb-6 text-sm">
+            <Link href="/inscription" className="text-neutral-700 hover:text-primary inline-flex items-center gap-1">
+              ← Autres profils
+            </Link>
+          </nav>
+
+          <div className="bg-white rounded-xl border border-neutral-100 p-8 sm:p-10">
+            <Image
+              src="/images/logo-mivl.png"
+              alt="Made In Val de Loire"
+              width={72}
+              height={72}
+              className="object-contain mb-5"
+              priority
+            />
+            <h1 className="text-2xl sm:text-3xl font-heading font-bold text-neutral-900 mb-2">
+              Inscription visiteur
+            </h1>
+            <p className="text-neutral-700 mb-8">
+              Venez découvrir les entreprises industrielles de la région et leurs métiers. L'entrée est libre et gratuite le 15 octobre 2026 au CO'Met d'Orléans.
+            </p>
+
+            <InscriptionVisiteurForm />
+          </div>
+        </div>
+      </main>
+      <PublicFooter />
+    </>
+  );
+}

@@ -70,6 +70,8 @@ export function InscriptionVisiteurForm() {
         disabled={pending}
       />
 
+      <hr className="border-neutral-100" />
+
       <label className="flex items-start gap-3 rounded-lg border border-neutral-100 bg-neutral-50 p-4 cursor-pointer">
         <input
           type="checkbox"
