@@ -1,17 +1,16 @@
 /**
  * Univers d'activité du salon Made In Val de Loire.
  * 8 catégories officielles CCI + possibilité de texte libre (secteurAutre).
- * Correspond à la question 10 du formulaire d'inscription exposant.
  */
 export const SECTEURS = [
-  { code: "AUTO_FERRO_AERO_DEFENSE", label: "Automobile, Ferroviaire, Aéronautique et Défense" },
-  { code: "ELEC_MECA_ROBOT_DIGITAL", label: "Electronique, Mécanique, Robotique et Digital" },
-  { code: "PLASTURGIE_CHIMIE", label: "Plasturgie et Chimie" },
-  { code: "PHARMA_MEDICAL_COSMETIQUE", label: "Pharma, Médical et Cosmétique" },
-  { code: "AGROALIMENTAIRE", label: "Agroalimentaire" },
-  { code: "MATIERES_EMBALLAGES", label: "Matières et Emballages" },
-  { code: "ENERGIE", label: "Énergie" },
-  { code: "AUTRES_INDUSTRIES", label: "Autres industries" },
+  { code: "AUTOMOBILE_FERROVIAIRE",          label: "Automobile & Ferroviaire" },
+  { code: "AERONAUTIQUE_DEFENSE",            label: "Aéronautique & Défense" },
+  { code: "ELEC_MECA_ROBOT_DIGITAL",         label: "Électronique, Mécanique, Robotique & Digital" },
+  { code: "PLASTURGIE_CHIMIE_MATERIAUX",     label: "Plasturgie, Chimie, Matériaux & Emballage" },
+  { code: "ENERGIE_ENVIRONNEMENT",           label: "Énergie et environnement" },
+  { code: "PHARMA_MEDICAL_COSMETIQUE",       label: "Pharma, Médical & Cosmétique" },
+  { code: "AGROALIMENTAIRE",                 label: "Agroalimentaire" },
+  { code: "AUTRES_INDUSTRIES",               label: "Autres industries" },
 ] as const;
 
 export type SecteurCode = (typeof SECTEURS)[number]["code"];

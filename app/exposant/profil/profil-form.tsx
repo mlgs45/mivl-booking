@@ -110,7 +110,7 @@ export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
   }
 
   return (
-    <form className="space-y-10">
+    <form className="space-y-6">
       {message && (
         <div
           className={`rounded-lg border p-4 text-sm ${
@@ -206,6 +206,8 @@ export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
         </Field>
       </Section>
 
+      <hr className="border-neutral-100" />
+
       {/* ── Section 2 : Contact référent ───────────────────────────── */}
       <Section
         title="Référent présent sur le stand"
@@ -248,6 +250,8 @@ export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
           </Field>
         </div>
       </Section>
+
+      <hr className="border-neutral-100" />
 
       {/* ── Section 3 : Secteurs & description ─────────────────────── */}
       <Section
@@ -293,6 +297,8 @@ export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
           />
         </Field>
       </Section>
+
+      <hr className="border-neutral-100" />
 
       {/* ── Section 4 : Offres aux visiteurs ───────────────────────── */}
       <Section
@@ -358,6 +364,8 @@ export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
         </div>
       </Section>
 
+      <hr className="border-neutral-100" />
+
       {/* ── Section 5 : Stand ───────────────────────────────────────── */}
       <Section
         title="Que présentez-vous sur le stand ?"
@@ -386,6 +394,8 @@ export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
         </Field>
       </Section>
 
+      <hr className="border-neutral-100" />
+
       {/* ── Section 6 : Animations ─────────────────────────────────── */}
       <Section
         title="Animations et interventions"
@@ -399,6 +409,8 @@ export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
           errors={errors}
         />
       </Section>
+
+      <hr className="border-neutral-100" />
 
       {/* ── Section 7 : Innovation ─────────────────────────────────── */}
       <Section
@@ -440,6 +452,8 @@ export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
           </div>
         )}
       </Section>
+
+      <hr className="border-neutral-100" />
 
       {/* ── Section 8 : Recrutement & consentement ─────────────────── */}
       <Section
@@ -487,6 +501,8 @@ export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
         </label>
         <FieldErrors errors={errors} field="consentementCommunication" />
       </Section>
+
+      <hr className="border-neutral-100" />
 
       {/* ── Mention RGPD ────────────────────────────────────────────── */}
       <section className="rounded-lg border border-neutral-100 bg-neutral-50 p-4 text-xs text-neutral-700 leading-relaxed">
