@@ -49,11 +49,14 @@ export const inscriptionDEschema = z
 
 export type InscriptionDEInput = z.infer<typeof inscriptionDEschema>;
 
-export const inscriptionVisiteurSchema = z.object({
-  email: z.string().min(1, "L'email est requis").email("Email invalide").toLowerCase().trim(),
-  prenom: z.string().min(1, "Prénom requis").max(60).trim(),
-  nom: z.string().min(1, "Nom requis").max(60).trim(),
-  rgpdConsent: z.literal("on", { message: "Vous devez accepter la politique de confidentialité" }),
-});
+export const inscriptionVisiteurSchema = z
+  .object({
+    ...baseVisiteur,
+    ...motDePasseFields,
+  })
+  .refine((v) => v.motDePasse === v.confirmation, {
+    path: ["confirmation"],
+    message: "Les deux mots de passe ne correspondent pas.",
+  });
 
 export type InscriptionVisiteurInput = z.infer<typeof inscriptionVisiteurSchema>;

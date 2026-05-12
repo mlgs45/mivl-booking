@@ -45,9 +45,9 @@ export function InscriptionVisiteurForm() {
   if (state.ok) {
     return (
       <div className="rounded-xl bg-green-50 border border-green-200 p-6 text-center">
-        <p className="text-lg font-semibold text-green-800 mb-1">Inscription enregistrée !</p>
+        <p className="text-lg font-semibold text-green-800 mb-1">Compte créé !</p>
         <p className="text-sm text-green-700">
-          Un email de confirmation vous a été envoyé. Rendez-vous le 15 octobre 2026 au CO&apos;Met d&apos;Orléans.
+          Vous allez être redirigé vers votre espace visiteur.
         </p>
       </div>
     );
@@ -67,6 +67,29 @@ export function InscriptionVisiteurForm() {
         autoComplete="email"
         required
         errors={state.errors?.email}
+        disabled={pending}
+      />
+
+      <hr className="border-neutral-100" />
+
+      <Field
+        label="Mot de passe"
+        name="motDePasse"
+        type="password"
+        autoComplete="new-password"
+        required
+        errors={state.errors?.motDePasse}
+        disabled={pending}
+      />
+      <p className="text-xs text-neutral-500 -mt-3">10 caractères minimum.</p>
+
+      <Field
+        label="Confirmer le mot de passe"
+        name="confirmation"
+        type="password"
+        autoComplete="new-password"
+        required
+        errors={state.errors?.confirmation}
         disabled={pending}
       />
 
@@ -95,7 +118,7 @@ export function InscriptionVisiteurForm() {
         disabled={pending}
         className="w-full bg-primary hover:bg-primary-dark text-white font-semibold py-3 rounded-lg transition-colors disabled:opacity-60"
       >
-        {pending ? "Enregistrement…" : "Je m'inscris comme visiteur"}
+        {pending ? "Création du compte…" : "Je m'inscris comme visiteur"}
       </button>
     </form>
   );

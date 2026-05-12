@@ -13,6 +13,8 @@ export function homePathForRole(role: Role): string {
     case "JEUNE":
     case "DEMANDEUR_EMPLOI":
       return "/visiteur";
+    case "VISITEUR":
+      return "/espace-visiteur";
     default: {
       const _exhaustive: never = role;
       void _exhaustive;

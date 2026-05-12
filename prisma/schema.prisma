@@ -22,6 +22,7 @@ enum Role {
   ENSEIGNANT
   JEUNE
   DEMANDEUR_EMPLOI
+  VISITEUR
 }
 
 enum StatutExposant {
@@ -134,6 +135,7 @@ model User {
   enseignant      Enseignant?
   jeune           Jeune?
   demandeurEmploi DemandeurEmploi?
+  visiteur        Visiteur?
 
   auditLogs    AuditLog[]
   adminTokens  AdminToken[]
@@ -380,16 +382,21 @@ model DemandeurEmploi {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// VISITEUR (simple visiteur — pas de compte, pas de RDV)
+// VISITEUR (visiteur avec compte — peut préparer sa visite)
 // ═══════════════════════════════════════════════════════════════════════════
 
 model Visiteur {
-  id            String   @id @default(cuid())
-  email         String   @unique
-  prenom        String
-  nom           String
-  rgpdConsentAt DateTime @default(now())
-  createdAt     DateTime @default(now())
+  id                String   @id @default(cuid())
+  userId            String?  @unique
+  user              User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  email             String   @unique
+  prenom            String
+  nom               String
+  rgpdConsentAt     DateTime @default(now())
+  createdAt         DateTime @default(now())
+
+  // IDs des exposants sélectionnés pour "Mon programme"
+  exposantsFavoris  String[]
 
   @@index([createdAt])
 }
