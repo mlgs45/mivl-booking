@@ -17,7 +17,8 @@ export type EmailTemplate =
   | "confirmation-rdv-enseignant"
   | "confirmation-rdv-visiteur"
   | "rappel-j-moins-1"
-  | "annulation-rdv";
+  | "annulation-rdv"
+  | "confirmation-inscription-visiteur";
 
 interface TemplateData {
   "otp-code": { code: string };
@@ -56,6 +57,7 @@ interface TemplateData {
     creneau: string;
     exposant: string;
   };
+  "confirmation-inscription-visiteur": { prenom: string };
 }
 
 export interface RenderedEmail {
@@ -311,6 +313,20 @@ export function renderEmail<K extends EmailTemplate>(
           <p>Vous pouvez réserver un nouveau créneau depuis votre espace MIVL Connect.</p>
         `),
         text: `RDV ${d.creneau} avec ${d.exposant} annulé.`,
+      };
+    }
+    case "confirmation-inscription-visiteur": {
+      const d = data as TemplateData["confirmation-inscription-visiteur"];
+      return {
+        subject: "Votre inscription visiteur est enregistrée — MIVL Connect",
+        html: baseLayout(`
+          <p>Bonjour ${d.prenom},</p>
+          <p>Votre inscription en tant que visiteur au salon <strong>Made In Val de Loire 2026</strong> est bien enregistrée.</p>
+          <p>Le salon se tient le <strong>15 octobre 2026 au CO'Met d'Orléans</strong>. L'entrée est libre et gratuite.</p>
+          <p>Vous recevrez un email de rappel quelques jours avant l'événement avec toutes les informations pratiques.</p>
+          <p>À très bientôt,<br>L'équipe MIVL</p>
+        `),
+        text: `Bonjour ${d.prenom}, votre inscription visiteur au salon Made In Val de Loire 2026 est enregistrée. Rendez-vous le 15 octobre 2026 au CO'Met d'Orléans. Entrée libre et gratuite.`,
       };
     }
     default: {

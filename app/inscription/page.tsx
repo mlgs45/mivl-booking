@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PublicHeader } from "@/components/layout/public-header";
 import { PublicFooter } from "@/components/layout/public-footer";
+import { InscriptionVisiteurForm } from "./visiteur-form";
 
 export const metadata = {
   title: "Inscription — MIVL Connect",
@@ -82,7 +83,19 @@ export default function InscriptionPage() {
             ))}
           </div>
 
-          <p className="mt-10 text-center text-sm text-neutral-700">
+          <div className="mt-10 border-t border-neutral-200 pt-10">
+            <div className="mb-6">
+              <h2 className="text-xl font-heading font-bold text-neutral-900 mb-1">
+                Je suis un simple visiteur
+              </h2>
+              <p className="text-sm text-neutral-700">
+                Je viens découvrir le salon librement. Inscrivez-vous pour recevoir un email de confirmation et les informations pratiques avant le 15 octobre.
+              </p>
+            </div>
+            <InscriptionVisiteurForm />
+          </div>
+
+          <p className="mt-8 text-center text-sm text-neutral-700">
             Déjà inscrit ?{" "}
             <Link
               href="/connexion"

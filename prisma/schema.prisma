@@ -380,6 +380,21 @@ model DemandeurEmploi {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// VISITEUR (simple visiteur — pas de compte, pas de RDV)
+// ═══════════════════════════════════════════════════════════════════════════
+
+model Visiteur {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  prenom        String
+  nom           String
+  rgpdConsentAt DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // CRÉNEAUX & RENDEZ-VOUS
 // ═══════════════════════════════════════════════════════════════════════════
 
