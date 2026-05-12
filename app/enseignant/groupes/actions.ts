@@ -6,6 +6,7 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { groupeSchema } from "@/lib/validation/enseignant";
 import { reserverParcours, annulerParcoursGroupe } from "@/lib/booking/parcours";
+import { getRdvOuvertureConfig, isRdvOuvert } from "@/lib/rdv-ouvert";
 
 export type GroupeFormState = {
   ok: boolean;
@@ -162,6 +163,11 @@ export async function confirmerParcours(
 ): Promise<ReserverParcoursState> {
   const enseignantId = await getEnseignantId();
   if (!enseignantId) return { ok: false, error: "Non authentifié." };
+
+  const rdvConfig = await getRdvOuvertureConfig();
+  if (!isRdvOuvert(rdvConfig)) {
+    return { ok: false, error: "Les réservations ne sont pas encore ouvertes." };
+  }
 
   const groupe = await db.groupe.findUnique({
     where: { id: groupeId },

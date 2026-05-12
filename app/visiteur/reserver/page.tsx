@@ -8,6 +8,7 @@ import { ExposantCard } from "@/components/booking/exposant-card";
 import { SelectionBar } from "@/components/booking/selection-bar";
 import { SECTEUR_CODES } from "@/lib/referentiel/secteurs";
 import { getVisitorContext } from "../actions";
+import { getRdvOuvertureConfig, isRdvOuvert } from "@/lib/rdv-ouvert";
 import type { TypeOffre } from "@prisma/client";
 
 export const metadata = { title: "Choisir mes exposants — MIVL Connect" };
@@ -49,6 +50,34 @@ export default async function ReserverSpeedDatingsPage({
 
   const ctx = await getVisitorContext();
   if (!ctx) redirect("/visiteur");
+
+  const rdvConfig = await getRdvOuvertureConfig();
+  if (!isRdvOuvert(rdvConfig)) {
+    return (
+      <>
+        <AppHeader session={session} />
+        <main className="max-w-5xl mx-auto px-4 sm:px-6 py-16 text-center">
+          <div className="max-w-md mx-auto">
+            <p className="text-4xl mb-4">🔒</p>
+            <h1 className="text-2xl font-heading font-bold text-neutral-900 mb-3">
+              Les réservations ne sont pas encore ouvertes
+            </h1>
+            <p className="text-neutral-600 text-sm mb-2">
+              {rdvConfig.ouvertureRdvAt
+                ? `Ouverture prévue le ${rdvConfig.ouvertureRdvAt.toLocaleString("fr-FR", { dateStyle: "long", timeStyle: "short" })}.`
+                : "La date d'ouverture sera communiquée prochainement."}
+            </p>
+            <p className="text-neutral-500 text-sm mb-6">
+              Tous les inscrits pourront réserver en même temps dès l'ouverture.
+            </p>
+            <Link href="/visiteur" className="text-primary hover:underline underline-offset-2 text-sm font-medium">
+              ← Retour à mon espace
+            </Link>
+          </div>
+        </main>
+      </>
+    );
+  }
 
   const sp = await searchParams;
 

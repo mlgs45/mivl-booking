@@ -133,6 +133,11 @@ export default async function AdminDashboard() {
             title="Live jour J"
             description="Compteurs d'arrivées, RDV honorés, walk-ins — auto-refresh 30s."
           />
+          <ActionCard
+            href="/admin/configuration"
+            title="Configuration"
+            description="Ouvrir ou planifier les réservations RDV pour les enseignants, jeunes et demandeurs d'emploi."
+          />
           {session.user.role === "SUPER_ADMIN" && (
             <ActionCard
               href="/admin/utilisateurs"

@@ -7,6 +7,7 @@ import { BookingFilterBar } from "@/components/booking/filter-bar";
 import { ExposantCard } from "@/components/booking/exposant-card";
 import { SelectionBar } from "@/components/booking/selection-bar";
 import { SECTEUR_CODES } from "@/lib/referentiel/secteurs";
+import { getRdvOuvertureConfig, isRdvOuvert } from "@/lib/rdv-ouvert";
 import type { TypeOffre } from "@prisma/client";
 
 export const metadata = { title: "Choisir les exposants — MIVL Connect" };
@@ -63,6 +64,34 @@ export default async function ReserverParcoursPage({
   if (groupe.enseignant.userId !== session.user.id) redirect("/enseignant");
   if (groupe.rendezVous.length > 0) {
     redirect(`/enseignant/groupes/${id}`);
+  }
+
+  const rdvConfig = await getRdvOuvertureConfig();
+  if (!isRdvOuvert(rdvConfig)) {
+    return (
+      <>
+        <AppHeader session={session} />
+        <main className="max-w-5xl mx-auto px-4 sm:px-6 py-16 text-center">
+          <div className="max-w-md mx-auto">
+            <p className="text-4xl mb-4">🔒</p>
+            <h1 className="text-2xl font-heading font-bold text-neutral-900 mb-3">
+              Les réservations ne sont pas encore ouvertes
+            </h1>
+            <p className="text-neutral-600 text-sm mb-2">
+              {rdvConfig.ouvertureRdvAt
+                ? `Ouverture prévue le ${rdvConfig.ouvertureRdvAt.toLocaleString("fr-FR", { dateStyle: "long", timeStyle: "short" })}.`
+                : "La date d'ouverture sera communiquée prochainement."}
+            </p>
+            <p className="text-neutral-500 text-sm mb-6">
+              Tous les enseignants validés pourront réserver en même temps dès l'ouverture.
+            </p>
+            <Link href={`/enseignant/groupes/${id}`} className="text-primary hover:underline underline-offset-2 text-sm font-medium">
+              ← Retour à mon groupe
+            </Link>
+          </div>
+        </main>
+      </>
+    );
   }
 
   const selection = parseSelection(sp.sel);

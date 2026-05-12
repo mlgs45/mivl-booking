@@ -545,8 +545,12 @@ model ConfigurationSalon {
   maxRdvParVisiteur                  Int      @default(6)
 
   // ── Ouvertures inscriptions (contrôle par le back-office) ──
-  inscriptionsExposantsOuvertes      Boolean  @default(false)
-  inscriptionsVisiteursOuvertes      Boolean  @default(false)
+  inscriptionsExposantsOuvertes      Boolean   @default(false)
+  inscriptionsVisiteursOuvertes      Boolean   @default(false)
+
+  // ── Ouverture des réservations RDV ──
+  // null = fermé, date passée = ouvert, date future = planifié (mais encore fermé)
+  ouvertureRdvAt                     DateTime?
 
   updatedAt                          DateTime @updatedAt
 }

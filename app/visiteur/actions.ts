@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { reserverSpeedDatings, type ReserverSpeedDatingsResult } from "@/lib/booking/speed-datings";
+import { getRdvOuvertureConfig, isRdvOuvert } from "@/lib/rdv-ouvert";
 
 export type VisitorContext = {
   type: "JEUNE" | "DE";
@@ -46,6 +47,11 @@ export async function confirmerSpeedDatings(
 ): Promise<ConfirmerSpeedDatingsState> {
   const ctx = await getVisitorContext();
   if (!ctx) return { ok: false, error: "Non authentifié." };
+
+  const rdvConfig = await getRdvOuvertureConfig();
+  if (!isRdvOuvert(rdvConfig)) {
+    return { ok: false, error: "Les réservations ne sont pas encore ouvertes." };
+  }
 
   const result = await reserverSpeedDatings(
     { type: ctx.type, id: ctx.id },
