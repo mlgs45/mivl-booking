@@ -196,6 +196,39 @@ export async function attribuerStand(
   return { ok: true, message: "Stand mis à jour." };
 }
 
+export async function supprimerExposant(
+  _prev: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  const session = await getAdminSession();
+  if (!session?.user) return { ok: false, message: "Non autorisé." };
+
+  const id = formData.get("exposantId");
+  if (typeof id !== "string") return { ok: false, message: "ID manquant." };
+
+  const exposant = await db.exposant.findUnique({
+    where: { id },
+    select: { id: true, raisonSociale: true, userId: true },
+  });
+  if (!exposant) return { ok: false, message: "Exposant introuvable." };
+
+  await db.auditLog.create({
+    data: {
+      userId: session.user.id,
+      action: "exposant.supprime",
+      entite: "Exposant",
+      entiteId: id,
+      payload: { raisonSociale: exposant.raisonSociale },
+    },
+  });
+
+  // La suppression du User cascade sur Exposant (onDelete: Cascade)
+  await db.user.delete({ where: { id: exposant.userId } });
+
+  revalidatePath("/admin/exposants");
+  redirect(`/admin/exposants?supprime=${encodeURIComponent(exposant.raisonSociale)}`);
+}
+
 export async function togglePartenaire(
   _prev: AdminActionState,
   formData: FormData,

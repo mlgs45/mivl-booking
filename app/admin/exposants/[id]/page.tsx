@@ -13,6 +13,7 @@ import { RefuserForm } from "./refuser-form";
 import { ValiderForm } from "./valider-form";
 import { AttribuerStandForm } from "./attribuer-stand-form";
 import { PartenaireToggle } from "./partenaire-toggle";
+import { SupprimerForm } from "./supprimer-form";
 import type { TypeOffre, TypeOpportunite } from "@prisma/client";
 
 const OFFRE_LABELS: Record<TypeOffre, string> = {
@@ -158,6 +159,11 @@ export default async function AdminExposantDetailPage({
             </div>
           </>
         )}
+
+        {/* Zone danger */}
+        <div className="mb-8 flex justify-end">
+          <SupprimerForm exposantId={exposant.id} raisonSociale={exposant.raisonSociale} />
+        </div>
 
         {/* Contenu du profil */}
         <div className="space-y-8">
