@@ -193,14 +193,15 @@ export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
           label="Site web"
           name="siteWeb"
           errors={errors}
-          hint="Commence par https://"
+          hint="Ex. : monentreprise.fr — le https:// est ajouté automatiquement."
         >
           <input
-            type="url"
+            type="text"
+            inputMode="url"
             name="siteWeb"
             defaultValue={exposant.siteWeb ?? ""}
             disabled={fullLock}
-            placeholder="https://..."
+            placeholder="monentreprise.fr"
             className={inputClass}
           />
         </Field>

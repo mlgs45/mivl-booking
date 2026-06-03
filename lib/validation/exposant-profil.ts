@@ -53,7 +53,13 @@ export const profilExposantDraftSchema = z.object({
     .regex(/^\d{5}$/, "Code postal invalide")
     .optional()
     .or(z.literal("")),
-  siteWeb: z.string().trim().url("URL invalide").optional().or(z.literal("")),
+  siteWeb: z
+    .string()
+    .trim()
+    // Tolère un domaine nu : « monsite.fr » devient « https://monsite.fr ».
+    .transform((v) => (v && !/^https?:\/\//i.test(v) ? `https://${v}` : v))
+    .pipe(z.literal("").or(z.string().url("Adresse de site web invalide")))
+    .optional(),
   nomContact: z.string().trim().max(120).optional(),
   telephoneContact: z.string().trim().max(30).optional(),
   fonctionContact: z.string().trim().max(100).optional(),
