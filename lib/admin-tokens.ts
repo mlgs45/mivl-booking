@@ -80,13 +80,6 @@ export async function verifierAdminToken(token: string): Promise<TokenInfo | nul
   };
 }
 
-export async function consommerAdminToken(tokenId: string): Promise<void> {
-  await db.adminToken.update({
-    where: { id: tokenId },
-    data: { usedAt: new Date() },
-  });
-}
-
 export function statutInvitationEnCours(tokens: Array<{ type: TypeAdminToken; expiresAt: Date; usedAt: Date | null }>):
   | { etat: "aucune" }
   | { etat: "active"; expiresAt: Date }

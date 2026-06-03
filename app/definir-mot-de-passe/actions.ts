@@ -4,10 +4,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { hash } from "@node-rs/argon2";
 import { db } from "@/lib/db";
-import {
-  consommerAdminToken,
-  verifierAdminToken,
-} from "@/lib/admin-tokens";
+import { verifierAdminToken } from "@/lib/admin-tokens";
 
 export type DefinirMdpState = {
   ok: boolean;
@@ -55,15 +52,37 @@ export async function definirMotDePasse(
 
   const hashed = await hash(parsed.data.motDePasse);
 
-  await db.user.update({
-    where: { id: info.userId },
-    data: {
-      hashedPassword: hashed,
-      emailVerified: new Date(),
-    },
-  });
+  // Consommation atomique : on « réclame » le token (usage unique) et on pose
+  // le mot de passe dans la même transaction. Deux requêtes concurrentes avec
+  // le même lien ne peuvent donc pas aboutir toutes les deux.
+  try {
+    await db.$transaction(async (tx) => {
+      const claim = await tx.adminToken.updateMany({
+        where: { id: info.id, usedAt: null, expiresAt: { gt: new Date() } },
+        data: { usedAt: new Date() },
+      });
+      if (claim.count === 0) throw new Error("token-deja-consomme");
 
-  await consommerAdminToken(info.id);
+      await tx.user.update({
+        where: { id: info.userId },
+        data: { hashedPassword: hashed, emailVerified: new Date() },
+      });
+
+      await tx.auditLog.create({
+        data: {
+          userId: info.userId,
+          action: "auth.password_set",
+          entite: "User",
+          entiteId: info.userId,
+        },
+      });
+    });
+  } catch {
+    return {
+      ok: false,
+      error: "Ce lien a déjà été utilisé ou a expiré. Demandez-en un nouveau.",
+    };
+  }
 
   const message =
     info.type === "INVITATION" ? "compte-active" : "mot-de-passe-mis-a-jour";

@@ -30,6 +30,15 @@ export async function sendEmail<K extends EmailTemplate>(
   const rendered = renderEmail(template, data);
   const provider = process.env.EMAIL_PROVIDER ?? "console";
 
+  // En prod, le provider "console" écrirait le corps complet des emails — dont
+  // les liens d'activation/reset à token — dans les logs. On échoue bruyamment
+  // plutôt que de fuiter ces tokens.
+  if (provider !== "brevo" && process.env.NODE_ENV === "production") {
+    throw new Error(
+      'EMAIL_PROVIDER doit valoir "brevo" en production (les liens à token ne doivent jamais être loggés).'
+    );
+  }
+
   const log = await db.emailLog.create({
     data: {
       destinataire: to,

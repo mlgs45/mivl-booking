@@ -2,7 +2,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AuthError } from "next-auth";
 import { auth, signIn } from "@/auth";
+import { db } from "@/lib/db";
 import { homePathForRole } from "@/lib/auth-redirect";
+import { checkLoginRateLimit } from "@/lib/rate-limit";
+import { clientIp } from "@/lib/request-ip";
 import { Button } from "@/components/ui/button";
 
 export const metadata = {
@@ -11,14 +14,22 @@ export const metadata = {
 
 async function credentialsSignIn(formData: FormData) {
   "use server";
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const password = String(formData.get("password") ?? "");
+
+  const ip = await clientIp();
+  const rate = await checkLoginRateLimit(email, ip);
+  if (!rate.allowed) {
+    redirect(`/connexion/admin?erreur=rate`);
+  }
+
   try {
-    await signIn("credentials", {
-      email: String(formData.get("email") ?? "").trim().toLowerCase(),
-      password: String(formData.get("password") ?? ""),
-      redirectTo: "/admin",
-    });
+    await signIn("credentials", { email, password, redirectTo: "/admin" });
   } catch (error) {
     if (error instanceof AuthError) {
+      await db.auditLog.create({
+        data: { action: "auth.signin_failed", entite: "User", ip, payload: { email } },
+      });
       redirect(`/connexion/admin?erreur=${encodeURIComponent(error.type)}`);
     }
     throw error;
@@ -73,8 +84,9 @@ export default async function ConnexionAdminPage({
 
           {erreur && (
             <div className="mb-4 rounded-lg border-l-4 border-danger bg-danger/10 p-3 text-sm text-neutral-900">
-              Identifiants incorrects. Vérifiez votre adresse email et votre mot
-              de passe.
+              {erreur === "rate"
+                ? "Trop de tentatives de connexion. Patientez quelques minutes avant de réessayer."
+                : "Identifiants incorrects. Vérifiez votre adresse email et votre mot de passe."}
             </div>
           )}
 
@@ -126,12 +138,6 @@ export default async function ConnexionAdminPage({
               className="text-sm text-primary hover:underline underline-offset-2"
             >
               Mot de passe oublié ?
-            </Link>
-            <Link
-              href="/connexion"
-              className="text-sm text-neutral-700 hover:text-primary underline-offset-2 hover:underline"
-            >
-              Connexion par code email
             </Link>
           </div>
         </div>

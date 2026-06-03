@@ -54,7 +54,6 @@ export default async function AdminUtilisateursPage({
       email: true,
       name: true,
       role: true,
-      hashedPassword: true,
       emailVerified: true,
       createdAt: true,
       adminTokens: {
@@ -121,7 +120,10 @@ export default async function AdminUtilisateursPage({
             <tbody>
               {admins.map((admin) => {
                 const estSoi = admin.id === session.user.id;
-                const active = Boolean(admin.hashedPassword);
+                // emailVerified est posé en même temps que hashedPassword à
+                // l'activation du compte (cf. definir-mot-de-passe) : proxy fiable
+                // de « compte activé », sans charger le hash en mémoire.
+                const active = Boolean(admin.emailVerified);
                 const invitation = admin.adminTokens[0];
                 const invitationActive =
                   !active && invitation && invitation.expiresAt > now;

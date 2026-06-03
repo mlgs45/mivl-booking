@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { AppHeader } from "@/components/layout/app-header";
@@ -35,7 +35,10 @@ export default async function AdminEnseignantDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const session = await auth();
-  if (!session?.user) return null;
+  const role = session?.user?.role;
+  if (!session?.user || (role !== "SUPER_ADMIN" && role !== "GESTIONNAIRE")) {
+    redirect("/admin");
+  }
   const { id } = await params;
 
   const enseignant = await db.enseignant.findUnique({
