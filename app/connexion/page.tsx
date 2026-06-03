@@ -4,6 +4,8 @@ import { AuthError } from "next-auth";
 import { auth, signIn } from "@/auth";
 import { db } from "@/lib/db";
 import { homePathForRole } from "@/lib/auth-redirect";
+import { checkLoginRateLimit } from "@/lib/rate-limit";
+import { clientIp } from "@/lib/request-ip";
 import { Button } from "@/components/ui/button";
 
 export const metadata = {
@@ -15,6 +17,12 @@ async function connexionAction(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
 
+  const ip = await clientIp();
+  const rate = await checkLoginRateLimit(email, ip);
+  if (!rate.allowed) {
+    redirect(`/connexion?erreur=rate`);
+  }
+
   const user = await db.user.findUnique({ where: { email }, select: { role: true } });
   const redirectTo = user ? homePathForRole(user.role) : "/";
 
@@ -22,6 +30,9 @@ async function connexionAction(formData: FormData) {
     await signIn("credentials", { email, password, redirectTo });
   } catch (error) {
     if (error instanceof AuthError) {
+      await db.auditLog.create({
+        data: { action: "auth.signin_failed", entite: "User", ip, payload: { email } },
+      });
       redirect(`/connexion?erreur=true`);
     }
     throw error;
@@ -78,7 +89,9 @@ export default async function ConnexionPage({
 
           {erreur && (
             <div className="mb-4 rounded-lg border-l-4 border-danger bg-danger/10 p-3 text-sm text-neutral-900">
-              Email ou mot de passe incorrect.
+              {erreur === "rate"
+                ? "Trop de tentatives de connexion. Patientez quelques minutes avant de réessayer."
+                : "Email ou mot de passe incorrect."}
             </div>
           )}
 

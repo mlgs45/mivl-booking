@@ -41,37 +41,26 @@ export async function demanderResetMdp(
     };
   }
 
+  // Réponse identique que le compte existe ou non : pas d'énumération de comptes.
   const user = await db.user.findUnique({
     where: { email },
     select: { id: true, name: true },
   });
 
-  if (!user) {
-    return {
-      ok: false,
-      error: "Aucun compte n'est associé à cette adresse email.",
-    };
+  if (user) {
+    const token = await creerAdminToken({ userId: user.id, type: "RESET" });
+    const lienReset = `${APP_URL}/definir-mot-de-passe?token=${token}`;
+
+    await sendEmail({
+      to: email,
+      template: "reset-mdp-admin",
+      data: { nomUtilisateur: user.name ?? email, lienReset },
+    });
   }
-
-  const token = await creerAdminToken({
-    userId: user.id,
-    type: "RESET",
-  });
-
-  const lienReset = `${APP_URL}/definir-mot-de-passe?token=${token}`;
-
-  await sendEmail({
-    to: email,
-    template: "reset-mdp-admin",
-    data: {
-      nomUtilisateur: user.name ?? email,
-      lienReset,
-    },
-  });
 
   return {
     ok: true,
     message:
-      "Un email contenant un lien de réinitialisation vient de vous être envoyé. Le lien est valable 7 jours.",
+      "Si un compte est associé à cette adresse, un email contenant un lien de réinitialisation vient d'être envoyé. Le lien est valable 7 jours.",
   };
 }

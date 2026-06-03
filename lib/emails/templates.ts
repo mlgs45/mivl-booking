@@ -4,7 +4,6 @@
  */
 
 export type EmailTemplate =
-  | "otp-code"
   | "invitation-exposant-admin"
   | "invitation-admin"
   | "reset-mdp-admin"
@@ -21,7 +20,6 @@ export type EmailTemplate =
   | "confirmation-inscription-visiteur";
 
 interface TemplateData {
-  "otp-code": { code: string };
   "invitation-exposant-admin": {
     raisonSociale: string;
     appUrl: string;
@@ -91,22 +89,6 @@ export function renderEmail<K extends EmailTemplate>(
   data: TemplateData[K]
 ): RenderedEmail {
   switch (template) {
-    case "otp-code": {
-      const d = data as TemplateData["otp-code"];
-      return {
-        subject: `Votre code de connexion : ${d.code} — MIVL Connect`,
-        html: baseLayout(`
-          <p>Bonjour,</p>
-          <p>Voici votre code de connexion à votre espace MIVL Connect :</p>
-          <p style="margin: 32px 0; text-align: center;">
-            <span style="display: inline-block; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 32px; letter-spacing: 8px; font-weight: 700; color: #1B4DB5; background: #F3F6FC; padding: 18px 28px; border-radius: 10px; border: 1px solid #E9EDF2;">${d.code}</span>
-          </p>
-          <p style="font-size: 14px; color: #6B7280;">Saisissez ce code sur la page de connexion pour accéder à votre espace. Il est valable 10 minutes et ne peut être utilisé qu'une seule fois.</p>
-          <p style="font-size: 14px; color: #6B7280;">Si vous n'êtes pas à l'origine de cette demande, ignorez simplement cet email.</p>
-        `),
-        text: `Votre code de connexion MIVL Connect : ${d.code}\n\nSaisissez-le sur la page de connexion. Valable 10 minutes.`,
-      };
-    }
     case "invitation-admin": {
       const d = data as TemplateData["invitation-admin"];
       const roleLabel =
