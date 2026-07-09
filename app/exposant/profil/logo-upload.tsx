@@ -43,6 +43,8 @@ export function LogoUpload({
       </h2>
       <p className="text-sm text-neutral-700 mb-4">
         Optionnel. Affiché sur l'annuaire public. PNG, JPG ou WEBP, 2 Mo max.
+        Sélectionnez un fichier puis cliquez sur « Téléverser le logo » ci-dessous
+        pour l'envoyer — cette étape est indépendante du reste du formulaire.
       </p>
 
       <div className="flex items-start gap-4">

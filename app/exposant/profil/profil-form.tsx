@@ -485,7 +485,13 @@ export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
           </div>
         </fieldset>
 
-        <label className="flex items-start gap-3 mt-6 p-3 rounded-lg border border-neutral-100 cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+        <label
+          className={`flex items-start gap-3 mt-6 p-3 rounded-lg border cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary/5 ${
+            errors.consentementCommunication?.length
+              ? "border-danger bg-danger/5"
+              : "border-neutral-100"
+          }`}
+        >
           <input
             type="checkbox"
             name="consentementCommunication"
@@ -500,7 +506,11 @@ export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
             J). <span className="text-danger">*</span>
           </span>
         </label>
-        <FieldErrors errors={errors} field="consentementCommunication" />
+        {errors.consentementCommunication?.length ? (
+          <p className="mt-1 text-sm font-semibold text-danger" role="alert">
+            ⚠ Cette case doit être cochée pour pouvoir soumettre votre fiche à la CCI.
+          </p>
+        ) : null}
       </Section>
 
       <hr className="border-neutral-100" />
@@ -541,7 +551,14 @@ export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
 
       {/* ── Actions ─────────────────────────────────────────────────── */}
       {!fullLock && (
-        <div className="sticky bottom-0 bg-white border-t border-neutral-100 py-4 -mx-4 sm:-mx-6 px-4 sm:px-6 flex flex-col sm:flex-row gap-3 sm:justify-end">
+        <div className="sticky bottom-0 bg-white border-t border-neutral-100 py-4 -mx-4 sm:-mx-6 px-4 sm:px-6 flex flex-col gap-3">
+          {canSubmit && (
+            <p className="text-xs text-neutral-700">
+              Le logo se téléverse séparément via le bouton « Téléverser le logo »
+              tout en haut de la page — il n'est pas envoyé par « Soumettre à la CCI ».
+            </p>
+          )}
+          <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
           <SubmitButton
             formAction={saveAction}
             variant={canSubmit ? "secondary" : "primary"}
@@ -556,6 +573,7 @@ export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
               pendingLabel="Envoi…"
             />
           )}
+          </div>
         </div>
       )}
     </form>

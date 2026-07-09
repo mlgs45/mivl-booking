@@ -69,18 +69,25 @@ export async function televerserLogo(
     return { ok: false, message: "Format non supporté (PNG, JPG, WEBP)." };
   }
 
-  await mkdir(LOGOS_DIR, { recursive: true });
-  await removeFileIfExists(exposant.logoUrl);
-
   const filename = `${exposant.id}.${ext}`;
   const buffer = Buffer.from(await file.arrayBuffer());
-  await writeFile(path.join(LOGOS_DIR, filename), buffer);
-
   const logoUrl = `/api/logos/${filename}`;
-  await db.exposant.update({
-    where: { id: exposant.id },
-    data: { logoUrl },
-  });
+
+  try {
+    await mkdir(LOGOS_DIR, { recursive: true });
+    await removeFileIfExists(exposant.logoUrl);
+    await writeFile(path.join(LOGOS_DIR, filename), buffer);
+    await db.exposant.update({
+      where: { id: exposant.id },
+      data: { logoUrl },
+    });
+  } catch (error) {
+    console.error("[logo] échec de l'enregistrement :", error);
+    return {
+      ok: false,
+      message: "Erreur serveur, le logo n'a pas pu être enregistré. Réessayez ou contactez la CCI.",
+    };
+  }
 
   revalidatePath("/exposant/profil");
   revalidatePath("/exposant");
@@ -98,11 +105,19 @@ export async function supprimerLogo(
     return { ok: false, message: "Fiche en cours de validation, logo non modifiable." };
   }
 
-  await removeFileIfExists(exposant.logoUrl);
-  await db.exposant.update({
-    where: { id: exposant.id },
-    data: { logoUrl: null },
-  });
+  try {
+    await removeFileIfExists(exposant.logoUrl);
+    await db.exposant.update({
+      where: { id: exposant.id },
+      data: { logoUrl: null },
+    });
+  } catch (error) {
+    console.error("[logo] échec de la suppression :", error);
+    return {
+      ok: false,
+      message: "Erreur serveur, le logo n'a pas pu être supprimé. Réessayez ou contactez la CCI.",
+    };
+  }
 
   revalidatePath("/exposant/profil");
   revalidatePath("/exposant");

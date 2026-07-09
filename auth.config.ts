@@ -30,6 +30,7 @@ export const authConfig = {
         "/definir-mot-de-passe",
         "/mentions-legales",
         "/confidentialite",
+        "/api/logos",
       ];
       const isPublic = publicPaths.some(
         (p) => path === p || path.startsWith(`${p}/`)
