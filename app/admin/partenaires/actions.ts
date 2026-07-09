@@ -29,7 +29,8 @@ export type CreerPartenaireState = {
 
 const creerSchema = z.object({
   email: z.string().trim().toLowerCase().email("Adresse email invalide."),
-  nom: z.string().trim().min(2, "Nom trop court.").max(120),
+  prenom: z.string().trim().min(2, "Prénom trop court.").max(60),
+  nom: z.string().trim().min(2, "Nom trop court.").max(60),
 });
 
 export async function creerPartenaire(
@@ -40,6 +41,7 @@ export async function creerPartenaire(
 
   const parsed = creerSchema.safeParse({
     email: formData.get("email"),
+    prenom: formData.get("prenom"),
     nom: formData.get("nom"),
   });
 
@@ -50,7 +52,8 @@ export async function creerPartenaire(
     };
   }
 
-  const { email, nom } = parsed.data;
+  const { email, prenom, nom: nomFamille } = parsed.data;
+  const nom = `${prenom} ${nomFamille}`;
 
   const existing = await db.user.findUnique({
     where: { email },

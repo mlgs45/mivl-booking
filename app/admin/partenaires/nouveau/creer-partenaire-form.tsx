@@ -18,23 +18,43 @@ export function CreerPartenaireForm() {
         </div>
       )}
 
-      <div>
-        <label
-          htmlFor="nom"
-          className="block text-sm font-medium text-neutral-900 mb-2"
-        >
-          Nom du partenaire
-        </label>
-        <input
-          id="nom"
-          name="nom"
-          type="text"
-          required
-          minLength={2}
-          maxLength={120}
-          placeholder="Ex. Région Centre-Val de Loire"
-          className="w-full px-4 py-3 rounded-lg border border-neutral-100 bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-        />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label
+            htmlFor="prenom"
+            className="block text-sm font-medium text-neutral-900 mb-2"
+          >
+            Prénom
+          </label>
+          <input
+            id="prenom"
+            name="prenom"
+            type="text"
+            required
+            minLength={2}
+            maxLength={60}
+            placeholder="Prénom"
+            className="w-full px-4 py-3 rounded-lg border border-neutral-100 bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+          />
+        </div>
+        <div>
+          <label
+            htmlFor="nom"
+            className="block text-sm font-medium text-neutral-900 mb-2"
+          >
+            Nom
+          </label>
+          <input
+            id="nom"
+            name="nom"
+            type="text"
+            required
+            minLength={2}
+            maxLength={60}
+            placeholder="Nom"
+            className="w-full px-4 py-3 rounded-lg border border-neutral-100 bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+          />
+        </div>
       </div>
 
       <div>
