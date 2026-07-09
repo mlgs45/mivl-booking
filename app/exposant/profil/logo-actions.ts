@@ -1,28 +1,21 @@
 "use server";
 
-import { writeFile, mkdir, unlink } from "node:fs/promises";
-import { existsSync } from "node:fs";
+import { writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
+import {
+  MAX_LOGO_BYTES,
+  ACCEPTED_LOGO_TYPES,
+  LOGOS_DIR,
+  removeLogoFileIfExists,
+} from "@/lib/logo-storage";
 
 export type LogoState = {
   ok: boolean;
   message?: string;
 };
-
-const MAX_BYTES = 2 * 1024 * 1024;
-const ACCEPTED: Record<string, string> = {
-  "image/png": "png",
-  "image/jpeg": "jpg",
-  "image/webp": "webp",
-};
-
-// STORAGE_DIR pointe sur un volume persistant (cf. docs/deploiement.md).
-// Dev : ./uploads — Prod : /app/uploads monté depuis /data/mivl-booking/uploads.
-const STORAGE_DIR = process.env.STORAGE_DIR ?? "./uploads";
-const LOGOS_DIR = path.resolve(STORAGE_DIR, "logos");
 
 async function getCurrentExposant() {
   const session = await auth();
@@ -31,20 +24,6 @@ async function getCurrentExposant() {
     where: { userId: session.user.id },
     select: { id: true, statut: true, logoUrl: true },
   });
-}
-
-async function removeFileIfExists(urlRelative: string | null) {
-  if (!urlRelative) return;
-  const filename = urlRelative.split("/").pop();
-  if (!filename) return;
-  const abs = path.join(LOGOS_DIR, filename);
-  if (existsSync(abs)) {
-    try {
-      await unlink(abs);
-    } catch (error) {
-      console.error("[logo] suppression ancien fichier échouée :", error);
-    }
-  }
 }
 
 export async function televerserLogo(
@@ -61,10 +40,10 @@ export async function televerserLogo(
   if (!(file instanceof File) || file.size === 0) {
     return { ok: false, message: "Sélectionnez un fichier." };
   }
-  if (file.size > MAX_BYTES) {
+  if (file.size > MAX_LOGO_BYTES) {
     return { ok: false, message: "Fichier trop volumineux (max 2 Mo)." };
   }
-  const ext = ACCEPTED[file.type];
+  const ext = ACCEPTED_LOGO_TYPES[file.type];
   if (!ext) {
     return { ok: false, message: "Format non supporté (PNG, JPG, WEBP)." };
   }
@@ -75,7 +54,7 @@ export async function televerserLogo(
 
   try {
     await mkdir(LOGOS_DIR, { recursive: true });
-    await removeFileIfExists(exposant.logoUrl);
+    await removeLogoFileIfExists(exposant.logoUrl);
     await writeFile(path.join(LOGOS_DIR, filename), buffer);
     await db.exposant.update({
       where: { id: exposant.id },
@@ -106,7 +85,7 @@ export async function supprimerLogo(
   }
 
   try {
-    await removeFileIfExists(exposant.logoUrl);
+    await removeLogoFileIfExists(exposant.logoUrl);
     await db.exposant.update({
       where: { id: exposant.id },
       data: { logoUrl: null },

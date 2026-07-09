@@ -12,16 +12,22 @@ import {
 export function LogoUpload({
   initialLogoUrl,
   disabled,
+  exposantId,
+  uploadAction: uploadActionProp = televerserLogo,
+  deleteAction: deleteActionProp = supprimerLogo,
 }: {
   initialLogoUrl: string | null;
   disabled: boolean;
+  exposantId?: string;
+  uploadAction?: typeof televerserLogo;
+  deleteAction?: typeof supprimerLogo;
 }) {
   const [uploadState, uploadAction] = useActionState<LogoState, FormData>(
-    televerserLogo,
+    uploadActionProp,
     { ok: false },
   );
   const [deleteState, deleteAction] = useActionState<LogoState, FormData>(
-    supprimerLogo,
+    deleteActionProp,
     { ok: false },
   );
   const [preview, setPreview] = useState<string | null>(null);
@@ -74,6 +80,7 @@ export function LogoUpload({
 
         <div className="flex-1 space-y-3">
           <form action={uploadAction} className="space-y-2">
+            {exposantId && <input type="hidden" name="exposantId" value={exposantId} />}
             <input
               ref={fileInputRef}
               type="file"
@@ -88,6 +95,7 @@ export function LogoUpload({
 
           {currentLogo && !disabled && (
             <form action={deleteAction}>
+              {exposantId && <input type="hidden" name="exposantId" value={exposantId} />}
               <button
                 type="submit"
                 className="text-xs text-danger hover:underline underline-offset-2"

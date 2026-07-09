@@ -8,70 +8,16 @@ import {
   profilExposantDraftSchema,
   profilExposantSubmitSchema,
 } from "@/lib/validation/exposant-profil";
+import {
+  extractProfilFromFormData,
+  issuesToErrors,
+} from "@/lib/exposant-profil-form";
 
 export type ProfilState = {
   ok: boolean;
   errors?: Record<string, string[]>;
   message?: string;
 };
-
-/**
- * Lit un FormData posté par le formulaire profil et le transforme en objet
- * compatible avec les schémas Zod (cases à cocher multiples → tableaux, booléens).
- */
-function extractProfilFromFormData(formData: FormData) {
-  const str = (k: string) => {
-    const v = formData.get(k);
-    return typeof v === "string" ? v : "";
-  };
-  const all = (k: string) =>
-    formData.getAll(k).filter((v): v is string => typeof v === "string");
-  const bool = (k: string) => formData.get(k) === "on";
-
-  return {
-    raisonSociale: str("raisonSociale"),
-    siret: str("siret") ?? "",
-    adresse: str("adresse"),
-    ville: str("ville"),
-    codePostal: str("codePostal") ?? "",
-    siteWeb: str("siteWeb") ?? "",
-    nomContact: str("nomContact"),
-    telephoneContact: str("telephoneContact"),
-    fonctionContact: str("fonctionContact"),
-
-    secteurs: all("secteurs"),
-    secteurAutre: str("secteurAutre"),
-    description: str("description"),
-
-    offres: all("offres"),
-    typesOpportunites: all("typesOpportunites"),
-    metiersProposes: all("metiersProposes"),
-
-    elementsStand: all("elementsStand"),
-    elementsStandAutre: str("elementsStandAutre"),
-
-    animations: all("animations"),
-
-    innovationMiseEnAvant: bool("innovationMiseEnAvant"),
-    descriptionInnovation: str("descriptionInnovation"),
-
-    statutRecrutement: str("statutRecrutement") || "NON",
-
-    consentementCommunication: bool("consentementCommunication"),
-  };
-}
-
-function issuesToErrors(
-  issues: ReadonlyArray<{ path: ReadonlyArray<PropertyKey>; message: string }>,
-) {
-  const errors: Record<string, string[]> = {};
-  for (const issue of issues) {
-    const key = issue.path.map(String).join(".") || "_";
-    if (!errors[key]) errors[key] = [];
-    errors[key].push(issue.message);
-  }
-  return errors;
-}
 
 async function getCurrentExposant() {
   const session = await auth();

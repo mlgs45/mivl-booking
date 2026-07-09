@@ -6,6 +6,11 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { sendEmail } from "@/lib/emails";
+import { profilExposantDraftSchema } from "@/lib/validation/exposant-profil";
+import {
+  extractProfilFromFormData,
+  issuesToErrors,
+} from "@/lib/exposant-profil-form";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
@@ -20,6 +25,89 @@ export type AdminActionState = {
   ok: boolean;
   message?: string;
 };
+
+export type ProfilState = {
+  ok: boolean;
+  errors?: Record<string, string[]>;
+  message?: string;
+};
+
+/**
+ * Édition libre du profil par un admin — ignore le verrouillage par statut
+ * qui s'applique à l'exposant lui-même (cf. app/exposant/profil/actions.ts).
+ * Ne touche jamais au statut : celui-ci reste géré par valider/refuser/
+ * remettreEnAttente ci-dessous.
+ */
+export async function modifierProfilAdmin(
+  _prev: ProfilState,
+  formData: FormData,
+): Promise<ProfilState> {
+  const session = await getAdminSession();
+  if (!session?.user) return { ok: false, message: "Non autorisé." };
+
+  const exposantId = formData.get("exposantId");
+  if (typeof exposantId !== "string") return { ok: false, message: "ID manquant." };
+
+  const exposant = await db.exposant.findUnique({
+    where: { id: exposantId },
+    select: { id: true },
+  });
+  if (!exposant) return { ok: false, message: "Exposant introuvable." };
+
+  const raw = extractProfilFromFormData(formData);
+  const parsed = profilExposantDraftSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { ok: false, errors: issuesToErrors(parsed.error.issues) };
+  }
+
+  const d = parsed.data;
+  await db.exposant.update({
+    where: { id: exposant.id },
+    data: {
+      raisonSociale: d.raisonSociale ?? undefined,
+      siret: d.siret && d.siret.length > 0 ? d.siret : null,
+      adresse: d.adresse ?? null,
+      ville: d.ville ?? undefined,
+      codePostal: d.codePostal && d.codePostal.length > 0 ? d.codePostal : null,
+      siteWeb: d.siteWeb && d.siteWeb.length > 0 ? d.siteWeb : null,
+      nomContact: d.nomContact ?? null,
+      telephoneContact: d.telephoneContact ?? null,
+      fonctionContact: d.fonctionContact ?? null,
+      secteurs: d.secteurs,
+      secteurAutre: d.secteurAutre ?? null,
+      description: d.description ?? "",
+      offres: d.offres,
+      typesOpportunites: d.offres.includes("OPPORTUNITES")
+        ? d.typesOpportunites
+        : [],
+      metiersProposes: d.metiersProposes,
+      elementsStand: d.elementsStand,
+      elementsStandAutre: d.elementsStandAutre ?? null,
+      animations: d.animations,
+      innovationMiseEnAvant: d.innovationMiseEnAvant,
+      descriptionInnovation: d.innovationMiseEnAvant
+        ? (d.descriptionInnovation ?? null)
+        : null,
+      statutRecrutement: d.statutRecrutement,
+      consentementCommunication: d.consentementCommunication,
+    },
+  });
+
+  await db.auditLog.create({
+    data: {
+      userId: session.user.id,
+      action: "exposant.profil.modifie_admin",
+      entite: "Exposant",
+      entiteId: exposant.id,
+    },
+  });
+
+  revalidatePath(`/admin/exposants/${exposant.id}`);
+  revalidatePath("/exposant");
+  revalidatePath("/exposant/profil");
+  revalidatePath(`/exposants/${exposant.id}`);
+  return { ok: true, message: "Modifications enregistrées." };
+}
 
 export async function validerExposant(
   _prev: AdminActionState,

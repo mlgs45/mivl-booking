@@ -15,6 +15,7 @@ export default async function ExposantProfilPage() {
   const exposant = await db.exposant.findUnique({
     where: { userId: session.user.id },
     select: {
+      id: true,
       raisonSociale: true,
       siret: true,
       adresse: true,

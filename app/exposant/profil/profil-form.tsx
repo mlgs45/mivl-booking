@@ -15,6 +15,7 @@ import type { Exposant } from "@prisma/client";
 
 type ExposantProfil = Pick<
   Exposant,
+  | "id"
   | "raisonSociale"
   | "siret"
   | "adresse"
@@ -75,9 +76,17 @@ const STATUT_RECRUTEMENT_LABELS: Record<string, string> = {
   PROCHAINEMENT: "Pas pour l'instant mais bientôt",
 };
 
-export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
+export function ProfilForm({
+  exposant,
+  saveAction: saveActionProp = sauvegarderProfil,
+  adminMode = false,
+}: {
+  exposant: ExposantProfil;
+  saveAction?: typeof sauvegarderProfil;
+  adminMode?: boolean;
+}) {
   const [saveState, saveAction] = useActionState<ProfilState, FormData>(
-    sauvegarderProfil,
+    saveActionProp,
     { ok: false },
   );
   const [submitState, submitAction] = useActionState<ProfilState, FormData>(
@@ -91,10 +100,13 @@ export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
   // VALIDE : champs structurels verrouillés (identité, offres, stand…),
   //          champs "cosmétiques" modifiables (description, contact, site web,
   //          logo, innovation desc, statut recrutement).
-  const fullLock = exposant.statut === "SOUMIS";
-  const structuralLock = fullLock || exposant.statut === "VALIDE";
+  // Un admin (adminMode) n'est jamais verrouillé : il peut tout modifier
+  // quel que soit le statut de la fiche.
+  const fullLock = !adminMode && exposant.statut === "SOUMIS";
+  const structuralLock = !adminMode && (fullLock || exposant.statut === "VALIDE");
   const canSubmit =
-    exposant.statut === "BROUILLON" || exposant.statut === "REFUSE";
+    !adminMode &&
+    (exposant.statut === "BROUILLON" || exposant.statut === "REFUSE");
 
   const [offresState, setOffresState] = useState<string[]>(exposant.offres);
   const [innovationState, setInnovationState] = useState<boolean>(
@@ -111,6 +123,7 @@ export function ProfilForm({ exposant }: { exposant: ExposantProfil }) {
 
   return (
     <form className="space-y-6">
+      <input type="hidden" name="exposantId" value={exposant.id} />
       {message && (
         <div
           className={`rounded-lg border p-4 text-sm ${

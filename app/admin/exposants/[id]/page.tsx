@@ -3,45 +3,16 @@ import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { AppHeader } from "@/components/layout/app-header";
-import { SECTEUR_LABELS } from "@/lib/referentiel/secteurs";
-import { ELEMENT_STAND_LABELS } from "@/lib/referentiel/elements-stand";
-import { ANIMATION_LABELS } from "@/lib/referentiel/animations";
-import type { SecteurCode } from "@/lib/referentiel/secteurs";
-import type { ElementStandCode } from "@/lib/referentiel/elements-stand";
-import type { AnimationCode } from "@/lib/referentiel/animations";
 import { RefuserForm } from "./refuser-form";
 import { ValiderForm } from "./valider-form";
 import { AttribuerStandForm } from "./attribuer-stand-form";
 import { PartenaireToggle } from "./partenaire-toggle";
 import { SupprimerForm } from "./supprimer-form";
 import { RemettreEnAttenteForm } from "./remettre-en-attente-form";
-import type { TypeOffre, TypeOpportunite } from "@prisma/client";
-
-const OFFRE_LABELS: Record<TypeOffre, string> = {
-  DECOUVERTE_ENTREPRISE: "Découverte entreprise",
-  DECOUVERTE_METIERS: "Découverte métiers",
-  OPPORTUNITES: "Opportunités",
-};
-
-const OPPORTUNITE_LABELS: Record<TypeOpportunite, string> = {
-  STAGE_3E: "Stage 3e",
-  STAGE_SECONDE: "Stage 2nde",
-  STAGE_BTS: "Stage BTS",
-  STAGE_LICENCE: "Stage Licence",
-  STAGE_MASTER: "Stage Master",
-  APPRENTISSAGE: "Apprentissage",
-  ALTERNANCE: "Alternance",
-  CDD: "CDD",
-  CDI: "CDI",
-  JOB_ETE: "Job d'été",
-  DECOUVERTE: "Stage découverte",
-};
-
-const STATUT_RECRUTEMENT_LABELS: Record<string, string> = {
-  OUI: "Oui, recrute",
-  NON: "Pas de recrutement",
-  PROCHAINEMENT: "Prochainement",
-};
+import { modifierProfilAdmin } from "./actions";
+import { televerserLogoAdmin, supprimerLogoAdmin } from "./logo-actions";
+import { ProfilForm } from "@/app/exposant/profil/profil-form";
+import { LogoUpload } from "@/app/exposant/profil/logo-upload";
 
 const STATUT_CONFIG = {
   BROUILLON: { label: "Brouillon", classes: "bg-neutral-100 text-neutral-700" },
@@ -172,135 +143,26 @@ export default async function AdminExposantDetailPage({
           <SupprimerForm exposantId={exposant.id} raisonSociale={exposant.raisonSociale} />
         </div>
 
-        {/* Contenu du profil */}
-        <div className="space-y-8">
-          <ProfilSection title="Identité">
-            <Row label="SIRET" value={exposant.siret} />
-            <Row label="Adresse" value={exposant.adresse} />
-            <Row label="Site web" value={exposant.siteWeb} link />
-            <Row label="Référent stand" value={exposant.nomContact} />
-            <Row label="Contact" value={
-              [exposant.fonctionContact, exposant.telephoneContact]
-                .filter(Boolean).join(" · ") || null
-            } />
-          </ProfilSection>
-
-          <ProfilSection title="Secteurs">
-            <Chips
-              values={[
-                ...exposant.secteurs.map(
-                  (c) => SECTEUR_LABELS[c as SecteurCode] ?? c
-                ),
-                ...(exposant.secteurAutre ? [exposant.secteurAutre] : []),
-              ]}
+        {/* Édition libre du profil (admin) — aucun verrouillage par statut */}
+        <div className="border-t border-neutral-100 pt-8">
+          <p className="text-xs text-neutral-500 mb-4">
+            En tant qu'administrateur, vous pouvez modifier tous les champs
+            ci-dessous, quel que soit le statut de la fiche. Le statut lui-même
+            se change via les actions plus haut (valider, refuser, remettre en
+            attente).
+          </p>
+          <div className="mb-8">
+            <LogoUpload
+              initialLogoUrl={exposant.logoUrl}
+              disabled={false}
+              exposantId={exposant.id}
+              uploadAction={televerserLogoAdmin}
+              deleteAction={supprimerLogoAdmin}
             />
-          </ProfilSection>
-
-          <ProfilSection title="Description">
-            <p className="text-sm text-neutral-900 leading-relaxed whitespace-pre-wrap">
-              {exposant.description || <span className="italic text-neutral-500">Non renseignée</span>}
-            </p>
-          </ProfilSection>
-
-          <ProfilSection title="Offres aux visiteurs">
-            <Chips values={exposant.offres.map((o) => OFFRE_LABELS[o])} />
-            {exposant.typesOpportunites.length > 0 && (
-              <div className="mt-3">
-                <p className="text-xs text-neutral-700 mb-1.5">Types d'opportunités :</p>
-                <Chips values={exposant.typesOpportunites.map((o) => OPPORTUNITE_LABELS[o])} small />
-              </div>
-            )}
-          </ProfilSection>
-
-          <ProfilSection title="Stand">
-            <Chips
-              values={exposant.elementsStand.map(
-                (c) => ELEMENT_STAND_LABELS[c as ElementStandCode] ?? c
-              )}
-            />
-            {exposant.elementsStandAutre && (
-              <p className="mt-2 text-sm text-neutral-700">+ {exposant.elementsStandAutre}</p>
-            )}
-          </ProfilSection>
-
-          {exposant.animations.length > 0 && (
-            <ProfilSection title="Animations">
-              <Chips
-                values={exposant.animations.map(
-                  (c) => ANIMATION_LABELS[c as AnimationCode] ?? c
-                )}
-              />
-            </ProfilSection>
-          )}
-
-          {exposant.innovationMiseEnAvant && (
-            <ProfilSection title="Innovation mise en avant">
-              <p className="text-sm text-neutral-900 leading-relaxed">
-                {exposant.descriptionInnovation}
-              </p>
-            </ProfilSection>
-          )}
-
-          <ProfilSection title="Recrutement & consentement">
-            <Row
-              label="Recrutement"
-              value={STATUT_RECRUTEMENT_LABELS[exposant.statutRecrutement] ?? exposant.statutRecrutement}
-            />
-            <Row
-              label="Consentement communication"
-              value={exposant.consentementCommunication ? "✓ Oui" : "✗ Non"}
-            />
-          </ProfilSection>
-
-          <ProfilSection title="Capacité d'accueil">
-            <Row label="Ressources matin" value={String(exposant.ressourcesMatin)} />
-            <Row label="Ressources après-midi" value={String(exposant.ressourcesApresMidi)} />
-            <Row label="Quota groupes / créneau" value={String(exposant.quotaGroupesMatinParCreneau)} />
-            <Row label="Quota groupes / matinée" value={String(exposant.quotaGroupesMatinTotal)} />
-          </ProfilSection>
+          </div>
+          <ProfilForm exposant={exposant} saveAction={modifierProfilAdmin} adminMode />
         </div>
       </main>
     </>
-  );
-}
-
-function ProfilSection({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section className="border-t border-neutral-100 pt-6">
-      <h2 className="text-sm font-bold uppercase tracking-wider text-neutral-500 mb-3">{title}</h2>
-      <div className="space-y-2">{children}</div>
-    </section>
-  );
-}
-
-function Row({ label, value, link }: { label: string; value: string | null | undefined; link?: boolean }) {
-  if (!value) return null;
-  return (
-    <div className="flex gap-3 text-sm">
-      <span className="text-neutral-500 w-44 shrink-0">{label}</span>
-      {link ? (
-        <a href={value} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline underline-offset-2 break-all">
-          {value}
-        </a>
-      ) : (
-        <span className="text-neutral-900">{value}</span>
-      )}
-    </div>
-  );
-}
-
-function Chips({ values, small }: { values: string[]; small?: boolean }) {
-  if (!values.length) return <span className="text-sm italic text-neutral-500">Non renseigné</span>;
-  return (
-    <div className="flex flex-wrap gap-1.5">
-      {values.map((v) => (
-        <span
-          key={v}
-          className={`bg-neutral-100 text-neutral-700 rounded-full font-medium ${small ? "text-xs px-2 py-0.5" : "text-sm px-3 py-1"}`}
-        >
-          {v}
-        </span>
-      ))}
-    </div>
   );
 }
