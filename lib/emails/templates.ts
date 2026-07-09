@@ -6,7 +6,9 @@
 export type EmailTemplate =
   | "invitation-exposant-admin"
   | "invitation-admin"
+  | "invitation-partenaire"
   | "reset-mdp-admin"
+  | "reset-mdp-partenaire"
   | "confirmation-inscription-exposant"
   | "exposant-valide"
   | "exposant-refuse"
@@ -31,7 +33,16 @@ interface TemplateData {
     lienActivation: string;
     invitePar: string;
   };
+  "invitation-partenaire": {
+    nomInvite: string;
+    lienActivation: string;
+    invitePar: string;
+  };
   "reset-mdp-admin": {
+    nomUtilisateur: string;
+    lienReset: string;
+  };
+  "reset-mdp-partenaire": {
     nomUtilisateur: string;
     lienReset: string;
   };
@@ -116,6 +127,40 @@ export function renderEmail<K extends EmailTemplate>(
         html: baseLayout(`
           <p>Bonjour ${d.nomUtilisateur},</p>
           <p>Vous avez demandé à réinitialiser votre mot de passe administrateur MIVL Connect.</p>
+          <p style="margin: 32px 0;">
+            <a href="${d.lienReset}" style="background: #1B4DB5; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">Choisir un nouveau mot de passe</a>
+          </p>
+          <p style="font-size: 14px; color: #6B7280;">Ce lien est valable 7 jours et ne peut être utilisé qu'une seule fois.</p>
+          <p style="font-size: 14px; color: #6B7280;">Si vous n'êtes pas à l'origine de cette demande, ignorez simplement ce mail : votre mot de passe actuel reste inchangé.</p>
+        `),
+        text: `Réinitialisez votre mot de passe MIVL Connect : ${d.lienReset} (valable 7 jours).`,
+      };
+    }
+    case "invitation-partenaire": {
+      const d = data as TemplateData["invitation-partenaire"];
+      return {
+        subject: `Invitation : votre accès partenaire MIVL Connect`,
+        html: baseLayout(`
+          <p>Bonjour ${d.nomInvite},</p>
+          <p>${d.invitePar} vous invite à accéder à la plateforme <strong>MIVL Connect</strong> (salon Made In Val de Loire 2026) en tant que <strong>partenaire</strong>.</p>
+          <p>À ce titre, vous pourrez consulter à tout moment la liste des entreprises exposantes inscrites au salon.</p>
+          <p style="margin: 32px 0;">
+            <a href="${d.lienActivation}" style="background: #1B4DB5; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">Activer mon compte</a>
+          </p>
+          <p style="font-size: 14px; color: #6B7280;">Ce lien est valable 7 jours. Il vous permettra de choisir votre mot de passe.</p>
+          <p>Si vous n'attendiez pas cette invitation, ignorez simplement ce mail.</p>
+          <p>À bientôt,<br>L'équipe MIVL</p>
+        `),
+        text: `${d.invitePar} vous invite comme partenaire sur MIVL Connect. Activez votre compte : ${d.lienActivation} (lien valable 7 jours).`,
+      };
+    }
+    case "reset-mdp-partenaire": {
+      const d = data as TemplateData["reset-mdp-partenaire"];
+      return {
+        subject: "Réinitialisation de votre mot de passe — MIVL Connect",
+        html: baseLayout(`
+          <p>Bonjour ${d.nomUtilisateur},</p>
+          <p>Vous avez demandé à réinitialiser votre mot de passe partenaire MIVL Connect.</p>
           <p style="margin: 32px 0;">
             <a href="${d.lienReset}" style="background: #1B4DB5; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">Choisir un nouveau mot de passe</a>
           </p>

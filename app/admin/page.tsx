@@ -138,11 +138,16 @@ export default async function AdminDashboard() {
             title="Configuration"
             description="Ouvrir ou planifier les réservations RDV pour les enseignants, jeunes et demandeurs d'emploi."
           />
+          <ActionCard
+            href="/admin/partenaires"
+            title="Gérer les partenaires"
+            description="Inviter des comptes partenaires en lecture seule sur la liste des entreprises exposantes."
+          />
           {session.user.role === "SUPER_ADMIN" && (
             <ActionCard
               href="/admin/utilisateurs"
               title="Gérer les administrateurs"
-              description="Inviter, modifier ou retirer les administrateurs CCI et partenaires."
+              description="Inviter, modifier ou retirer les administrateurs CCI."
             />
           )}
         </div>

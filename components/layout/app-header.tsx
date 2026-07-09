@@ -10,6 +10,8 @@ const ROLE_LABELS: Record<string, string> = {
   ENSEIGNANT: "Enseignant",
   JEUNE: "Jeune / Diplômé",
   DEMANDEUR_EMPLOI: "Demandeur d'emploi",
+  VISITEUR: "Visiteur",
+  PARTENAIRE: "Partenaire",
 };
 
 export function AppHeader({ session }: { session: Session }) {

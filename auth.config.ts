@@ -49,6 +49,7 @@ export const authConfig = {
         return role === "JEUNE" || role === "DEMANDEUR_EMPLOI";
       }
       if (path.startsWith("/espace-visiteur")) return role === "VISITEUR";
+      if (path.startsWith("/partenaire")) return role === "PARTENAIRE";
 
       return true;
     },

@@ -23,6 +23,7 @@ enum Role {
   JEUNE
   DEMANDEUR_EMPLOI
   VISITEUR
+  PARTENAIRE
 }
 
 enum StatutExposant {

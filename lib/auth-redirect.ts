@@ -15,6 +15,8 @@ export function homePathForRole(role: Role): string {
       return "/visiteur";
     case "VISITEUR":
       return "/espace-visiteur";
+    case "PARTENAIRE":
+      return "/partenaire";
     default: {
       const _exhaustive: never = role;
       void _exhaustive;

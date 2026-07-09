@@ -42,6 +42,8 @@ async function connexionAction(formData: FormData) {
 const OK_MESSAGES: Record<string, string> = {
   "compte-cree":
     "Votre compte a été créé. Connectez-vous avec votre email et votre mot de passe.",
+  "compte-active":
+    "Votre compte est activé. Connectez-vous avec votre email et votre mot de passe.",
   "mot-de-passe-mis-a-jour":
     "Mot de passe mis à jour. Connectez-vous avec votre nouveau mot de passe.",
 };
