@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import type { TypeOffre } from "@prisma/client";
 import { SECTEURS, SECTEUR_LABELS, type SecteurCode } from "@/lib/referentiel/secteurs";
@@ -185,6 +186,8 @@ export function ExposantsGrid({ exposants }: { exposants: ExposantPublic[] }) {
 }
 
 function ExposantCard({ exposant }: { exposant: ExposantPublic }) {
+  const router = useRouter();
+  const href = `/exposants/${exposant.id}`;
   const dept = departementFromCodePostal(exposant.codePostal);
   const secteurLabels = [
     ...exposant.secteurs.map((code) => SECTEUR_LABELS[code as SecteurCode] ?? code),
@@ -193,7 +196,16 @@ function ExposantCard({ exposant }: { exposant: ExposantPublic }) {
 
   return (
     <article
-      className={`bg-white rounded-xl border p-5 flex flex-col transition-all hover:border-primary/40 hover:shadow-md ${
+      role="link"
+      tabIndex={0}
+      onClick={() => router.push(href)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          router.push(href);
+        }
+      }}
+      className={`bg-white rounded-xl border p-5 flex flex-col transition-all cursor-pointer hover:border-primary/40 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${
         exposant.estPartenaire
           ? "border-accent/60 ring-1 ring-accent/30"
           : "border-neutral-100"
@@ -270,6 +282,7 @@ function ExposantCard({ exposant }: { exposant: ExposantPublic }) {
             href={exposant.siteWeb}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
             className="shrink-0 text-xs text-primary hover:underline underline-offset-2 font-medium"
           >
             Site →
