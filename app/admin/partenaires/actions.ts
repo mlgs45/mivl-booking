@@ -29,6 +29,7 @@ export type CreerPartenaireState = {
 
 const creerSchema = z.object({
   email: z.string().trim().toLowerCase().email("Adresse email invalide."),
+  nomOrganisation: z.string().trim().min(2, "Nom du partenaire trop court.").max(120),
   prenom: z.string().trim().min(2, "Prénom trop court.").max(60),
   nom: z.string().trim().min(2, "Nom trop court.").max(60),
 });
@@ -41,6 +42,7 @@ export async function creerPartenaire(
 
   const parsed = creerSchema.safeParse({
     email: formData.get("email"),
+    nomOrganisation: formData.get("nomOrganisation"),
     prenom: formData.get("prenom"),
     nom: formData.get("nom"),
   });
@@ -52,8 +54,7 @@ export async function creerPartenaire(
     };
   }
 
-  const { email, prenom, nom: nomFamille } = parsed.data;
-  const nom = `${prenom} ${nomFamille}`;
+  const { email, nomOrganisation, prenom, nom } = parsed.data;
 
   const existing = await db.user.findUnique({
     where: { email },
@@ -70,10 +71,17 @@ export async function creerPartenaire(
   const user = await db.user.create({
     data: {
       email,
-      name: nom,
+      name: nomOrganisation,
       role: "PARTENAIRE",
       emailVerified: null,
       hashedPassword: null,
+      partenaire: {
+        create: {
+          nomOrganisation,
+          prenomContact: prenom,
+          nomContact: nom,
+        },
+      },
     },
   });
 
@@ -96,7 +104,8 @@ export async function creerPartenaire(
     to: email,
     template: "invitation-partenaire",
     data: {
-      nomInvite: nom,
+      nomInvite: prenom,
+      nomOrganisation,
       lienActivation: `${APP_URL}/definir-mot-de-passe?token=${token}`,
       invitePar: session.user.name ?? "La CCI Centre-Val de Loire",
     },
@@ -113,7 +122,13 @@ export async function renvoyerInvitationPartenaire(userId: string) {
 
   const user = await db.user.findUnique({
     where: { id: userId },
-    select: { email: true, name: true, role: true, hashedPassword: true },
+    select: {
+      email: true,
+      name: true,
+      role: true,
+      hashedPassword: true,
+      partenaire: { select: { nomOrganisation: true, prenomContact: true } },
+    },
   });
   if (!user) redirect("/admin/partenaires?erreur=introuvable");
   if (user.role !== "PARTENAIRE") redirect("/admin/partenaires?erreur=pas-partenaire");
@@ -129,7 +144,8 @@ export async function renvoyerInvitationPartenaire(userId: string) {
     to: user.email,
     template: "invitation-partenaire",
     data: {
-      nomInvite: user.name ?? user.email,
+      nomInvite: user.partenaire?.prenomContact ?? user.name ?? user.email,
+      nomOrganisation: user.partenaire?.nomOrganisation ?? user.name ?? user.email,
       lienActivation: `${APP_URL}/definir-mot-de-passe?token=${token}`,
       invitePar: session.user.name ?? "La CCI Centre-Val de Loire",
     },
@@ -146,7 +162,12 @@ export async function declencherResetPartenaire(userId: string) {
 
   const user = await db.user.findUnique({
     where: { id: userId },
-    select: { email: true, name: true, role: true },
+    select: {
+      email: true,
+      name: true,
+      role: true,
+      partenaire: { select: { prenomContact: true } },
+    },
   });
   if (!user) redirect("/admin/partenaires?erreur=introuvable");
   if (user.role !== "PARTENAIRE") redirect("/admin/partenaires?erreur=pas-partenaire");
@@ -161,7 +182,7 @@ export async function declencherResetPartenaire(userId: string) {
     to: user.email,
     template: "reset-mdp-partenaire",
     data: {
-      nomUtilisateur: user.name ?? user.email,
+      nomUtilisateur: user.partenaire?.prenomContact ?? user.name ?? user.email,
       lienReset: `${APP_URL}/definir-mot-de-passe?token=${token}`,
     },
   });

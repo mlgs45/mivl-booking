@@ -137,6 +137,7 @@ model User {
   jeune           Jeune?
   demandeurEmploi DemandeurEmploi?
   visiteur        Visiteur?
+  partenaire      Partenaire?
 
   auditLogs    AuditLog[]
   adminTokens  AdminToken[]
@@ -400,6 +401,22 @@ model Visiteur {
   exposantsFavoris  String[]
 
   @@index([createdAt])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PARTENAIRE (compte créé par un admin, lecture seule sur les exposants)
+// ═══════════════════════════════════════════════════════════════════════════
+
+model Partenaire {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  nomOrganisation String
+  prenomContact   String
+  nomContact      String
+
+  createdAt       DateTime @default(now())
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

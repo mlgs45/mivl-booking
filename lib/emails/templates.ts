@@ -35,6 +35,7 @@ interface TemplateData {
   };
   "invitation-partenaire": {
     nomInvite: string;
+    nomOrganisation: string;
     lienActivation: string;
     invitePar: string;
   };
@@ -142,7 +143,7 @@ export function renderEmail<K extends EmailTemplate>(
         subject: `Invitation : votre accès partenaire MIVL Connect`,
         html: baseLayout(`
           <p>Bonjour ${d.nomInvite},</p>
-          <p>${d.invitePar} vous invite à accéder à la plateforme <strong>MIVL Connect</strong> (salon Made In Val de Loire 2026) en tant que <strong>partenaire</strong>.</p>
+          <p>${d.invitePar} vous invite à accéder à la plateforme <strong>MIVL Connect</strong> (salon Made In Val de Loire 2026) en tant que <strong>partenaire</strong>, pour le compte de <strong>${d.nomOrganisation}</strong>.</p>
           <p>À ce titre, vous pourrez consulter à tout moment la liste des entreprises exposantes inscrites au salon.</p>
           <p style="margin: 32px 0;">
             <a href="${d.lienActivation}" style="background: #1B4DB5; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">Activer mon compte</a>
@@ -151,7 +152,7 @@ export function renderEmail<K extends EmailTemplate>(
           <p>Si vous n'attendiez pas cette invitation, ignorez simplement ce mail.</p>
           <p>À bientôt,<br>L'équipe MIVL</p>
         `),
-        text: `${d.invitePar} vous invite comme partenaire sur MIVL Connect. Activez votre compte : ${d.lienActivation} (lien valable 7 jours).`,
+        text: `${d.invitePar} vous invite comme partenaire (${d.nomOrganisation}) sur MIVL Connect. Activez votre compte : ${d.lienActivation} (lien valable 7 jours).`,
       };
     }
     case "reset-mdp-partenaire": {

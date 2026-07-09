@@ -18,13 +18,32 @@ export function CreerPartenaireForm() {
         </div>
       )}
 
+      <div>
+        <label
+          htmlFor="nomOrganisation"
+          className="block text-sm font-medium text-neutral-900 mb-2"
+        >
+          Nom du partenaire
+        </label>
+        <input
+          id="nomOrganisation"
+          name="nomOrganisation"
+          type="text"
+          required
+          minLength={2}
+          maxLength={120}
+          placeholder="Ex. Région Centre-Val de Loire"
+          className="w-full px-4 py-3 rounded-lg border border-neutral-100 bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+        />
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label
             htmlFor="prenom"
             className="block text-sm font-medium text-neutral-900 mb-2"
           >
-            Prénom
+            Prénom du contact
           </label>
           <input
             id="prenom"
@@ -42,7 +61,7 @@ export function CreerPartenaireForm() {
             htmlFor="nom"
             className="block text-sm font-medium text-neutral-900 mb-2"
           >
-            Nom
+            Nom du contact
           </label>
           <input
             id="nom"

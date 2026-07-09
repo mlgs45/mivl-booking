@@ -45,6 +45,7 @@ export default async function AdminPartenairesPage({
       name: true,
       emailVerified: true,
       createdAt: true,
+      partenaire: { select: { nomOrganisation: true, prenomContact: true, nomContact: true } },
       adminTokens: {
         where: { type: "INVITATION", usedAt: null },
         orderBy: { createdAt: "desc" },
@@ -101,7 +102,8 @@ export default async function AdminPartenairesPage({
           <table className="w-full text-sm">
             <thead className="bg-neutral-50 border-b border-neutral-100">
               <tr className="text-left text-xs uppercase tracking-wider text-neutral-500">
-                <th className="px-4 py-3 font-semibold">Nom / Email</th>
+                <th className="px-4 py-3 font-semibold">Partenaire</th>
+                <th className="px-4 py-3 font-semibold">Contact</th>
                 <th className="px-4 py-3 font-semibold">Statut</th>
                 <th className="px-4 py-3 font-semibold text-right">Actions</th>
               </tr>
@@ -109,7 +111,7 @@ export default async function AdminPartenairesPage({
             <tbody>
               {partenaires.length === 0 && (
                 <tr>
-                  <td colSpan={3} className="px-4 py-8 text-center text-neutral-500">
+                  <td colSpan={4} className="px-4 py-8 text-center text-neutral-500">
                     Aucun partenaire pour le moment.
                   </td>
                 </tr>
@@ -126,8 +128,15 @@ export default async function AdminPartenairesPage({
                 return (
                   <tr key={p.id} className="border-b border-neutral-100 last:border-0">
                     <td className="px-4 py-3">
-                      <div className="font-medium text-neutral-900">{p.name ?? "—"}</div>
+                      <div className="font-medium text-neutral-900">
+                        {p.partenaire?.nomOrganisation ?? p.name ?? "—"}
+                      </div>
                       <div className="text-xs text-neutral-700">{p.email}</div>
+                    </td>
+                    <td className="px-4 py-3 text-neutral-700">
+                      {p.partenaire
+                        ? `${p.partenaire.prenomContact} ${p.partenaire.nomContact}`
+                        : "—"}
                     </td>
                     <td className="px-4 py-3">
                       {active ? (
