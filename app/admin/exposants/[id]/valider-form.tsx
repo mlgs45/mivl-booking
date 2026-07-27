@@ -4,7 +4,14 @@ import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { validerExposant, type AdminActionState } from "./actions";
 
-export function ValiderForm({ exposantId }: { exposantId: string }) {
+export function ValiderForm({
+  exposantId,
+  label = "✓ Valider la participation",
+}: {
+  exposantId: string;
+  /** Personnalisé pour le repêchage depuis la liste d'attente. */
+  label?: string;
+}) {
   const [, action] = useActionState<AdminActionState, FormData>(
     validerExposant,
     { ok: false },
@@ -13,12 +20,12 @@ export function ValiderForm({ exposantId }: { exposantId: string }) {
   return (
     <form action={action}>
       <input type="hidden" name="exposantId" value={exposantId} />
-      <SubmitValider />
+      <SubmitValider label={label} />
     </form>
   );
 }
 
-function SubmitValider() {
+function SubmitValider({ label }: { label: string }) {
   const { pending } = useFormStatus();
   return (
     <button
@@ -26,7 +33,7 @@ function SubmitValider() {
       disabled={pending}
       className="w-full sm:w-auto bg-success hover:bg-success/90 text-white font-semibold px-5 py-2.5 rounded-lg transition-colors disabled:opacity-60"
     >
-      {pending ? "Validation…" : "✓ Valider la participation"}
+      {pending ? "Validation…" : label}
     </button>
   );
 }

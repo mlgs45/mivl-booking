@@ -14,9 +14,16 @@ const STATUT_CONFIG: Record<StatutExposant, { label: string; dot: string }> = {
   SOUMIS: { label: "En cours de validation", dot: "bg-primary" },
   VALIDE: { label: "Validé", dot: "bg-success" },
   REFUSE: { label: "Refusé", dot: "bg-danger" },
+  LISTE_ATTENTE: { label: "Liste d'attente", dot: "bg-accent" },
 };
 
-const STATUT_ORDER: StatutExposant[] = ["VALIDE", "SOUMIS", "BROUILLON", "REFUSE"];
+const STATUT_ORDER: StatutExposant[] = [
+  "VALIDE",
+  "SOUMIS",
+  "LISTE_ATTENTE",
+  "BROUILLON",
+  "REFUSE",
+];
 
 export default async function PartenairePage({
   searchParams,

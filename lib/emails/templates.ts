@@ -12,6 +12,7 @@ export type EmailTemplate =
   | "confirmation-inscription-exposant"
   | "exposant-valide"
   | "exposant-refuse"
+  | "exposant-liste-attente"
   | "confirmation-inscription-enseignant"
   | "enseignant-valide"
   | "enseignant-refuse"
@@ -50,6 +51,7 @@ interface TemplateData {
   "confirmation-inscription-exposant": { raisonSociale: string };
   "exposant-valide": { raisonSociale: string; appUrl: string };
   "exposant-refuse": { raisonSociale: string; motif: string };
+  "exposant-liste-attente": { raisonSociale: string; message: string | null };
   "confirmation-inscription-enseignant": { prenom: string; etablissement: string };
   "enseignant-valide": { prenom: string; appUrl: string };
   "enseignant-refuse": { prenom: string; motif: string };
@@ -236,6 +238,29 @@ export function renderEmail<K extends EmailTemplate>(
           <p>Cordialement,<br>L'équipe MIVL</p>
         `),
         text: `Candidature non retenue pour cette édition. Motif : ${d.motif}`,
+      };
+    }
+    case "exposant-liste-attente": {
+      const d = data as TemplateData["exposant-liste-attente"];
+      return {
+        subject: "Votre candidature est placée en liste d'attente — MIVL Connect",
+        html: baseLayout(`
+          <p>Bonjour,</p>
+          <p>Nous vous remercions pour la candidature de <strong>${d.raisonSociale}</strong> au salon Made In Val de Loire 2026.</p>
+          <p>Votre dossier a retenu toute notre attention. Cependant, le salon compte <strong>120 stands</strong> et l'ensemble des emplacements est aujourd'hui attribué : nous ne pouvons donc pas confirmer votre participation à ce stade.</p>
+          <p>Votre candidature est <strong>placée en liste d'attente</strong>. En cas de désistement d'un exposant d'ici au salon, nous reviendrons vers vous en priorité pour vous proposer l'emplacement libéré.</p>
+          <p>Vous n'avez aucune démarche à effectuer : votre dossier reste enregistré sur MIVL Connect et vous serez informé par email dès qu'une place se libère.</p>
+          ${d.message ? `<p style="border-left: 3px solid #E9EDF2; padding-left: 14px; color: #4B5563;">${d.message}</p>` : ""}
+          <p>Pour toute question, n'hésitez pas à nous contacter par retour d'email.</p>
+          <p>Cordialement,<br>L'équipe MIVL</p>
+        `),
+        text: [
+          `Candidature de ${d.raisonSociale} placée en liste d'attente : les 120 stands du salon Made In Val de Loire 2026 sont tous attribués.`,
+          "En cas de désistement, nous reviendrons vers vous en priorité. Aucune démarche de votre part n'est nécessaire.",
+          d.message ?? "",
+        ]
+          .filter(Boolean)
+          .join("\n\n"),
       };
     }
     case "confirmation-inscription-enseignant": {

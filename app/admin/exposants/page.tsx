@@ -32,14 +32,31 @@ const STATUT_CONFIG: Record<
     dot: "bg-danger",
     row: "",
   },
+  LISTE_ATTENTE: {
+    label: "Liste d'attente",
+    dot: "bg-accent",
+    row: "",
+  },
 };
 
-const STATUT_ORDER: StatutExposant[] = ["SOUMIS", "BROUILLON", "REFUSE", "VALIDE"];
+const STATUT_ORDER: StatutExposant[] = [
+  "SOUMIS",
+  "LISTE_ATTENTE",
+  "BROUILLON",
+  "REFUSE",
+  "VALIDE",
+];
 
 export default async function AdminExposantsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ valide?: string; refuse?: string; supprime?: string; statut?: string }>;
+  searchParams: Promise<{
+    valide?: string;
+    refuse?: string;
+    attente?: string;
+    supprime?: string;
+    statut?: string;
+  }>;
 }) {
   const session = await auth();
   if (!session?.user) return null;
@@ -121,6 +138,11 @@ export default async function AdminExposantsPage({
         {params.refuse && (
           <div className="mb-4 rounded-lg border border-danger/30 bg-danger/10 text-danger p-3 text-sm">
             ✗ <strong>{params.refuse}</strong> refusé — email envoyé.
+          </div>
+        )}
+        {params.attente && (
+          <div className="mb-4 rounded-lg border border-accent bg-accent/15 text-neutral-900 p-3 text-sm">
+            ⏳ <strong>{params.attente}</strong> placé en liste d&apos;attente — email envoyé.
           </div>
         )}
         {params.supprime && (

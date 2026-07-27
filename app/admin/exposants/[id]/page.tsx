@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { AppHeader } from "@/components/layout/app-header";
 import { RefuserForm } from "./refuser-form";
 import { ValiderForm } from "./valider-form";
+import { ListeAttenteForm } from "./liste-attente-form";
 import { AttribuerStandForm } from "./attribuer-stand-form";
 import { PartenaireToggle } from "./partenaire-toggle";
 import { SupprimerForm } from "./supprimer-form";
@@ -20,6 +21,7 @@ const STATUT_CONFIG = {
   SOUMIS: { label: "En attente", classes: "bg-primary/10 text-primary" },
   VALIDE: { label: "Validé", classes: "bg-success/10 text-success" },
   REFUSE: { label: "Refusé", classes: "bg-danger/10 text-danger" },
+  LISTE_ATTENTE: { label: "Liste d'attente", classes: "bg-accent/30 text-neutral-900" },
 };
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
@@ -97,7 +99,35 @@ export default async function AdminExposantDetailPage({
             </h2>
             <div className="flex flex-col sm:flex-row gap-3">
               <ValiderForm exposantId={exposant.id} />
+              <ListeAttenteForm exposantId={exposant.id} />
               <RefuserForm exposantId={exposant.id} />
+            </div>
+          </div>
+        )}
+
+        {exposant.statut === "LISTE_ATTENTE" && (
+          <div className="mb-8 rounded-xl border border-accent bg-accent/10 p-5">
+            <h2 className="font-heading font-semibold text-neutral-900 mb-1">
+              En liste d&apos;attente
+              {exposant.listeAttenteA
+                ? ` depuis le ${new Date(exposant.listeAttenteA).toLocaleDateString("fr-FR")}`
+                : ""}
+            </h2>
+            <p className="text-sm text-neutral-700 mb-4">
+              Candidature recevable mais sans stand disponible. En cas de
+              désistement, validez-la directement : l&apos;exposant recevra
+              l&apos;email de confirmation habituel.
+            </p>
+            {exposant.messageListeAttente && (
+              <p className="text-sm text-neutral-900 mb-4 border-l-2 border-neutral-200 pl-3">
+                <span className="font-semibold">Message envoyé : </span>
+                {exposant.messageListeAttente}
+              </p>
+            )}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <ValiderForm exposantId={exposant.id} label="✓ Repêcher et valider" />
+              <RefuserForm exposantId={exposant.id} />
+              <RemettreEnAttenteForm exposantId={exposant.id} />
             </div>
           </div>
         )}

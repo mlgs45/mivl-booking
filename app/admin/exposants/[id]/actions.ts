@@ -234,8 +234,13 @@ export async function validerExposant(
     select: { id: true, statut: true, raisonSociale: true, user: { select: { email: true } } },
   });
   if (!exposant) return { ok: false, message: "Exposant introuvable." };
-  if (exposant.statut !== "SOUMIS") {
-    return { ok: false, message: "Seuls les profils en statut SOUMIS peuvent être validés." };
+  // La liste d'attente est validable directement : c'est le repêchage après
+  // désistement, sans repasser par SOUMIS.
+  if (exposant.statut !== "SOUMIS" && exposant.statut !== "LISTE_ATTENTE") {
+    return {
+      ok: false,
+      message: "Seuls les profils en attente de décision ou en liste d'attente peuvent être validés.",
+    };
   }
 
   await db.exposant.update({
@@ -245,6 +250,8 @@ export async function validerExposant(
       valideParId: session.user.id,
       valideA: new Date(),
       motifRefus: null,
+      listeAttenteA: null,
+      messageListeAttente: null,
     },
   });
 
@@ -295,13 +302,21 @@ export async function refuserExposant(
     select: { id: true, statut: true, raisonSociale: true, user: { select: { email: true } } },
   });
   if (!exposant) return { ok: false, message: "Exposant introuvable." };
-  if (exposant.statut !== "SOUMIS") {
-    return { ok: false, message: "Seuls les profils en statut SOUMIS peuvent être refusés." };
+  if (exposant.statut !== "SOUMIS" && exposant.statut !== "LISTE_ATTENTE") {
+    return {
+      ok: false,
+      message: "Seuls les profils en attente de décision ou en liste d'attente peuvent être refusés.",
+    };
   }
 
   await db.exposant.update({
     where: { id: exposantId },
-    data: { statut: "REFUSE", motifRefus },
+    data: {
+      statut: "REFUSE",
+      motifRefus,
+      listeAttenteA: null,
+      messageListeAttente: null,
+    },
   });
 
   await db.auditLog.create({
@@ -323,6 +338,82 @@ export async function refuserExposant(
   revalidatePath("/admin/exposants");
   revalidatePath(`/admin/exposants/${exposantId}`);
   redirect(`/admin/exposants?refuse=${encodeURIComponent(exposant.raisonSociale)}`);
+}
+
+/**
+ * Mise en liste d'attente — le salon plafonne à 120 stands. La candidature
+ * reste recevable : elle n'est ni validée ni refusée, et pourra être repêchée
+ * en VALIDE si un exposant se désiste (cf. validerExposant, qui accepte
+ * LISTE_ATTENTE en entrée).
+ */
+export async function mettreEnListeAttente(
+  _prev: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  const session = await getAdminSession();
+  if (!session?.user) return { ok: false, message: "Non autorisé." };
+
+  const parsed = z.object({
+    exposantId: z.string().min(1),
+    message: z
+      .string()
+      .trim()
+      .max(1000)
+      .optional()
+      .transform((v) => (v && v.length > 0 ? v : null)),
+  }).safeParse({
+    exposantId: formData.get("exposantId"),
+    message: formData.get("message") ?? undefined,
+  });
+
+  if (!parsed.success) {
+    return { ok: false, message: parsed.error.issues[0]?.message ?? "Données invalides." };
+  }
+
+  const { exposantId, message } = parsed.data;
+
+  const exposant = await db.exposant.findUnique({
+    where: { id: exposantId },
+    select: { id: true, statut: true, raisonSociale: true, user: { select: { email: true } } },
+  });
+  if (!exposant) return { ok: false, message: "Exposant introuvable." };
+  if (exposant.statut !== "SOUMIS") {
+    return {
+      ok: false,
+      message: "Seuls les profils en statut SOUMIS peuvent être mis en liste d'attente.",
+    };
+  }
+
+  await db.exposant.update({
+    where: { id: exposantId },
+    data: {
+      statut: "LISTE_ATTENTE",
+      listeAttenteA: new Date(),
+      messageListeAttente: message,
+      motifRefus: null,
+    },
+  });
+
+  await db.auditLog.create({
+    data: {
+      userId: session.user.id,
+      action: "exposant.liste_attente",
+      entite: "Exposant",
+      entiteId: exposantId,
+      payload: { message },
+    },
+  });
+
+  await sendEmail({
+    to: exposant.user.email,
+    template: "exposant-liste-attente",
+    data: { raisonSociale: exposant.raisonSociale, message },
+  });
+
+  revalidatePath("/admin/exposants");
+  revalidatePath(`/admin/exposants/${exposantId}`);
+  revalidatePath("/exposant");
+  redirect(`/admin/exposants?attente=${encodeURIComponent(exposant.raisonSociale)}`);
 }
 
 const standSchema = z.object({
@@ -444,8 +535,11 @@ export async function remettreEnAttente(
     select: { id: true, statut: true, raisonSociale: true },
   });
   if (!exposant) return { ok: false, message: "Exposant introuvable." };
-  if (exposant.statut !== "VALIDE") {
-    return { ok: false, message: "Seuls les exposants validés peuvent être remis en attente." };
+  if (exposant.statut !== "VALIDE" && exposant.statut !== "LISTE_ATTENTE") {
+    return {
+      ok: false,
+      message: "Seuls les exposants validés ou en liste d'attente peuvent être remis en attente.",
+    };
   }
 
   await db.exposant.update({
@@ -454,6 +548,8 @@ export async function remettreEnAttente(
       statut: "SOUMIS",
       valideParId: null,
       valideA: null,
+      listeAttenteA: null,
+      messageListeAttente: null,
     },
   });
 

@@ -26,6 +26,7 @@ export default async function AdminDashboard() {
 
   const soumisCount = byStatut.SOUMIS ?? 0;
   const valideCount = byStatut.VALIDE ?? 0;
+  const listeAttenteCount = byStatut.LISTE_ATTENTE ?? 0;
   const totalExposants = exposantStats.reduce((sum, s) => sum + s._count._all, 0);
   const enseignantsSoumis = byStatutEnseignant.SOUMIS ?? 0;
   const enseignantsValides = byStatutEnseignant.VALIDE ?? 0;
@@ -76,10 +77,11 @@ export default async function AdminDashboard() {
 
         {/* Stats exposants */}
         <h2 className="text-sm font-bold uppercase tracking-wider text-neutral-500 mb-3">Exposants</h2>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
           <StatCard label="Total" value={totalExposants} href="/admin/exposants" />
           <StatCard label="Validés" value={valideCount} href="/admin/exposants?statut=VALIDE" accent="success" />
           <StatCard label="À traiter" value={soumisCount} href="/admin/exposants?statut=SOUMIS" accent={soumisCount > 0 ? "primary" : undefined} />
+          <StatCard label="Liste d'attente" value={listeAttenteCount} href="/admin/exposants?statut=LISTE_ATTENTE" />
           <StatCard label="Visiteurs inscrits" value={visiteurCount} href="/admin/visiteurs" />
         </div>
 

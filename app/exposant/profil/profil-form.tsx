@@ -96,13 +96,15 @@ export function ProfilForm({
 
   const errors = submitState.errors ?? saveState.errors ?? {};
   const message = submitState.message ?? saveState.message;
-  // SOUMIS : tout verrouillé (CCI en revue).
+  // SOUMIS / LISTE_ATTENTE : tout verrouillé (dossier entre les mains de la CCI).
   // VALIDE : champs structurels verrouillés (identité, offres, stand…),
   //          champs "cosmétiques" modifiables (description, contact, site web,
   //          logo, innovation desc, statut recrutement).
   // Un admin (adminMode) n'est jamais verrouillé : il peut tout modifier
   // quel que soit le statut de la fiche.
-  const fullLock = !adminMode && exposant.statut === "SOUMIS";
+  const fullLock =
+    !adminMode &&
+    (exposant.statut === "SOUMIS" || exposant.statut === "LISTE_ATTENTE");
   const structuralLock = !adminMode && (fullLock || exposant.statut === "VALIDE");
   const canSubmit =
     !adminMode &&

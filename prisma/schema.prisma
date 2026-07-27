@@ -31,6 +31,10 @@ enum StatutExposant {
   SOUMIS
   VALIDE
   REFUSE
+  /// Candidature recevable mais plus de stand disponible (120 max) — repêchable
+  /// en VALIDE en cas de désistement. Ajouté en fin d'enum : l'ordre de
+  /// déclaration pilote les tris `orderBy: { statut: "asc" }` côté admin.
+  LISTE_ATTENTE
 }
 
 enum StatutEnseignant {
@@ -214,6 +218,11 @@ model Exposant {
   motifRefus                   String?        @db.Text
   valideParId                  String?
   valideA                      DateTime?
+
+  /// Date de mise en liste d'attente — fait foi pour l'ordre de repêchage
+  listeAttenteA                DateTime?
+  /// Message libre facultatif joint à la mise en liste d'attente (repris dans l'email)
+  messageListeAttente          String?        @db.Text
 
   /// Marqueur "Partenaire" (stand plus grand, sponsors, institutionnels). Badge public.
   estPartenaire                Boolean        @default(false)

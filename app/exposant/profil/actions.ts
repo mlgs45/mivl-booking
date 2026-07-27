@@ -33,7 +33,8 @@ async function getCurrentExposant() {
  * Sauvegarde brouillon — tolérante, pas de validation stricte.
  *
  * Statuts :
- * - SOUMIS : tout verrouillé (CCI en cours de revue)
+ * - SOUMIS / LISTE_ATTENTE : tout verrouillé (dossier entre les mains de la
+ *   CCI, qui peut le repêcher tel quel à tout moment)
  * - VALIDE : seuls les champs "cosmétiques" (logo, description, contact, site
  *   web, innovation description, statut recrutement) sont mis à jour — les
  *   champs structurels restent intouchables sans re-validation CCI
@@ -47,10 +48,13 @@ export async function sauvegarderProfil(
   if (!exposant) {
     return { ok: false, message: "Session expirée, reconnectez-vous." };
   }
-  if (exposant.statut === "SOUMIS") {
+  if (exposant.statut === "SOUMIS" || exposant.statut === "LISTE_ATTENTE") {
     return {
       ok: false,
-      message: "Fiche en cours de validation par la CCI, modification impossible pour le moment.",
+      message:
+        exposant.statut === "LISTE_ATTENTE"
+          ? "Votre candidature est en liste d'attente : contactez la CCI pour faire évoluer votre fiche."
+          : "Fiche en cours de validation par la CCI, modification impossible pour le moment.",
     };
   }
 
@@ -133,10 +137,15 @@ export async function soumettreProfil(
   if (!exposant) {
     return { ok: false, message: "Session expirée, reconnectez-vous." };
   }
-  if (exposant.statut === "VALIDE" || exposant.statut === "SOUMIS") {
+  // Liste blanche : seuls BROUILLON et REFUSE (re)soumettent. LISTE_ATTENTE en
+  // est exclu — une resoumission ferait sauter la file d'attente.
+  if (exposant.statut !== "BROUILLON" && exposant.statut !== "REFUSE") {
     return {
       ok: false,
-      message: "Votre profil est déjà en cours de validation ou validé.",
+      message:
+        exposant.statut === "LISTE_ATTENTE"
+          ? "Votre candidature est en liste d'attente : la CCI reviendra vers vous dès qu'un stand se libère."
+          : "Votre profil est déjà en cours de validation ou validé.",
     };
   }
 

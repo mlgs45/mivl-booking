@@ -34,6 +34,12 @@ const STATUT_CONFIG: Record<
     message:
       "Votre candidature n'a pas été retenue. Consultez le motif et, si possible, modifiez votre profil pour resoumettre.",
   },
+  LISTE_ATTENTE: {
+    label: "En liste d'attente",
+    tone: "warning",
+    message:
+      "Les 120 stands du salon sont attribués. Votre candidature est conservée en liste d'attente : en cas de désistement, la CCI vous recontactera en priorité. Aucune démarche de votre part n'est nécessaire.",
+  },
 };
 
 const TONE_CLASSES: Record<"warning" | "info" | "success" | "danger", string> = {
@@ -60,6 +66,7 @@ export default async function ExposantDashboard({
       raisonSociale: true,
       statut: true,
       motifRefus: true,
+      messageListeAttente: true,
       ville: true,
       numStand: true,
       emplacement: true,
@@ -121,6 +128,12 @@ export default async function ExposantDashboard({
               {exposant.motifRefus}
             </div>
           )}
+          {exposant.messageListeAttente && exposant.statut === "LISTE_ATTENTE" && (
+            <div className="mt-3 pt-3 border-t border-current/20 text-sm">
+              <strong className="font-semibold">Message de la CCI : </strong>
+              {exposant.messageListeAttente}
+            </div>
+          )}
         </div>
 
         {(exposant.statut === "BROUILLON" || exposant.statut === "REFUSE") && (
@@ -146,14 +159,15 @@ export default async function ExposantDashboard({
           </div>
         )}
 
-        {exposant.statut === "SOUMIS" && (
+        {(exposant.statut === "SOUMIS" || exposant.statut === "LISTE_ATTENTE") && (
           <div className="rounded-xl border border-neutral-100 bg-neutral-50 p-6">
             <h2 className="font-heading font-bold text-neutral-900 mb-2">
               Consulter mon profil
             </h2>
             <p className="text-sm text-neutral-700 mb-4">
-              Votre profil n'est plus modifiable tant que la CCI ne l'a pas
-              traité. Vous pouvez le relire ci-dessous.
+              {exposant.statut === "LISTE_ATTENTE"
+                ? "Votre fiche reste enregistrée en l'état pendant l'attente. Pour la faire évoluer, contactez la CCI."
+                : "Votre profil n'est plus modifiable tant que la CCI ne l'a pas traité. Vous pouvez le relire ci-dessous."}
             </p>
             <Link
               href="/exposant/profil"

@@ -60,7 +60,8 @@ export default async function ExposantProfilPage() {
     );
   }
 
-  const fullLock = exposant.statut === "SOUMIS";
+  const fullLock =
+    exposant.statut === "SOUMIS" || exposant.statut === "LISTE_ATTENTE";
 
   return (
     <>
@@ -89,6 +90,15 @@ export default async function ExposantProfilPage() {
           <div className="mb-6 rounded-lg border border-primary/30 bg-primary/5 p-4 text-sm text-primary">
             Votre fiche est en cours de validation par la CCI. Vous pourrez
             la modifier à nouveau si elle vous est renvoyée en brouillon.
+          </div>
+        )}
+
+        {exposant.statut === "LISTE_ATTENTE" && (
+          <div className="mb-6 rounded-lg border border-accent bg-accent/15 p-4 text-sm text-neutral-900">
+            Votre candidature est en liste d&apos;attente : les 120 stands du
+            salon sont attribués. Votre fiche est conservée en l&apos;état pour
+            un repêchage immédiat en cas de désistement — contactez la CCI si
+            vous devez la faire modifier.
           </div>
         )}
 
