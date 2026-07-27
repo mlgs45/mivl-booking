@@ -8,7 +8,7 @@ import { db } from "@/lib/db";
 import { sendEmail } from "@/lib/emails";
 import {
   profilExposantDraftSchema,
-  profilExposantSubmitSchema,
+  profilExposantSoumissionAdminSchema,
 } from "@/lib/validation/exposant-profil";
 import {
   extractProfilFromFormData,
@@ -113,31 +113,26 @@ export async function modifierProfilAdmin(
   return { ok: true, message: "Modifications enregistrées." };
 }
 
-// Libellés lisibles pour rendre compte des champs manquants à la soumission.
+// Libellés lisibles pour rendre compte des champs bloquant la soumission.
 const LIBELLES_CHAMPS: Record<string, string> = {
   raisonSociale: "raison sociale",
   siret: "SIRET",
-  adresse: "adresse",
   ville: "ville",
   codePostal: "code postal",
   siteWeb: "site web",
-  nomContact: "prénom et nom du référent",
-  telephoneContact: "téléphone du référent",
-  fonctionContact: "fonction du référent",
-  secteurs: "secteurs d'activité",
-  description: "description de l'entreprise (50 caractères min.)",
-  offres: "types d'offres proposées",
+  description: "description (20 caractères min.)",
   typesOpportunites: "types d'opportunités",
-  elementsStand: "éléments présentés sur le stand",
   descriptionInnovation: "description de l'innovation",
-  consentementCommunication: "consentement communication",
 };
 
 /**
  * Soumission d'une fiche restée en brouillon, par un admin à la place de
- * l'exposant. Applique les mêmes règles de complétude que la soumission
- * self-service (cf. app/exposant/profil/actions.ts) : une fiche incomplète est
- * refusée avec la liste des champs à compléter, éditables juste en dessous.
+ * l'exposant.
+ *
+ * Contrôles volontairement allégés par rapport à la soumission self-service
+ * (cf. profilExposantSoumissionAdminSchema) : les rubriques propres aux
+ * industriels restent facultatives pour ne pas obliger l'admin à inventer des
+ * données sur un partenaire institutionnel.
  */
 export async function soumettreExposantAdmin(
   _prev: AdminActionState,
@@ -160,7 +155,7 @@ export async function soumettreExposantAdmin(
 
   // On valide l'enregistrement stocké, pas un formulaire : les champs nullables
   // en base sont ramenés à "" pour correspondre à l'entrée attendue par le schéma.
-  const parsed = profilExposantSubmitSchema.safeParse({
+  const parsed = profilExposantSoumissionAdminSchema.safeParse({
     raisonSociale: exposant.raisonSociale,
     siret: exposant.siret ?? "",
     adresse: exposant.adresse ?? "",
@@ -196,7 +191,7 @@ export async function soumettreExposantAdmin(
     );
     return {
       ok: false,
-      message: `Fiche incomplète — à compléter avant soumission : ${manquants.join(", ")}.`,
+      message: `Soumission impossible — à corriger ci-dessous : ${manquants.join(", ")}.`,
     };
   }
 

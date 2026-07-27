@@ -162,3 +162,44 @@ export const profilExposantSubmitSchema = profilExposantDraftSchema
   });
 
 export type ProfilExposantSubmitInput = z.infer<typeof profilExposantSubmitSchema>;
+
+/**
+ * Schéma pour la soumission d'une fiche par un admin, à la place de l'exposant.
+ *
+ * Volontairement plus permissif que profilExposantSubmitSchema : seuls les
+ * champs réellement affichés dans l'annuaire public sont exigés. Les rubriques
+ * pensées pour un industriel (secteurs, offres, éléments de stand, consentement
+ * communication) restent facultatives — un partenaire institutionnel n'a rien à
+ * y déclarer, et forcer l'admin à cocher des cases produirait des données
+ * fausses. Les contrôles de format et de cohérence, eux, continuent de
+ * s'appliquer dès qu'un champ est rempli.
+ */
+export const profilExposantSoumissionAdminSchema = profilExposantDraftSchema
+  .extend({
+    raisonSociale: z.string().trim().min(2, "Raison sociale requise").max(200),
+    ville: z.string().trim().min(1, "Ville requise").max(100),
+    description: z
+      .string()
+      .trim()
+      .min(20, "Décrivez l'exposant (20 caractères min)")
+      .max(2000),
+  })
+  .superRefine((data, ctx) => {
+    if (data.offres.includes("OPPORTUNITES") && data.typesOpportunites.length === 0) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["typesOpportunites"],
+        message: "Précisez au moins un type d'opportunité",
+      });
+    }
+    if (
+      data.innovationMiseEnAvant &&
+      (!data.descriptionInnovation || data.descriptionInnovation.length < 20)
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["descriptionInnovation"],
+        message: "Décrivez l'innovation (20 caractères min)",
+      });
+    }
+  });

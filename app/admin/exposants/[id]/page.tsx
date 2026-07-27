@@ -110,9 +110,11 @@ export default async function AdminExposantDetailPage({
             <p className="text-sm text-neutral-700 mb-4">
               L&apos;exposant n&apos;a pas finalisé sa candidature. Vous pouvez la
               soumettre à sa place : elle passera en attente de validation et
-              vous pourrez ensuite la valider ou la refuser. Les mêmes champs
-              obligatoires que côté exposant sont exigés — complétez-les
-              ci-dessous si besoin.
+              vous pourrez ensuite la valider ou la refuser. Seuls la raison
+              sociale, la ville et la description sont exigés — les rubriques
+              propres aux industriels (secteurs, offres, éléments de stand)
+              restent facultatives, notamment pour un partenaire
+              institutionnel.
             </p>
             <SoumettreForm exposantId={exposant.id} />
           </div>
