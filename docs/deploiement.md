@@ -2,13 +2,96 @@
 
 ## Infrastructure
 
-| Serveur     | Rôle                                             |
-|-------------|--------------------------------------------------|
-| compute-01  | Coolify + conteneur applicatif (Next.js)         |
-| data-01     | PostgreSQL 16 — base `mivl_booking`              |
+| Serveur     | Rôle                                                        |
+|-------------|-------------------------------------------------------------|
+| compute-01  | Coolify + conteneur applicatif (Next.js)                    |
+| data-01     | PostgreSQL 16 (conteneur Coolify) — base `postgres`         |
 
 - App exposée sur `https://connect.mivl-orleans.fr`
-- data-01 joignable uniquement depuis compute-01 via le réseau privé Hetzner
+- Les deux serveurs sont gérés par Coolify. Les conteneurs portent des noms
+  générés (`<uuid-coolify>-<horodatage>`) qui **changent à chaque
+  redéploiement** : ne jamais les coder en dur, utiliser les commandes de
+  découverte ci-dessous.
+
+> Ce dépôt est **public**. Aucune IP, aucun UUID Coolify et aucun secret ne
+> doit être écrit ici — les valeurs réelles se lisent dans l'interface
+> Coolify ou via `docker inspect`.
+
+### Accès SSH
+
+Deux alias sont attendus dans `~/.ssh/config` (poste de l'admin) :
+
+| Alias         | Machine     |
+|---------------|-------------|
+| `htz-compute` | compute-01  |
+| `htz-data`    | data-01     |
+
+### Repérer les conteneurs
+
+Ces snippets se collent **dans** la session SSH : `$APP` et `$DB` restent
+alors définis pour toute la durée de la session, et les commandes des
+sections suivantes s'y réfèrent. Dans un `ssh htz-data '<commande>'` en une
+seule ligne, ces variables n'existent pas — il faut rouvrir une session.
+
+```bash
+# Conteneur applicatif, sur compute-01 — identifié par son URL publique
+ssh htz-compute
+APP=$(docker ps -q | xargs -I{} sh -c \
+  'docker inspect {} --format "{{.Name}} {{range .Config.Env}}{{.}} {{end}}"' \
+  | grep -m1 "NEXT_PUBLIC_APP_URL=https://connect.mivl-orleans.fr" \
+  | awk '{print $1}' | sed 's#^/##')
+echo "$APP"
+
+# Conteneur PostgreSQL, sur data-01 — plusieurs bases cohabitent sur la machine,
+# on retient celle qui porte le schéma MIVL
+ssh htz-data
+DB=$(for c in $(docker ps --format '{{.Names}}' | grep -v -- '-proxy'); do
+  if docker exec "$c" psql -U postgres -d postgres -tAc \
+       "SELECT to_regclass('public.\"Exposant\"');" 2>/dev/null | grep -q Exposant
+  then echo "$c"; break; fi
+done)
+echo "$DB"
+```
+
+### Connexion applicative à la base
+
+| Paramètre | Valeur                                                |
+|-----------|-------------------------------------------------------|
+| Hôte      | IP **publique** de data-01 (voir `DATABASE_URL` Coolify) |
+| Port      | `5437` (publié par le conteneur proxy Coolify)        |
+| Base      | `postgres`                                            |
+| Rôle      | `postgres` (seul rôle avec login sur l'instance)      |
+
+> ⚠️ La base ne s'appelle **pas** `mivl_booking` et le rôle `mivl_user`
+> n'existe pas — les deux figuraient dans les versions antérieures de ce
+> guide et toutes les commandes qui s'en servaient échouaient.
+
+### ⚠️ Le réseau privé Hetzner existe mais n'est pas utilisé
+
+Les deux serveurs disposent d'une interface privée (`enp7s0`, réseau
+`10.0.0.0/24`) et se routent mutuellement dessus. Mais `DATABASE_URL` pointe
+l'**IP publique** de data-01, et la règle iptables autorise l'**IP publique**
+de compute-01 : le trafic applicatif sort donc par l'interface publique de
+compute-01 et rentre par celle de data-01.
+
+Or `ssl` est à `off` côté PostgreSQL et toutes les connexions actives sont
+non chiffrées (`pg_stat_ssl.ssl = f`). **Toutes les données personnelles
+(exposants, enseignants, visiteurs : noms, emails, téléphones) transitent
+donc en clair sur le réseau public**, alors qu'un lien privé inutilisé est
+disponible.
+
+Bascule vers le réseau privé — **dans cet ordre**, sous peine de coupure :
+
+1. sur data-01, autoriser l'IP privée de compute-01 :
+   `iptables -I DOCKER-USER -p tcp --dport 5437 -s <ip-privée-compute-01> -j ACCEPT`
+2. `netfilter-persistent save`
+3. dans Coolify, remplacer l'hôte de `DATABASE_URL` par l'IP privée de
+   data-01, puis redéployer
+4. vérifier que l'app repart (`docker logs`), puis seulement alors retirer la
+   règle `ACCEPT` portant sur l'IP publique de compute-01, et sauvegarder
+
+Tant que cette bascule n'est pas faite, la seule protection reste l'allowlist
+iptables (cf. §2.5).
 
 ---
 
@@ -21,10 +104,29 @@ Le `Dockerfile` (multi-stage, standalone Next.js) fait **deux choses au démarra
 1. `prisma migrate deploy` — applique les migrations en attente (idempotent, no-op si rien à faire)
 2. `node server.js` — lance le serveur Next
 
-**Aucune action manuelle n'est requise pour les migrations.** Si on doit vérifier l'état :
+**Aucune action manuelle n'est requise pour les migrations.** Si on doit vérifier l'état (`$APP` défini plus haut) :
 
 ```bash
-docker exec <container_id> ./migrator/node_modules/.bin/prisma migrate status
+docker exec "$APP" ./migrator/node_modules/.bin/prisma migrate status
+```
+
+Le CLI Prisma vit dans `./migrator/node_modules/`, mais il est lancé depuis
+`/app` et y trouve `prisma/schema.prisma` tout seul. Le `--schema` explicite
+du `CMD` du Dockerfile n'est donc pas nécessaire ici.
+
+Réponse attendue : `Database schema is up to date!`
+
+Les logs de démarrage confirment ce qui a été appliqué :
+
+```bash
+docker logs --tail 20 "$APP"
+```
+
+Vérifier aussi que le conteneur tourne bien sur le commit attendu :
+
+```bash
+docker inspect "$APP" --format '{{range .Config.Env}}{{println .}}{{end}}' \
+  | grep SOURCE_COMMIT
 ```
 
 ---
@@ -56,19 +158,30 @@ Contient :
 Valeurs sensibles → champ `Secret`.
 
 ```env
-DATABASE_URL=postgresql://mivl_user:PASSWORD@<data-01-private-ip>:5432/mivl_booking
+DATABASE_URL=postgres://postgres:PASSWORD@<ip-publique-data-01>:5437/postgres
 AUTH_SECRET=<openssl rand -base64 32>
 AUTH_URL=https://connect.mivl-orleans.fr
-AUTH_TRUST_HOST=true
 BREVO_API_KEY=<clé Brevo>
 BREVO_FROM_EMAIL=noreply@mivl-orleans.fr
 BREVO_FROM_NAME=MIVL Connect
 EMAIL_PROVIDER=brevo
 QR_SIGNING_SECRET=<openssl rand -base64 32>
 NEXT_PUBLIC_APP_URL=https://connect.mivl-orleans.fr
+NEXT_PUBLIC_APP_NAME=MIVL Connect
 SUPER_ADMIN_EMAIL=mathieu.langlois@centre.cci.fr
 STORAGE_DIR=/app/uploads
 NODE_ENV=production
+```
+
+`AUTH_TRUST_HOST` figurait dans les versions antérieures de ce guide mais
+n'est pas défini sur le conteneur en production, et l'authentification
+fonctionne : `AUTH_URL` suffit. Ne pas l'ajouter sans raison.
+
+Pour relire la liste réellement en place (noms seuls, sans les valeurs) :
+
+```bash
+docker inspect "$APP" --format '{{range .Config.Env}}{{println .}}{{end}}' \
+  | cut -d= -f1 | sort
 ```
 
 ### 2.4 Seed initial — **une seule fois après le 1er build**
@@ -80,25 +193,46 @@ NODE_ENV=production
 docker exec -it \
   -e SUPER_ADMIN_EMAIL=mathieu.langlois@centre.cci.fr \
   -e SUPER_ADMIN_PASSWORD='<mot de passe choisi>' \
-  <container_id> node_modules/.bin/tsx prisma/seed-prod.ts
+  "$APP" node_modules/.bin/tsx prisma/seed-prod.ts
 ```
 
 > ⚠️ **Ne jamais lancer `prisma/seed.ts` en prod** — ce seed est destructif (fait `deleteMany` sur toutes les tables) et ne sert qu'à recréer l'environnement de dev local.
 
 ### 2.5 Sécurité réseau data-01
 
-UFW ne filtre pas le trafic Docker (Docker insère ses règles **au-dessus** de celles d'UFW). La DB est donc protégée par `iptables` directement, dans la chaîne `DOCKER-USER` :
+Le conteneur proxy Coolify publie PostgreSQL sur `0.0.0.0:5437` — le port est
+donc exposé sur l'interface publique. UFW ne filtre pas le trafic Docker
+(Docker insère ses règles **au-dessus** de celles d'UFW). La DB est donc
+protégée par `iptables` directement, dans la chaîne `DOCKER-USER` :
 
 ```bash
-# Sur data-01
-iptables -I DOCKER-USER -p tcp --dport 5432 -s <ip-privée-compute-01> -j ACCEPT
-iptables -I DOCKER-USER -p tcp --dport 5432 -j DROP
+# Sur data-01 — noter le port 5437, et l'IP *publique* de compute-01
+iptables -I DOCKER-USER -p tcp --dport 5437 -s <ip-publique-compute-01> -j ACCEPT
+iptables -I DOCKER-USER -p tcp --dport 5437 -j DROP
 
 # Persister (package iptables-persistent)
 netfilter-persistent save
 ```
 
-À vérifier après tout reboot de data-01 ou réinstallation OS.
+**État vérifié le 27/07/2026** : les deux règles sont actives, persistées
+dans `/etc/iptables/rules.v4`, `netfilter-persistent` est activé, et le port
+5437 testé depuis une IP hors allowlist part en timeout. La base n'est pas
+joignable depuis Internet.
+
+Contrôler après tout reboot de data-01, réinstallation OS ou changement de
+port côté Coolify :
+
+```bash
+# Les deux règles doivent apparaître
+ssh htz-data 'iptables -S DOCKER-USER'
+
+# Et le port doit être injoignable depuis n'importe quelle autre machine
+nc -z -v -w 6 <ip-publique-data-01> 5437     # attendu : timeout
+```
+
+Ces règles sont la **seule** protection du port : le conteneur proxy Coolify
+le publie sur `0.0.0.0`. Si elles disparaissent, la base est exposée
+immédiatement.
 
 ---
 
@@ -114,24 +248,69 @@ Rien d'autre à faire côté DB. Si le build échoue, les logs sont dans Coolify
 
 ## 4. Base de données (data-01)
 
+PostgreSQL 16 tourne dans un conteneur Coolify sur data-01. `psql` et
+`pg_dump` ne sont pas installés sur l'hôte : tout passe par `docker exec`.
+`$DB` est le nom du conteneur (cf. « Repérer les conteneurs »).
+
 ### Connexion directe
 
 ```bash
-ssh user@data-01
-psql -U mivl_user -d mivl_booking
+ssh htz-data
+docker exec -it "$DB" psql -U postgres -d postgres
 ```
 
 ### Backup manuel
 
+À faire **avant tout push portant une migration de schéma**.
+
 ```bash
-pg_dump -U mivl_user mivl_booking | gzip > backup_$(date +%Y%m%d_%H%M%S).sql.gz
+# Dans la session ssh htz-data, $DB défini
+STAMP=$(date +%Y%m%d_%H%M%S)
+docker exec "$DB" pg_dump -U postgres -d postgres --no-owner --no-privileges \
+  | gzip > "/tmp/backup_$STAMP.sql.gz"
+ls -lh "/tmp/backup_$STAMP.sql.gz"
+exit
+
+# Puis, depuis le poste local — ne pas laisser le seul exemplaire sur data-01
+scp htz-data:/tmp/backup_*.sql.gz .
+```
+
+Vérifier que le dump n'est pas vide avant de considérer le backup fait :
+
+```bash
+gunzip -c backup_YYYYMMDD_HHMMSS.sql.gz | grep -c "CREATE TABLE"   # attendu : 21
 ```
 
 ### Restauration
 
+> ⚠️ Écrase les données en place. Prévenir la CCI avant, l'app écrit en
+> continu (inscriptions exposants, réservations).
+
 ```bash
-gunzip -c backup_YYYYMMDD_HHMMSS.sql.gz | psql -U mivl_user mivl_booking
+# Depuis le poste local : remonter le dump sur data-01
+scp backup_YYYYMMDD_HHMMSS.sql.gz htz-data:/tmp/
+
+# Puis dans la session ssh htz-data, $DB défini
+gunzip -c /tmp/backup_YYYYMMDD_HHMMSS.sql.gz \
+  | docker exec -i "$DB" psql -U postgres -d postgres
 ```
+
+### Inspecter sans risque
+
+Pour auditer le schéma sans toucher à la prod, dumper la **structure seule**
+(aucune donnée personnelle) et la rejouer sur une base jetable locale :
+
+```bash
+# Dans la session ssh htz-data, $DB défini
+docker exec "$DB" pg_dump -U postgres -d postgres \
+  --schema-only --no-owner --no-privileges > /tmp/prod-schema.sql
+exit
+scp htz-data:/tmp/prod-schema.sql .
+```
+
+Rejoué sur une base jetable locale, ce fichier permet de vérifier qu'une
+migration s'applique proprement sur le schéma réel de production avant de
+pousser.
 
 ---
 
@@ -150,8 +329,35 @@ Ces variables vivent dans l'interface Coolify (champs `Secret`).
 ## 6. Rollback
 
 1. Coolify → **Deployments** → sélectionner la version précédente → **Redeploy this deployment**
-2. Si une migration fautive a été appliquée : restaurer le dernier backup (`gunzip ... | psql ...`) puis redéployer la version précédente
+2. Si une migration fautive a été appliquée : restaurer le dernier backup (cf. §4) puis redéployer la version précédente
 3. Prisma ne downgrade pas automatiquement — pour un rollback de schéma, il faut une migration inverse commitée dans le repo
+
+### ⚠️ Les migrations ne rejouent pas sur une base vierge
+
+Reconstruire la base à partir de zéro (`prisma migrate deploy` sur une base
+vide : sinistre, nouvel environnement de staging) **échoue aujourd'hui** :
+
+```
+Applying migration `20260512_visiteur_compte_programme`
+ERROR: relation "Visiteur" does not exist
+```
+
+Le dossier `20260512_visiteur_compte_programme` n'a pas d'horodatage complet
+et Prisma le trie **avant** `20260512074902_add_visiteur`, qui crée pourtant
+la table dont il dépend.
+
+La production n'est pas concernée : ces deux migrations y ont été appliquées
+incrémentalement dans le bon ordre le 12/05/2026, et `migrate deploy` ne
+rejoue que ce qui manque dans `_prisma_migrations`.
+
+Correctif à prévoir : renommer le dossier en
+`20260512130000_visiteur_compte_programme` et mettre à jour la ligne
+`migration_name` correspondante dans `_prisma_migrations` en prod, sans quoi
+la migration serait rejouée au prochain déploiement.
+
+**En attendant, la restauration d'un backup (§4) est le seul chemin de
+reconstruction fiable** — elle restitue le schéma et `_prisma_migrations`
+d'un coup, sans rejouer l'historique.
 
 ---
 
@@ -159,8 +365,9 @@ Ces variables vivent dans l'interface Coolify (champs `Secret`).
 
 - [ ] Typecheck + lint OK en local (`pnpm typecheck && pnpm lint`)
 - [ ] Aucune nouvelle variable d'env sans valeur définie dans Coolify
-- [ ] Si migration de schéma : dump DB avant push (`pg_dump ...`)
+- [ ] Si migration de schéma : backup DB avant push (§4)
 - [ ] Push main → attendre fin du build Coolify (logs verts)
+- [ ] `SOURCE_COMMIT` du conteneur = le commit poussé (§1)
+- [ ] `docker exec "$APP" ./migrator/node_modules/.bin/prisma migrate status` = « Database schema is up to date! »
 - [ ] Vérifier `/connexion/admin` : login password OK
 - [ ] Vérifier `/connexion` : envoi OTP + réception Brevo + validation code OK
-- [ ] `docker exec <container> ./migrator/node_modules/.bin/prisma migrate status` = à jour
