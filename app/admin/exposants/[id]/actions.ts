@@ -6,7 +6,10 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { sendEmail } from "@/lib/emails";
-import { profilExposantDraftSchema } from "@/lib/validation/exposant-profil";
+import {
+  profilExposantDraftSchema,
+  profilExposantSubmitSchema,
+} from "@/lib/validation/exposant-profil";
 import {
   extractProfilFromFormData,
   issuesToErrors,
@@ -106,7 +109,119 @@ export async function modifierProfilAdmin(
   revalidatePath("/exposant");
   revalidatePath("/exposant/profil");
   revalidatePath(`/exposants/${exposant.id}`);
+  revalidatePath("/exposants");
   return { ok: true, message: "Modifications enregistrées." };
+}
+
+// Libellés lisibles pour rendre compte des champs manquants à la soumission.
+const LIBELLES_CHAMPS: Record<string, string> = {
+  raisonSociale: "raison sociale",
+  siret: "SIRET",
+  adresse: "adresse",
+  ville: "ville",
+  codePostal: "code postal",
+  siteWeb: "site web",
+  nomContact: "prénom et nom du référent",
+  telephoneContact: "téléphone du référent",
+  fonctionContact: "fonction du référent",
+  secteurs: "secteurs d'activité",
+  description: "description de l'entreprise (50 caractères min.)",
+  offres: "types d'offres proposées",
+  typesOpportunites: "types d'opportunités",
+  elementsStand: "éléments présentés sur le stand",
+  descriptionInnovation: "description de l'innovation",
+  consentementCommunication: "consentement communication",
+};
+
+/**
+ * Soumission d'une fiche restée en brouillon, par un admin à la place de
+ * l'exposant. Applique les mêmes règles de complétude que la soumission
+ * self-service (cf. app/exposant/profil/actions.ts) : une fiche incomplète est
+ * refusée avec la liste des champs à compléter, éditables juste en dessous.
+ */
+export async function soumettreExposantAdmin(
+  _prev: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  const session = await getAdminSession();
+  if (!session?.user) return { ok: false, message: "Non autorisé." };
+
+  const id = formData.get("exposantId");
+  if (typeof id !== "string") return { ok: false, message: "ID manquant." };
+
+  const exposant = await db.exposant.findUnique({ where: { id } });
+  if (!exposant) return { ok: false, message: "Exposant introuvable." };
+  if (exposant.statut !== "BROUILLON") {
+    return {
+      ok: false,
+      message: "Seules les fiches en brouillon peuvent être soumises depuis l'admin.",
+    };
+  }
+
+  // On valide l'enregistrement stocké, pas un formulaire : les champs nullables
+  // en base sont ramenés à "" pour correspondre à l'entrée attendue par le schéma.
+  const parsed = profilExposantSubmitSchema.safeParse({
+    raisonSociale: exposant.raisonSociale,
+    siret: exposant.siret ?? "",
+    adresse: exposant.adresse ?? "",
+    ville: exposant.ville,
+    codePostal: exposant.codePostal ?? "",
+    siteWeb: exposant.siteWeb ?? "",
+    nomContact: exposant.nomContact ?? "",
+    telephoneContact: exposant.telephoneContact ?? "",
+    fonctionContact: exposant.fonctionContact ?? "",
+    secteurs: exposant.secteurs,
+    secteurAutre: exposant.secteurAutre ?? "",
+    description: exposant.description,
+    offres: exposant.offres,
+    typesOpportunites: exposant.typesOpportunites,
+    metiersProposes: exposant.metiersProposes,
+    elementsStand: exposant.elementsStand,
+    elementsStandAutre: exposant.elementsStandAutre ?? "",
+    animations: exposant.animations,
+    innovationMiseEnAvant: exposant.innovationMiseEnAvant,
+    descriptionInnovation: exposant.descriptionInnovation ?? "",
+    statutRecrutement: exposant.statutRecrutement,
+    consentementCommunication: exposant.consentementCommunication,
+  });
+
+  if (!parsed.success) {
+    const manquants = Array.from(
+      new Set(
+        parsed.error.issues.map((issue) => {
+          const champ = String(issue.path[0] ?? "");
+          return LIBELLES_CHAMPS[champ] ?? champ;
+        }),
+      ),
+    );
+    return {
+      ok: false,
+      message: `Fiche incomplète — à compléter avant soumission : ${manquants.join(", ")}.`,
+    };
+  }
+
+  await db.exposant.update({
+    where: { id },
+    data: { statut: "SOUMIS", motifRefus: null },
+  });
+
+  await db.auditLog.create({
+    data: {
+      userId: session.user.id,
+      action: "exposant.soumis_par_admin",
+      entite: "Exposant",
+      entiteId: id,
+    },
+  });
+
+  revalidatePath("/admin/exposants");
+  revalidatePath(`/admin/exposants/${id}`);
+  revalidatePath("/exposant");
+  revalidatePath("/exposant/profil");
+  return {
+    ok: true,
+    message: "Fiche soumise — elle est maintenant en attente de validation.",
+  };
 }
 
 export async function validerExposant(
@@ -155,6 +270,7 @@ export async function validerExposant(
 
   revalidatePath("/admin/exposants");
   revalidatePath(`/admin/exposants/${id}`);
+  revalidatePath("/exposants");
   redirect(`/admin/exposants?valide=${encodeURIComponent(exposant.raisonSociale)}`);
 }
 
@@ -314,6 +430,7 @@ export async function supprimerExposant(
   await db.user.delete({ where: { id: exposant.userId } });
 
   revalidatePath("/admin/exposants");
+  revalidatePath("/exposants");
   redirect(`/admin/exposants?supprime=${encodeURIComponent(exposant.raisonSociale)}`);
 }
 
@@ -356,6 +473,7 @@ export async function remettreEnAttente(
 
   revalidatePath("/admin/exposants");
   revalidatePath(`/admin/exposants/${id}`);
+  revalidatePath("/exposants");
   return { ok: true, message: "Exposant remis en attente de validation." };
 }
 

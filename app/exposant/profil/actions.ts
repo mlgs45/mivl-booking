@@ -80,6 +80,8 @@ export async function sauvegarderProfil(
     revalidatePath("/exposant");
     revalidatePath("/exposant/profil");
     revalidatePath(`/exposants/${exposant.id}`);
+    // La fiche est publique : l'annuaire (ISR) doit repartir sur des données fraîches.
+    revalidatePath("/exposants");
     return { ok: true, message: "Modifications enregistrées." };
   }
 

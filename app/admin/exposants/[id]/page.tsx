@@ -9,6 +9,7 @@ import { AttribuerStandForm } from "./attribuer-stand-form";
 import { PartenaireToggle } from "./partenaire-toggle";
 import { SupprimerForm } from "./supprimer-form";
 import { RemettreEnAttenteForm } from "./remettre-en-attente-form";
+import { SoumettreForm } from "./soumettre-form";
 import { modifierProfilAdmin } from "./actions";
 import { televerserLogoAdmin, supprimerLogoAdmin } from "./logo-actions";
 import { ProfilForm } from "@/app/exposant/profil/profil-form";
@@ -98,6 +99,22 @@ export default async function AdminExposantDetailPage({
               <ValiderForm exposantId={exposant.id} />
               <RefuserForm exposantId={exposant.id} />
             </div>
+          </div>
+        )}
+
+        {exposant.statut === "BROUILLON" && (
+          <div className="mb-8 rounded-xl border border-neutral-200 bg-neutral-50 p-5">
+            <h2 className="font-heading font-semibold text-neutral-900 mb-1">
+              Fiche jamais soumise
+            </h2>
+            <p className="text-sm text-neutral-700 mb-4">
+              L&apos;exposant n&apos;a pas finalisé sa candidature. Vous pouvez la
+              soumettre à sa place : elle passera en attente de validation et
+              vous pourrez ensuite la valider ou la refuser. Les mêmes champs
+              obligatoires que côté exposant sont exigés — complétez-les
+              ci-dessous si besoin.
+            </p>
+            <SoumettreForm exposantId={exposant.id} />
           </div>
         )}
 

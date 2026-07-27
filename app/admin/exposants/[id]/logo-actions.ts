@@ -86,6 +86,7 @@ export async function televerserLogoAdmin(
   revalidatePath("/exposant/profil");
   revalidatePath("/exposant");
   revalidatePath(`/exposants/${exposant.id}`);
+  revalidatePath("/exposants");
   return { ok: true, message: "Logo téléversé." };
 }
 
@@ -133,5 +134,6 @@ export async function supprimerLogoAdmin(
   revalidatePath("/exposant/profil");
   revalidatePath("/exposant");
   revalidatePath(`/exposants/${exposant.id}`);
+  revalidatePath("/exposants");
   return { ok: true, message: "Logo supprimé." };
 }
