@@ -2,10 +2,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { PublicHeader } from "@/components/layout/public-header";
 import { PublicFooter } from "@/components/layout/public-footer";
+import { getSalonCompletExposants } from "@/lib/salon-complet";
 
 export const metadata = {
   title: "Made In Val de Loire 2026 — MIVL Connect",
 };
+
+// La bascule « salon complet » (back-office) revalide explicitement cette page ;
+// ce délai n'est qu'un filet de sécurité.
+export const revalidate = 300;
 
 const STATS = [
   { value: "120", label: "exposants industriels" },
@@ -79,7 +84,9 @@ const CTAS = [
   },
 ];
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const salonComplet = await getSalonCompletExposants();
+
   return (
     <>
       <PublicHeader />
@@ -147,6 +154,34 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* Salon complet — bandeau piloté depuis /admin/configuration.
+          Placé juste sous les stats : enchaîne sur les « 120 exposants ». */}
+      {salonComplet && (
+        <section className="bg-accent text-neutral-900">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-7">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8">
+              <div className="flex-1">
+                <p className="font-heading font-bold text-lg mb-1">
+                  Salon complet — les 120 stands sont attribués
+                </p>
+                <p className="text-sm leading-relaxed text-neutral-800">
+                  Vous êtes une entreprise et souhaitez exposer ? Les
+                  inscriptions restent ouvertes : votre candidature sera placée
+                  en liste d&apos;attente et, en cas de désistement, la CCI
+                  reviendra vers vous en priorité.
+                </p>
+              </div>
+              <Link
+                href="/inscription/exposant"
+                className="shrink-0 inline-flex items-center justify-center bg-neutral-900 text-white font-semibold px-5 py-3 rounded-lg hover:bg-neutral-800 transition-colors"
+              >
+                M&apos;inscrire en liste d&apos;attente →
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Parcours */}
       <section className="py-20 bg-white">

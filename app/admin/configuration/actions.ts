@@ -131,6 +131,7 @@ export async function basculerSalonComplet(
   });
 
   revalidatePath("/admin/configuration");
+  revalidatePath("/");
   revalidatePath("/inscription");
   revalidatePath("/inscription/exposant");
   revalidatePath("/exposant");
