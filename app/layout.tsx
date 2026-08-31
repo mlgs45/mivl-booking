@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import { SNIPPET_MATOMO } from "@/lib/matomo";
+import { MatomoPageViews } from "@/components/analytics/matomo-page-views";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -50,7 +52,14 @@ export default function RootLayout({
       lang="fr"
       className={cn("h-full", inter.variable, poppins.variable)}
     >
-      <body className="min-h-full flex flex-col antialiased">{children}</body>
+      <body className="min-h-full flex flex-col antialiased">
+        {/* Mesure d'audience : le script est rendu en clair dans le HTML —
+            c'est ce que cherchent le vérificateur d'installation de Matomo et
+            les audits RGPD — et il s'auto-limite au parcours public. */}
+        <script dangerouslySetInnerHTML={{ __html: SNIPPET_MATOMO }} />
+        <MatomoPageViews />
+        {children}
+      </body>
     </html>
   );
 }
