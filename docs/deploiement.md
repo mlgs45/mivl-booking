@@ -244,6 +244,39 @@ Chaque `git push origin main` déclenche le webhook → build → restart → mi
 
 Rien d'autre à faire côté DB. Si le build échoue, les logs sont dans Coolify → Logs.
 
+### ⚠️ Le build tourne AVANT la migration — piège du blocage circulaire
+
+`next build` s'exécute à la construction de l'image et **se connecte à la base
+de prod** (`DATABASE_URL` est passé en `--build-arg`) pour prérendre les pages
+statiques. Or `prisma migrate deploy` ne tourne qu'au **démarrage du
+conteneur**. L'ordre réel est donc :
+
+```
+build (lit la base, schéma ANCIEN)  →  image  →  démarrage  →  migrate deploy  →  serveur
+```
+
+Conséquence : une page prérendue qui lit une **colonne ajoutée par la migration
+du même commit** casse le build, le conteneur ne démarre pas, la migration
+n'est jamais appliquée — et chaque redéploiement rejoue le même échec. Symptôme
+dans les logs Coolify :
+
+```
+The column `X.y` does not exist in the current database.
+Error occurred prerendering page "/…"
+```
+
+Deux parades, à choisir avant de pousser :
+
+1. **Lecture tolérante** — la fonction qui lit la nouvelle colonne renvoie une
+   valeur par défaut en `catch`. C'est ce que fait `getSalonCompletExposants()`
+   dans `lib/salon-complet.ts` (cas vécu le 31/08/2026, colonne
+   `ConfigurationSalon.salonCompletExposants`).
+2. **Page dynamique** — `export const dynamic = "force-dynamic"` sur la page,
+   qui n'est alors plus prérendue au build. Coûte le cache statique.
+
+Se reproduit en local sur une base à l'ancien schéma : `pnpm build` échoue
+exactement comme en prod.
+
 ---
 
 ## 4. Base de données (data-01)
@@ -366,6 +399,8 @@ d'un coup, sans rejouer l'historique.
 - [ ] Typecheck + lint OK en local (`pnpm typecheck && pnpm lint`)
 - [ ] Aucune nouvelle variable d'env sans valeur définie dans Coolify
 - [ ] Si migration de schéma : backup DB avant push (§4)
+- [ ] Si migration de schéma : aucune page prérendue ne lit une colonne ajoutée
+      par cette migration sans lecture tolérante (§3, blocage circulaire)
 - [ ] Push main → attendre fin du build Coolify (logs verts)
 - [ ] `SOURCE_COMMIT` du conteneur = le commit poussé (§1)
 - [ ] `docker exec "$APP" ./migrator/node_modules/.bin/prisma migrate status` = « Database schema is up to date! »
