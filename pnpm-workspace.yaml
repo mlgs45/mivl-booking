@@ -1,3 +1,12 @@
+# Scripts de build autorisés. Réglage déplacé depuis le champ "pnpm" de
+# package.json, que pnpm >= 10.33 ne lit plus (il l'annonce à chaque commande).
+onlyBuiltDependencies:
+  - "@prisma/client"
+  - "@prisma/engines"
+  - esbuild
+  - prisma
+
 ignoredBuiltDependencies:
   - sharp
   - unrs-resolver
+
