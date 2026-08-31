@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { SITE_VITRINE } from "@/lib/liens";
 
 export function PublicFooter() {
   return (
@@ -39,6 +40,14 @@ export function PublicFooter() {
               Liens
             </h3>
             <ul className="space-y-2 text-sm">
+              <li>
+                <a
+                  href={SITE_VITRINE}
+                  className="text-white/80 hover:text-white transition-colors"
+                >
+                  Site du salon — mivl-orleans.fr
+                </a>
+              </li>
               <li>
                 <Link
                   href="/exposants"

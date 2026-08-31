@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { SITE_VITRINE } from "@/lib/liens";
 
 export function PublicHeader() {
   return (
@@ -18,6 +19,14 @@ export function PublicHeader() {
           </span>
         </Link>
         <nav className="flex items-center gap-6">
+          {/* Retour vers le site du salon : masqué sur mobile pour ne pas
+              serrer la barre, le pied de page prend le relais. */}
+          <a
+            href={SITE_VITRINE}
+            className="hidden sm:block text-sm font-medium text-neutral-700 hover:text-primary transition-colors"
+          >
+            Site du salon
+          </a>
           <Link
             href="/exposants"
             className="text-sm font-medium text-neutral-700 hover:text-primary transition-colors"
