@@ -582,6 +582,12 @@ model ConfigurationSalon {
   inscriptionsExposantsOuvertes      Boolean   @default(false)
   inscriptionsVisiteursOuvertes      Boolean   @default(false)
 
+  // ── Salon complet côté exposants ──
+  // Les 120 stands sont attribués : les inscriptions restent ouvertes, mais
+  // toute nouvelle candidature part en liste d'attente (cf. StatutExposant.LISTE_ATTENTE).
+  // Purement informatif — n'empêche ni l'inscription ni la soumission.
+  salonCompletExposants              Boolean   @default(false)
+
   // ── Ouverture des réservations RDV ──
   // null = fermé, date passée = ouvert, date future = planifié (mais encore fermé)
   ouvertureRdvAt                     DateTime?

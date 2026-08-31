@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
+import { sendEmail } from "@/lib/emails";
+import { getSalonCompletExposants } from "@/lib/salon-complet";
 import {
   profilExposantDraftSchema,
   profilExposantSubmitSchema,
@@ -24,7 +26,7 @@ async function getCurrentExposant() {
   if (!session?.user?.id) return null;
   const exposant = await db.exposant.findUnique({
     where: { userId: session.user.id },
-    select: { id: true, statut: true },
+    select: { id: true, statut: true, user: { select: { email: true } } },
   });
   return exposant;
 }
@@ -193,6 +195,23 @@ export async function soumettreProfil(
       motifRefus: null,
     },
   });
+
+  // Accusé de réception à l'entreprise. Le texte bascule sur la liste d'attente
+  // quand le salon est marqué complet (cf. lib/salon-complet.ts) — la décision
+  // reste prise dossier par dossier par la CCI.
+  try {
+    await sendEmail({
+      to: exposant.user.email,
+      template: "confirmation-inscription-exposant",
+      data: {
+        raisonSociale: d.raisonSociale,
+        salonComplet: await getSalonCompletExposants(),
+      },
+    });
+  } catch {
+    // Ne jamais bloquer la soumission si l'envoi échoue — la candidature est
+    // déjà enregistrée, et l'échec est tracé dans EmailLog.
+  }
 
   revalidatePath("/exposant");
   revalidatePath("/exposant/profil");

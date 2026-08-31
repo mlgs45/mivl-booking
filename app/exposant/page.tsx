@@ -2,6 +2,8 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { AppHeader } from "@/components/layout/app-header";
+import { BandeauSalonComplet } from "@/components/ui/bandeau-salon-complet";
+import { getSalonCompletExposants } from "@/lib/salon-complet";
 import type { StatutExposant } from "@prisma/client";
 
 export const metadata = { title: "Espace exposant — MIVL Connect" };
@@ -59,6 +61,8 @@ export default async function ExposantDashboard({
   const params = await searchParams;
   const justSoumis = params.soumis === "1";
 
+  const salonComplet = await getSalonCompletExposants();
+
   const exposant = await db.exposant.findUnique({
     where: { userId: session.user.id },
     select: {
@@ -103,6 +107,11 @@ export default async function ExposantDashboard({
           </h1>
           <p className="text-sm text-neutral-700">{exposant.ville}</p>
         </div>
+
+        {salonComplet &&
+          (exposant.statut === "BROUILLON" || exposant.statut === "SOUMIS") && (
+            <BandeauSalonComplet className="mb-4" />
+          )}
 
         {justSoumis && (
           <div className="rounded-xl border border-success/30 bg-success/10 text-success p-4 mb-4 text-sm">

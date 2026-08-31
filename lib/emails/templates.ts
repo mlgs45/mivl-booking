@@ -48,7 +48,11 @@ interface TemplateData {
     nomUtilisateur: string;
     lienReset: string;
   };
-  "confirmation-inscription-exposant": { raisonSociale: string };
+  "confirmation-inscription-exposant": {
+    raisonSociale: string;
+    /** ConfigurationSalon.salonCompletExposants — cf. lib/salon-complet.ts. */
+    salonComplet: boolean;
+  };
   "exposant-valide": { raisonSociale: string; appUrl: string };
   "exposant-refuse": { raisonSociale: string; motif: string };
   "exposant-liste-attente": { raisonSociale: string; message: string | null };
@@ -198,15 +202,21 @@ export function renderEmail<K extends EmailTemplate>(
     }
     case "confirmation-inscription-exposant": {
       const d = data as TemplateData["confirmation-inscription-exposant"];
+      const suite = d.salonComplet
+        ? "Les 120 stands du salon sont aujourd'hui tous attribués : votre dossier sera examiné par l'équipe de la CCI Centre-Val de Loire puis placé en <strong>liste d'attente</strong>. En cas de désistement d'un exposant, nous reviendrons vers vous en priorité pour vous proposer l'emplacement libéré. Vous n'avez aucune démarche à effectuer."
+        : "Votre dossier est en cours d'examen par l'équipe de la CCI Centre-Val de Loire. Vous recevrez un email de validation ou de demande de compléments sous 5 jours ouvrés.";
+      const suiteText = d.salonComplet
+        ? "Les 120 stands du salon sont tous attribués : votre candidature sera placée en liste d'attente. En cas de désistement, nous reviendrons vers vous en priorité."
+        : "Validation sous 5 jours ouvrés.";
       return {
         subject: "Votre candidature a bien été reçue — MIVL Connect",
         html: baseLayout(`
           <p>Bonjour,</p>
           <p>Nous avons bien reçu la candidature de <strong>${d.raisonSociale}</strong> pour participer au salon Made In Val de Loire 2026.</p>
-          <p>Votre dossier est en cours d'examen par l'équipe de la CCI Centre-Val de Loire. Vous recevrez un email de validation ou de demande de compléments sous 5 jours ouvrés.</p>
+          <p>${suite}</p>
           <p>À bientôt,<br>L'équipe MIVL</p>
         `),
-        text: `Candidature de ${d.raisonSociale} bien reçue. Validation sous 5 jours ouvrés.`,
+        text: `Candidature de ${d.raisonSociale} bien reçue. ${suiteText}`,
       };
     }
     case "exposant-valide": {

@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { AppHeader } from "@/components/layout/app-header";
 import { OuvertureRdvForm } from "./ouverture-rdv-form";
+import { SalonCompletForm } from "./salon-complet-form";
 
 export const metadata = { title: "Configuration — Admin MIVL" };
 
@@ -12,7 +13,7 @@ export default async function AdminConfigurationPage() {
 
   const config = await db.configurationSalon.findUnique({
     where: { id: 1 },
-    select: { ouvertureRdvAt: true },
+    select: { ouvertureRdvAt: true, salonCompletExposants: true },
   });
 
   return (
@@ -37,6 +38,21 @@ export default async function AdminConfigurationPage() {
             Contrôle l'accès aux pages de réservation pour les enseignants, les jeunes et les demandeurs d'emploi. Les inscriptions restent ouvertes indépendamment.
           </p>
           <OuvertureRdvForm ouvertureRdvAt={config?.ouvertureRdvAt ?? null} />
+        </section>
+
+        <section className="mt-6 rounded-xl border border-neutral-100 bg-white p-6">
+          <h2 className="font-heading font-semibold text-neutral-900 mb-1">
+            Salon complet — liste d&apos;attente exposants
+          </h2>
+          <p className="text-sm text-neutral-600 mb-5">
+            Affiche un bandeau sur la page de choix des profils, la page
+            d&apos;inscription exposant et l&apos;espace exposant : les 120
+            stands sont attribués, les nouvelles candidatures partent en liste
+            d&apos;attente. Purement informatif — les inscriptions et les
+            soumissions restent ouvertes, et chaque dossier reste traité
+            individuellement depuis Exposants.
+          </p>
+          <SalonCompletForm actif={config?.salonCompletExposants ?? false} />
         </section>
       </main>
     </>

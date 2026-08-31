@@ -101,3 +101,44 @@ export async function fermerRdv(
   revalidatePath("/admin/configuration");
   return { ok: true, message: "Les réservations sont fermées." };
 }
+
+/**
+ * Salon complet côté exposants — bascule purement informative : les
+ * inscriptions et les soumissions restent ouvertes, seul l'affichage change
+ * (bandeau sur /inscription, /inscription/exposant et /exposant).
+ */
+export async function basculerSalonComplet(
+  _prev: ConfigActionState,
+  formData: FormData,
+): Promise<ConfigActionState> {
+  const session = await getAdminSession();
+  if (!session?.user) return { ok: false, message: "Non autorisé." };
+
+  const actif = formData.get("actif") === "1";
+
+  await db.configurationSalon.update({
+    where: { id: 1 },
+    data: { salonCompletExposants: actif },
+  });
+
+  await db.auditLog.create({
+    data: {
+      userId: session.user.id,
+      action: actif ? "salon.complet.active" : "salon.complet.desactive",
+      entite: "ConfigurationSalon",
+      entiteId: "1",
+    },
+  });
+
+  revalidatePath("/admin/configuration");
+  revalidatePath("/inscription");
+  revalidatePath("/inscription/exposant");
+  revalidatePath("/exposant");
+
+  return {
+    ok: true,
+    message: actif
+      ? "Le bandeau « salon complet » est affiché."
+      : "Le bandeau « salon complet » est masqué.",
+  };
+}

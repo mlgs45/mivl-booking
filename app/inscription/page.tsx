@@ -1,18 +1,34 @@
 import Link from "next/link";
 import { PublicHeader } from "@/components/layout/public-header";
 import { PublicFooter } from "@/components/layout/public-footer";
+import { getSalonCompletExposants } from "@/lib/salon-complet";
 
 export const metadata = {
   title: "Inscription — MIVL Connect",
 };
 
-const PROFILS = [
+// La bascule « salon complet » (back-office) revalide explicitement cette page ;
+// ce délai n'est qu'un filet de sécurité.
+export const revalidate = 300;
+
+type Profil = {
+  titre: string;
+  desc: string;
+  href: string;
+  cta: string;
+  accent: boolean;
+  /** Seul le profil exposant porte la mention « complet · liste d'attente ». */
+  exposant?: boolean;
+};
+
+const PROFILS: Profil[] = [
   {
     titre: "Je suis une entreprise industrielle",
     desc: "Je présente mon entreprise, mes métiers et mes opportunités aux jeunes talents de la région.",
     href: "/inscription/exposant",
     cta: "Je veux un stand",
     accent: true,
+    exposant: true,
   },
   {
     titre: "Je suis professeur en collège",
@@ -44,7 +60,9 @@ const VISITEUR = {
   cta: "M'inscrire comme visiteur",
 };
 
-export default function InscriptionPage() {
+export default async function InscriptionPage() {
+  const salonComplet = await getSalonCompletExposants();
+
   return (
     <>
       <PublicHeader />
@@ -72,6 +90,11 @@ export default function InscriptionPage() {
                     : "bg-white border-neutral-100 hover:border-primary hover:shadow-sm"
                 }`}
               >
+                {p.exposant && salonComplet && (
+                  <span className="inline-block mb-2 rounded-full bg-neutral-900 px-2.5 py-1 text-xs font-semibold text-white">
+                    Complet · liste d&apos;attente
+                  </span>
+                )}
                 <h2 className="font-heading font-bold text-lg mb-2 text-neutral-900">
                   {p.titre}
                 </h2>
@@ -81,6 +104,15 @@ export default function InscriptionPage() {
                   }`}
                 >
                   {p.desc}
+                  {p.exposant && salonComplet && (
+                    <>
+                      {" "}
+                      <strong className="font-semibold">
+                        Les stands sont tous attribués : votre candidature sera
+                        placée en liste d&apos;attente.
+                      </strong>
+                    </>
+                  )}
                 </p>
                 <div className="mt-4 inline-flex items-center text-sm font-semibold text-primary">
                   {p.cta} →
