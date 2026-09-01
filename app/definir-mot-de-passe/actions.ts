@@ -5,6 +5,7 @@ import { z } from "zod";
 import { hash } from "@node-rs/argon2";
 import { db } from "@/lib/db";
 import { verifierAdminToken } from "@/lib/admin-tokens";
+import { motDePasseSchema } from "@/lib/validation/mot-de-passe";
 
 export type DefinirMdpState = {
   ok: boolean;
@@ -14,10 +15,7 @@ export type DefinirMdpState = {
 const schema = z
   .object({
     token: z.string().min(20, "Lien invalide."),
-    motDePasse: z
-      .string()
-      .min(10, "Le mot de passe doit contenir au moins 10 caractères.")
-      .max(200, "Mot de passe trop long."),
+    motDePasse: motDePasseSchema,
     confirmation: z.string(),
   })
   .refine((v) => v.motDePasse === v.confirmation, {

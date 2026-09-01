@@ -111,10 +111,10 @@ export default function MentionsLegalesPage() {
               Pour toute question relative à vos données personnelles,
               contactez la DPO, Carine Aigret&nbsp;:{" "}
               <a
-                href="mailto:carine.aigret@centre.cci.fr"
+                href="mailto:dpo@centre.cci.fr"
                 className="text-primary hover:underline underline-offset-2"
               >
-                carine.aigret@centre.cci.fr
+                dpo@centre.cci.fr
               </a>
               .
             </p>

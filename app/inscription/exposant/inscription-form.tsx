@@ -163,7 +163,7 @@ export function InscriptionExposantForm() {
             disabled={isPending}
             className="w-full rounded-lg border border-neutral-100 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary disabled:opacity-60"
           />
-          <p className="mt-1.5 text-xs text-neutral-700">10 caractères minimum.</p>
+          <p className="mt-1.5 text-xs text-neutral-700">12 caractères minimum, avec une majuscule, une minuscule, un chiffre et un caractère spécial.</p>
           <FieldError errors={state.errors?.motDePasse} />
         </div>
         <div>
@@ -188,7 +188,59 @@ export function InscriptionExposantForm() {
 
       <hr className="border-neutral-100" />
 
-      <label className="flex items-start gap-3 rounded-lg border border-neutral-100 bg-neutral-50 p-4 cursor-pointer">
+      {/* Mention d'information fournie par la DPO de la CCI. Le traitement
+          repose sur l'exécution du contrat de participation, pas sur le
+          consentement : la case ci-dessous vaut prise de connaissance et non
+          autorisation, et sert de trace datée. */}
+      <div className="rounded-lg border border-neutral-100 bg-neutral-50 p-4 text-xs leading-relaxed text-neutral-700">
+        <p className="font-semibold text-neutral-900 mb-1.5">
+          Traitement de vos données personnelles
+        </p>
+        <p>
+          Les données recueillies via ce formulaire font l'objet, par la CCI
+          Centre-Val de Loire, d'un traitement informatisé destiné à la création
+          de votre compte sur la plateforme MIVL Connect à des fins de gestion
+          de votre inscription en tant qu'exposant au salon Made In Val de
+          Loire. Vos données seront conservées 10 ans selon l'instruction
+          d'archivage des CCI DPACI/RES/2005. La CCI Centre-Val de Loire est
+          susceptible de réutiliser vos données pour vous adresser une enquête
+          de satisfaction et/ou un bilan de l'évènement (optionnel).
+        </p>
+        <p className="mt-2">
+          Conformément au Règlement Général sur la Protection des Données
+          (RGPD) 2016/679 et à la loi informatique et libertés du 6 janvier
+          1978 modifiée, vous bénéficiez d'un droit d'accès, de rectification,
+          d'effacement, de portabilité et de limitation du traitement de vos
+          données, que vous pouvez exercer auprès du délégué à la protection
+          des données personnelles de la CCI Centre-Val de Loire par mail à{" "}
+          <a
+            href="mailto:dpo@centre.cci.fr"
+            className="text-primary underline underline-offset-2"
+          >
+            dpo@centre.cci.fr
+          </a>
+          . Vous avez le droit d'introduire une réclamation auprès de la
+          Commission Nationale de l'Informatique et des Libertés (
+          <a
+            href="https://www.cnil.fr"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary underline underline-offset-2"
+          >
+            www.cnil.fr
+          </a>
+          ). Voir aussi notre{" "}
+          <Link
+            href="/confidentialite"
+            className="text-primary underline underline-offset-2"
+          >
+            politique de confidentialité
+          </Link>
+          .
+        </p>
+      </div>
+
+      <label className="flex items-start gap-3 rounded-lg border border-neutral-100 p-4 cursor-pointer">
         <input
           type="checkbox"
           name="rgpdConsent"
@@ -197,16 +249,7 @@ export function InscriptionExposantForm() {
           className="mt-0.5 h-4 w-4 rounded border-neutral-100 text-primary focus:ring-primary/30"
         />
         <span className="text-sm text-neutral-700">
-          J'accepte que mes données soient traitées par la CCI Centre-Val de
-          Loire pour la gestion de ma participation au salon Made In Val de
-          Loire 2026. Voir notre{" "}
-          <Link
-            href="/confidentialite"
-            className="text-primary underline underline-offset-2"
-          >
-            politique de confidentialité
-          </Link>
-          .
+          J'ai pris connaissance des informations ci-dessus.
         </span>
       </label>
       <FieldError errors={state.errors?.rgpdConsent} />

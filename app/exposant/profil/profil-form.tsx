@@ -139,6 +139,33 @@ export function ProfilForm({
         </div>
       )}
 
+      {/* ── Finalités, annoncées avant la collecte ──────────────────── */}
+      <section className="rounded-lg border border-primary/20 bg-primary/5 p-4 text-sm leading-relaxed">
+        <p className="font-semibold text-neutral-900 mb-1.5">
+          À quoi servent les informations demandées
+        </p>
+        <ul className="list-disc pl-5 space-y-1 text-neutral-700">
+          <li>
+            à la <strong>validation de votre participation</strong> par la CCI
+            Centre-Val de Loire&nbsp;;
+          </li>
+          <li>
+            à votre <strong>publication dans l'annuaire public</strong> du
+            salon — identité, secteurs, description, offres et logo y
+            figurent&nbsp;;
+          </li>
+          <li>
+            à la <strong>mise en relation avec les visiteurs</strong> le jour du
+            salon.
+          </li>
+        </ul>
+        <p className="mt-2 text-neutral-700">
+          Les coordonnées du référent de stand, demandées en fin de formulaire,
+          ne sont <strong>pas publiées</strong>&nbsp;: elles servent uniquement
+          à l'organisation.
+        </p>
+      </section>
+
       {/* ── Section 1 : Identité entreprise ────────────────────────── */}
       <Section
         title="Identité de l'entreprise"
@@ -224,52 +251,7 @@ export function ProfilForm({
 
       <hr className="border-neutral-100" />
 
-      {/* ── Section 2 : Contact référent ───────────────────────────── */}
-      <Section
-        title="Référent présent sur le stand"
-        description="La personne qui coordonne l'équipe le jour du salon."
-      >
-        <Field label="Prénom et nom" name="nomContact" required errors={errors}>
-          <input
-            type="text"
-            name="nomContact"
-            defaultValue={exposant.nomContact ?? ""}
-            disabled={fullLock}
-            placeholder="Marie Dupont"
-            className={inputClass}
-          />
-        </Field>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field
-            label="Téléphone"
-            name="telephoneContact"
-            required
-            errors={errors}
-          >
-            <input
-              type="tel"
-              name="telephoneContact"
-              defaultValue={exposant.telephoneContact ?? ""}
-              disabled={fullLock}
-              className={inputClass}
-            />
-          </Field>
-          <Field label="Fonction" name="fonctionContact" required errors={errors}>
-            <input
-              type="text"
-              name="fonctionContact"
-              defaultValue={exposant.fonctionContact ?? ""}
-              disabled={fullLock}
-              placeholder="DRH, dirigeant, responsable communication…"
-              className={inputClass}
-            />
-          </Field>
-        </div>
-      </Section>
-
-      <hr className="border-neutral-100" />
-
-      {/* ── Section 3 : Secteurs & description ─────────────────────── */}
+      {/* ── Section 2 : Secteurs & description ─────────────────────── */}
       <Section
         title="Secteurs d'activité"
         description="Sélectionnez toutes les catégories correspondant à votre activité."
@@ -316,7 +298,7 @@ export function ProfilForm({
 
       <hr className="border-neutral-100" />
 
-      {/* ── Section 4 : Offres aux visiteurs ───────────────────────── */}
+      {/* ── Section 3 : Offres aux visiteurs ───────────────────────── */}
       <Section
         title="Ce que vous proposez aux visiteurs"
         description="Un ou plusieurs types d'offres pour matcher avec les profils (jeunes, scolaires, demandeurs d'emploi)."
@@ -382,7 +364,7 @@ export function ProfilForm({
 
       <hr className="border-neutral-100" />
 
-      {/* ── Section 5 : Stand ───────────────────────────────────────── */}
+      {/* ── Section 4 : Stand ───────────────────────────────────────── */}
       <Section
         title="Que présentez-vous sur le stand ?"
         description="Ce qui sera physiquement visible ou manipulable par les visiteurs."
@@ -412,7 +394,7 @@ export function ProfilForm({
 
       <hr className="border-neutral-100" />
 
-      {/* ── Section 6 : Animations ─────────────────────────────────── */}
+      {/* ── Section 5 : Animations ─────────────────────────────────── */}
       <Section
         title="Animations et interventions"
         description="Laissez vide si vous n'en prévoyez pas."
@@ -428,7 +410,7 @@ export function ProfilForm({
 
       <hr className="border-neutral-100" />
 
-      {/* ── Section 7 : Innovation ─────────────────────────────────── */}
+      {/* ── Section 6 : Innovation ─────────────────────────────────── */}
       <Section
         title="Innovation à mettre en avant"
         description="Optionnel. Les innovations mises en avant pourront être relayées dans la communication presse CCI."
@@ -471,7 +453,7 @@ export function ProfilForm({
 
       <hr className="border-neutral-100" />
 
-      {/* ── Section 8 : Recrutement & consentement ─────────────────── */}
+      {/* ── Section 7 : Recrutement & consentement ─────────────────── */}
       <Section
         title="Recrutement et communication"
         description=""
@@ -530,6 +512,51 @@ export function ProfilForm({
 
       <hr className="border-neutral-100" />
 
+      {/* ── Section 8 : Contact référent (non publié) ──────────────── */}
+      <Section
+        title="Référent présent sur le stand"
+        description="Réservé à l'organisation du salon. Ces coordonnées ne sont pas publiées dans l'annuaire public."
+      >
+        <Field label="Prénom et nom" name="nomContact" required errors={errors}>
+          <input
+            type="text"
+            name="nomContact"
+            defaultValue={exposant.nomContact ?? ""}
+            disabled={fullLock}
+            placeholder="Marie Dupont"
+            className={inputClass}
+          />
+        </Field>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Field
+            label="Téléphone"
+            name="telephoneContact"
+            required
+            errors={errors}
+          >
+            <input
+              type="tel"
+              name="telephoneContact"
+              defaultValue={exposant.telephoneContact ?? ""}
+              disabled={fullLock}
+              className={inputClass}
+            />
+          </Field>
+          <Field label="Fonction" name="fonctionContact" required errors={errors}>
+            <input
+              type="text"
+              name="fonctionContact"
+              defaultValue={exposant.fonctionContact ?? ""}
+              disabled={fullLock}
+              placeholder="DRH, dirigeant, responsable communication…"
+              className={inputClass}
+            />
+          </Field>
+        </div>
+      </Section>
+
+      <hr className="border-neutral-100" />
+
       {/* ── Mention RGPD ────────────────────────────────────────────── */}
       <section className="rounded-lg border border-neutral-100 bg-neutral-50 p-4 text-xs text-neutral-700 leading-relaxed">
         <p className="mb-2">
@@ -538,7 +565,7 @@ export function ProfilForm({
           Loire pour l'organisation du salon MIVL 2026, la validation de votre
           participation et la mise en relation avec les visiteurs. Base légale :
           exécution d'un contrat et consentement (case ci-dessus pour la
-          communication). Conservation : 2 ans après la fin du salon.
+          communication). Conservation : 10 ans, conformément à l'instruction d'archivage des CCI DPACI/RES/2005.
         </p>
         <p>
           Vous pouvez exercer vos droits (accès, rectification, effacement,

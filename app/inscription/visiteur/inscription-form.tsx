@@ -81,7 +81,7 @@ export function InscriptionVisiteurForm() {
         errors={state.errors?.motDePasse}
         disabled={pending}
       />
-      <p className="text-xs text-neutral-500 -mt-3">10 caractères minimum.</p>
+      <p className="text-xs text-neutral-500 -mt-3">12 caractères minimum, avec une majuscule, une minuscule, un chiffre et un caractère spécial.</p>
 
       <Field
         label="Confirmer le mot de passe"

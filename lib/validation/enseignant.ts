@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { motDePasseSchema } from "./mot-de-passe";
 
 export const inscriptionEnseignantSchema = z.object({
   email: z.string().min(1, "L'email est requis").email("Email invalide").toLowerCase().trim(),
@@ -9,10 +10,7 @@ export const inscriptionEnseignantSchema = z.object({
   matiere: z.string().max(100).trim().optional().or(z.literal("")),
   niveau: z.enum(["QUATRIEME", "TROISIEME", "SECONDE"]).optional(),
   rgpdConsent: z.literal("on", { message: "Vous devez accepter la politique de confidentialité" }),
-  motDePasse: z
-    .string()
-    .min(10, "Le mot de passe doit contenir au moins 10 caractères.")
-    .max(200, "Mot de passe trop long."),
+  motDePasse: motDePasseSchema,
   confirmation: z.string().min(1, "Confirmation requise."),
 }).refine((v) => v.motDePasse === v.confirmation, {
   path: ["confirmation"],

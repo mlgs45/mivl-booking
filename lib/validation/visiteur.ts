@@ -1,10 +1,8 @@
 import { z } from "zod";
+import { motDePasseSchema } from "./mot-de-passe";
 
 const motDePasseFields = {
-  motDePasse: z
-    .string()
-    .min(10, "Le mot de passe doit contenir au moins 10 caractères.")
-    .max(200, "Mot de passe trop long."),
+  motDePasse: motDePasseSchema,
   confirmation: z.string().min(1, "Confirmation requise."),
 };
 

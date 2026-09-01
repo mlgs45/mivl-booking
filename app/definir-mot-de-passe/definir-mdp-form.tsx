@@ -38,12 +38,12 @@ export function DefinirMdpForm({
           name="motDePasse"
           type="password"
           required
-          minLength={10}
+          minLength={12}
           autoComplete="new-password"
           className="w-full px-4 py-3 rounded-lg border border-neutral-100 bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
         />
         <p className="mt-1 text-xs text-neutral-700">
-          10 caractères minimum.
+          12 caractères minimum, avec une majuscule, une minuscule, un chiffre et un caractère spécial.
         </p>
       </div>
 
@@ -59,7 +59,7 @@ export function DefinirMdpForm({
           name="confirmation"
           type="password"
           required
-          minLength={10}
+          minLength={12}
           autoComplete="new-password"
           className="w-full px-4 py-3 rounded-lg border border-neutral-100 bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
         />

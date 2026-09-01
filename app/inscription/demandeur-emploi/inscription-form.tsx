@@ -52,7 +52,7 @@ export function InscriptionDEForm() {
           type="password"
           autoComplete="new-password"
           required
-          hint="10 caractères minimum."
+          hint="12 caractères minimum, avec une majuscule, une minuscule, un chiffre et un caractère spécial."
           errors={state.errors?.motDePasse}
           disabled={pending}
         />

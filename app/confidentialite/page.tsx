@@ -28,10 +28,10 @@ export default function ConfidentialitePage() {
               Déléguée à la protection des données (DPO)&nbsp;: Carine
               AIGRET —{" "}
               <a
-                href="mailto:carine.aigret@centre.cci.fr"
+                href="mailto:dpo@centre.cci.fr"
                 className="text-primary hover:underline underline-offset-2"
               >
-                carine.aigret@centre.cci.fr
+                dpo@centre.cci.fr
               </a>
               .
             </p>
@@ -99,10 +99,14 @@ export default function ConfidentialitePage() {
 
           <Section title="Durée de conservation">
             <p>
-              Les données sont conservées pendant 2 ans après la fin du salon,
-              puis archivées ou supprimées conformément à la politique
-              d'archivage de la CCI. Les logs de sécurité sont conservés 12
-              mois.
+              Les données liées à votre participation au salon sont conservées
+              <strong> 10 ans</strong>, conformément à l'instruction
+              d'archivage des CCI DPACI/RES/2005, puis archivées ou supprimées
+              selon la politique d'archivage de la CCI.
+            </p>
+            <p>
+              Les logs de sécurité sont conservés 12 mois, et les données de
+              navigation issues de la mesure d'audience 13 mois.
             </p>
           </Section>
 
@@ -135,10 +139,10 @@ export default function ConfidentialitePage() {
             <p>
               Pour exercer ces droits, contactez la DPO de la CCI à&nbsp;:{" "}
               <a
-                href="mailto:carine.aigret@centre.cci.fr"
+                href="mailto:dpo@centre.cci.fr"
                 className="text-primary hover:underline underline-offset-2"
               >
-                carine.aigret@centre.cci.fr
+                dpo@centre.cci.fr
               </a>
               . Une réponse vous sera apportée dans un délai d'un mois
               maximum.
@@ -190,6 +194,45 @@ export default function ConfidentialitePage() {
                 supprimées au terme de ce délai.
               </li>
             </ul>
+            <p className="font-semibold text-neutral-900 pt-2">
+              Cookies déposés
+            </p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs border-collapse">
+                <thead>
+                  <tr className="text-left border-b border-neutral-100">
+                    <th className="py-2 pr-3 font-semibold">Cookie</th>
+                    <th className="py-2 pr-3 font-semibold">Finalité</th>
+                    <th className="py-2 font-semibold">Durée</th>
+                  </tr>
+                </thead>
+                <tbody className="align-top">
+                  {[
+                    ["__Secure-authjs.session-token", "Maintien de votre session une fois connecté", "30 jours"],
+                    ["__Host-authjs.csrf-token", "Protection contre la falsification de requête", "Session"],
+                    ["__Secure-authjs.callback-url", "Redirection après connexion", "Session"],
+                    ["_pk_id", "Mesure d'audience — identifiant de visiteur anonyme", "13 mois"],
+                    ["_pk_ses", "Mesure d'audience — visite en cours", "30 minutes"],
+                    ["_pk_ref", "Mesure d'audience — provenance de la visite", "6 mois"],
+                    ["matomo_ignore", "Mémorise votre refus de la mesure d'audience", "2 ans"],
+                  ].map(([nom, finalite, duree]) => (
+                    <tr key={nom} className="border-b border-neutral-100/60">
+                      <td className="py-2 pr-3 font-mono text-[11px] break-all">{nom}</td>
+                      <td className="py-2 pr-3">{finalite}</td>
+                      <td className="py-2 whitespace-nowrap">{duree}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p>
+              Les trois premiers sont strictement nécessaires au fonctionnement
+              du service. Aucun cookie publicitaire n'est déposé à ce jour&nbsp;;
+              si cela devait changer, votre consentement serait recueilli au
+              préalable et ces cookies ne seraient déposés qu'après votre
+              acceptation.
+            </p>
+
             <p>
               <strong>S'opposer à la mesure d'audience</strong> — vous pouvez
               refuser cette mesure à tout moment à l'aide de la case
