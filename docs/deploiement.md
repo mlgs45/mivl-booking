@@ -57,7 +57,7 @@ echo "$DB"
 
 | Paramètre | Valeur                                                |
 |-----------|-------------------------------------------------------|
-| Hôte      | IP **publique** de data-01 (voir `DATABASE_URL` Coolify) |
+| Hôte      | IP **privée** de data-01, réseau `10.0.0.0/16` (voir `DATABASE_URL` Coolify) |
 | Port      | `5437` (publié par le conteneur proxy Coolify)        |
 | Base      | `postgres`                                            |
 | Rôle      | `postgres` (seul rôle avec login sur l'instance)      |
@@ -66,32 +66,48 @@ echo "$DB"
 > n'existe pas — les deux figuraient dans les versions antérieures de ce
 > guide et toutes les commandes qui s'en servaient échouaient.
 
-### ⚠️ Le réseau privé Hetzner existe mais n'est pas utilisé
+### Réseau privé — en service depuis le 02/09/2026
 
 Les deux serveurs disposent d'une interface privée (`enp7s0`, réseau
-`10.0.0.0/24`) et se routent mutuellement dessus. Mais `DATABASE_URL` pointe
-l'**IP publique** de data-01, et la règle iptables autorise l'**IP publique**
-de compute-01 : le trafic applicatif sort donc par l'interface publique de
-compute-01 et rentre par celle de data-01.
+`10.0.0.0/16`) et se routent mutuellement dessus. `DATABASE_URL` pointe
+désormais l'**IP privée** de data-01, et la règle iptables n'autorise plus que
+l'**IP privée** de compute-01 : le trafic applicatif ne transite plus par
+Internet.
 
-Or `ssl` est à `off` côté PostgreSQL et toutes les connexions actives sont
-non chiffrées (`pg_stat_ssl.ssl = f`). **Toutes les données personnelles
-(exposants, enseignants, visiteurs : noms, emails, téléphones) transitent
-donc en clair sur le réseau public**, alors qu'un lien privé inutilisé est
-disponible.
-
-Bascule vers le réseau privé — **dans cet ordre**, sous peine de coupure :
+Bascule réalisée le 02/09/2026. L'ordre ci-dessous est celui qui a été suivi ;
+le respecter si l'opération doit être rejouée, sous peine de coupure :
 
 1. sur data-01, autoriser l'IP privée de compute-01 :
    `iptables -I DOCKER-USER -p tcp --dport 5437 -s <ip-privée-compute-01> -j ACCEPT`
 2. `netfilter-persistent save`
 3. dans Coolify, remplacer l'hôte de `DATABASE_URL` par l'IP privée de
    data-01, puis redéployer
-4. vérifier que l'app repart (`docker logs`), puis seulement alors retirer la
-   règle `ACCEPT` portant sur l'IP publique de compute-01, et sauvegarder
+4. vérifier que l'app repart (`docker logs`, `prisma migrate status`), **puis
+   seulement alors** retirer la règle `ACCEPT` portant sur l'IP publique de
+   compute-01, et sauvegarder
 
-Tant que cette bascule n'est pas faite, la seule protection reste l'allowlist
-iptables (cf. §2.5).
+Pour vérifier que le trafic emprunte réellement la voie privée — remettre les
+compteurs à zéro, forcer une connexion, relire :
+
+```bash
+ssh htz-data 'iptables -Z DOCKER-USER'
+# $APP défini comme plus haut, sur compute-01
+docker exec "$APP" ./migrator/node_modules/.bin/prisma migrate status
+ssh htz-data 'iptables -L DOCKER-USER -v -n | grep 5437'
+# attendu : compteur non nul sur la règle privée, zéro sur le DROP
+```
+
+> ⚠️ Le pool Prisma conserve ses connexions ouvertes, et le trafic déjà établi
+> ne retraverse pas `DOCKER-USER` (conntrack). Charger une page en cache ne
+> prouve donc rien : il faut forcer l'ouverture d'une nouvelle connexion.
+
+### ⚠️ Reste à faire : les connexions ne sont pas chiffrées
+
+`ssl` est à `off` côté PostgreSQL, et `pg_stat_ssl.ssl = f` sur toutes les
+connexions actives. Le réseau privé met le trafic hors de portée d'Internet,
+il ne le chiffre pas : un accès à l'un des deux hôtes ou au réseau du
+fournisseur permettrait toujours de le lire en clair. Activer TLS côté serveur
+puis passer `sslmode=require` dans `DATABASE_URL` reste à faire.
 
 ---
 
@@ -158,7 +174,7 @@ Contient :
 Valeurs sensibles → champ `Secret`.
 
 ```env
-DATABASE_URL=postgres://postgres:PASSWORD@<ip-publique-data-01>:5437/postgres
+DATABASE_URL=postgres://postgres:PASSWORD@<ip-privée-data-01>:5437/postgres
 AUTH_SECRET=<openssl rand -base64 32>
 AUTH_URL=https://connect.mivl-orleans.fr
 BREVO_API_KEY=<clé Brevo>
@@ -206,18 +222,20 @@ donc exposé sur l'interface publique. UFW ne filtre pas le trafic Docker
 protégée par `iptables` directement, dans la chaîne `DOCKER-USER` :
 
 ```bash
-# Sur data-01 — noter le port 5437, et l'IP *publique* de compute-01
-iptables -I DOCKER-USER -p tcp --dport 5437 -s <ip-publique-compute-01> -j ACCEPT
+# Sur data-01 — noter le port 5437, et l'IP *privée* de compute-01
+iptables -I DOCKER-USER -p tcp --dport 5437 -s <ip-privée-compute-01> -j ACCEPT
 iptables -I DOCKER-USER -p tcp --dport 5437 -j DROP
 
 # Persister (package iptables-persistent)
 netfilter-persistent save
 ```
 
-**État vérifié le 27/07/2026** : les deux règles sont actives, persistées
+**État vérifié le 02/09/2026** : les deux règles sont actives, persistées
 dans `/etc/iptables/rules.v4`, `netfilter-persistent` est activé, et le port
 5437 testé depuis une IP hors allowlist part en timeout. La base n'est pas
-joignable depuis Internet.
+joignable depuis Internet. Depuis la bascule sur le réseau privé, l'unique
+règle `ACCEPT` porte sur l'IP **privée** de compute-01 : l'IP publique n'est
+plus autorisée.
 
 Contrôler après tout reboot de data-01, réinstallation OS ou changement de
 port côté Coolify :
@@ -292,27 +310,61 @@ ssh htz-data
 docker exec -it "$DB" psql -U postgres -d postgres
 ```
 
-### Backup manuel
+### Sauvegarde automatique quotidienne
 
-À faire **avant tout push portant une migration de schéma**.
+En place depuis le 02/09/2026. **Il n'y a plus rien à lancer à la main avant un
+push** : la sauvegarde tourne toutes les nuits, et la seule intervention
+manuelle utile est de vérifier le journal si un doute survient.
 
-```bash
-# Dans la session ssh htz-data, $DB défini
-STAMP=$(date +%Y%m%d_%H%M%S)
-docker exec "$DB" pg_dump -U postgres -d postgres --no-owner --no-privileges \
-  | gzip > "/tmp/backup_$STAMP.sql.gz"
-ls -lh "/tmp/backup_$STAMP.sql.gz"
-exit
+| | |
+|---|---|
+| Où tourne le travail | **compute-01** — pas sur la machine qu'il sauvegarde |
+| Déclenchement | minuterie systemd `mivl-backup.timer`, 03h30 UTC, `Persistent=true` |
+| Script | `/usr/local/bin/mivl-backup.sh` |
+| Dépôt | `/var/backups/mivl/quotidien/` et `/hebdo/` sur compute-01 |
+| Rétention | 14 quotidiennes, 8 hebdomadaires (copie du dimanche) |
+| Journal | `/var/log/mivl-backup.log` |
+| Alerte | e-mail Brevo à `SUPER_ADMIN_EMAIL` à chaque échec |
 
-# Puis, depuis le poste local — ne pas laisser le seul exemplaire sur data-01
-scp htz-data:/tmp/backup_*.sql.gz .
+Le dump est tiré de data-01 **par le réseau privé**, au moyen d'une clé SSH
+dédiée (`/root/.ssh/mivl-backup` sur compute-01) dont l'entrée dans
+`authorized_keys` de data-01 porte une **commande forcée** :
+
+```
+command="/usr/local/bin/mivl-dump.sh",no-port-forwarding,no-agent-forwarding,no-X11-forwarding,no-pty,no-user-rc
 ```
 
-Vérifier que le dump n'est pas vide avant de considérer le backup fait :
+Cette clé ne permet donc rien d'autre que d'obtenir un dump : toute commande
+demandée est ignorée au profit de `mivl-dump.sh`, qui découvre le conteneur
+PostgreSQL et émet un `pg_dump` compressé sur la sortie standard.
+
+**Le dump est vérifié avant d'être mis en place** — intégrité `gzip -t`, puis
+nombre de tables ≥ 21. Un dump douteux est supprimé, aucune rotation n'a lieu,
+et l'alerte part : une sauvegarde valide n'est jamais écrasée par une
+sauvegarde ratée.
+
+Contrôler l'état :
 
 ```bash
-gunzip -c backup_YYYYMMDD_HHMMSS.sql.gz | grep -c "CREATE TABLE"   # attendu : 21
+ssh htz-compute 'systemctl list-timers mivl-backup.timer --no-pager'
+ssh htz-compute 'tail -5 /var/log/mivl-backup.log'
+ssh htz-compute 'ls -lh /var/backups/mivl/quotidien/ | tail -5'
 ```
+
+Forcer une exécution immédiate (avant une opération sensible, par exemple) :
+
+```bash
+ssh htz-compute '/usr/local/bin/mivl-backup.sh && tail -2 /var/log/mivl-backup.log'
+```
+
+> ⚠️ **Ce que cette sauvegarde ne couvre pas.** compute-01 est une autre
+> machine que data-01, mais chez le même hébergeur. Le dispositif protège
+> d'une panne disque, d'une erreur d'exploitation ou d'une suppression
+> accidentelle — pas de la perte du compte Hetzner ni d'un sinistre affectant
+> le fournisseur. Un dépôt sur un stockage CCI reste à ajouter.
+>
+> Il ne couvre pas non plus le **volume des logos exposants**
+> (`/data/mivl-booking/uploads` sur compute-01), qui n'est pas dans le dump.
 
 ### Restauration
 
@@ -365,44 +417,63 @@ Ces variables vivent dans l'interface Coolify (champs `Secret`).
 2. Si une migration fautive a été appliquée : restaurer le dernier backup (cf. §4) puis redéployer la version précédente
 3. Prisma ne downgrade pas automatiquement — pour un rollback de schéma, il faut une migration inverse commitée dans le repo
 
-### ⚠️ Les migrations ne rejouent pas sur une base vierge
+### Reconstruction sur une base vierge — corrigée le 02/09/2026
 
-Reconstruire la base à partir de zéro (`prisma migrate deploy` sur une base
-vide : sinistre, nouvel environnement de staging) **échoue aujourd'hui** :
+`prisma migrate deploy` sur une base vide fonctionne : les 19 migrations
+s'appliquent dans l'ordre.
 
+Ce n'était pas le cas jusqu'au 02/09/2026. Le dossier
+`20260512_visiteur_compte_programme` n'avait qu'un horodatage à 8 chiffres, et
+**Prisma trie sur la valeur numérique du préfixe** : `20260512` passait donc
+avant `20260512074902_add_visiteur`, qui crée pourtant la table dont il dépend.
+La reconstruction s'arrêtait sur `relation "Visiteur" does not exist`.
+
+> Attention au piège de raisonnement : en tri par octets, `0` (0x30) précède
+> `_` (0x5F), et l'ordre *paraît* correct. Ce n'est pas le tri qu'applique
+> Prisma. Ne pas conclure sans avoir rejoué les migrations sur une base vide.
+
+Correctif appliqué :
+
+1. dossier renommé en `20260512125447_visiteur_compte_programme` — l'horodatage
+   est celui de son application réelle en production (12:54:47), et il le place
+   après `20260512123207_ouverture_rdv` ;
+2. en production, une ligne portant le nouveau nom a d'abord été **ajoutée** à
+   `_prisma_migrations` à côté de l'ancienne, avec le même `checksum` : tant que
+   les deux lignes coexistaient, l'ancien conteneur comme le nouveau
+   répondaient « No pending migrations to apply », et un redémarrage inopiné
+   pendant la bascule était sans conséquence ;
+3. l'ancienne ligne n'a été supprimée qu'après le redéploiement.
+
+Vérifier que la reconstruction fonctionne toujours — à refaire après toute
+nouvelle migration :
+
+```bash
+# Sur data-01 : base jetable
+ssh htz-data 'docker exec "$DB" psql -U postgres -d postgres \
+  -c "DROP DATABASE IF EXISTS migrate_test;" -c "CREATE DATABASE migrate_test;"'
+
+# Sur compute-01 : rejouer l'historique complet dedans, depuis le conteneur
+ssh htz-compute
+docker exec "$APP" sh -c '
+  DB_TEST=$(printf "%s" "$DATABASE_URL" | sed "s|/postgres$|/migrate_test|")
+  DATABASE_URL="$DB_TEST" ./migrator/node_modules/.bin/prisma migrate deploy'
+# attendu : "All migrations have been successfully applied."
+
+# Puis supprimer la base jetable
 ```
-Applying migration `20260512_visiteur_compte_programme`
-ERROR: relation "Visiteur" does not exist
-```
-
-Le dossier `20260512_visiteur_compte_programme` n'a pas d'horodatage complet
-et Prisma le trie **avant** `20260512074902_add_visiteur`, qui crée pourtant
-la table dont il dépend.
-
-La production n'est pas concernée : ces deux migrations y ont été appliquées
-incrémentalement dans le bon ordre le 12/05/2026, et `migrate deploy` ne
-rejoue que ce qui manque dans `_prisma_migrations`.
-
-Correctif à prévoir : renommer le dossier en
-`20260512130000_visiteur_compte_programme` et mettre à jour la ligne
-`migration_name` correspondante dans `_prisma_migrations` en prod, sans quoi
-la migration serait rejouée au prochain déploiement.
-
-**En attendant, la restauration d'un backup (§4) est le seul chemin de
-reconstruction fiable** — elle restitue le schéma et `_prisma_migrations`
-d'un coup, sans rejouer l'historique.
-
----
 
 ## 7. Checklist d'un redéploiement sain
 
 - [ ] Typecheck + lint OK en local (`pnpm typecheck && pnpm lint`)
 - [ ] Aucune nouvelle variable d'env sans valeur définie dans Coolify
-- [ ] Si migration de schéma : backup DB avant push (§4)
+- [ ] Si migration de schéma : la sauvegarde de la nuit est-elle passée ? (`tail -2 /var/log/mivl-backup.log`)
+      Au moindre doute, forcer une exécution (§4) — ne pas pousser sans sauvegarde fraîche
 - [ ] Si migration de schéma : aucune page prérendue ne lit une colonne ajoutée
       par cette migration sans lecture tolérante (§3, blocage circulaire)
 - [ ] Push main → attendre fin du build Coolify (logs verts)
 - [ ] `SOURCE_COMMIT` du conteneur = le commit poussé (§1)
 - [ ] `docker exec "$APP" ./migrator/node_modules/.bin/prisma migrate status` = « Database schema is up to date! »
+- [ ] Si migration de schéma : rejouer l'historique sur une base vierge (§6) — une migration mal horodatée casse la reconstruction sans se voir en production
 - [ ] Vérifier `/connexion/admin` : login password OK
-- [ ] Vérifier `/connexion` : envoi OTP + réception Brevo + validation code OK
+- [ ] Vérifier `/connexion` : connexion email + mot de passe OK
+- [ ] Vérifier `/mot-de-passe-oublie` : réception du lien Brevo et redéfinition du mot de passe OK
