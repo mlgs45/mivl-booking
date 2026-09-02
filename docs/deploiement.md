@@ -134,6 +134,14 @@ puis passer `sslmode=require` dans `DATABASE_URL` reste à faire.
 
 `git push origin main` → webhook Coolify → build Docker → démarrage du conteneur.
 
+> ⚠️ Le webhook est celui de la **GitHub App `coolify-mlgs45`**, réglé côté
+> GitHub (*Settings → Developer settings → GitHub Apps → coolify-mlgs45 →
+> Webhook URL*). Depuis la fermeture du port 8000 le 02/09/2026, il doit
+> pointer sur **`https://web.mlanglois.fr/webhooks/source/github/events`** —
+> une URL en `IP:8000` n'atteint plus Coolify, et les push ne déploient plus
+> rien, sans erreur visible côté git. Symptôme : `SOURCE_COMMIT` du conteneur
+> reste en arrière du dépôt. Contrôle : Coolify → application → *Deployments*.
+
 Le `Dockerfile` (multi-stage, standalone Next.js) fait **deux choses au démarrage** (voir `CMD` en bas du Dockerfile) :
 
 1. `prisma migrate deploy` — applique les migrations en attente (idempotent, no-op si rien à faire)
