@@ -6,6 +6,8 @@ import { hash } from "@node-rs/argon2";
 import { db } from "@/lib/db";
 import { signIn } from "@/auth";
 import { inscriptionExposantSchema } from "@/lib/validation/exposant";
+import { checkInscriptionRateLimit, messageAttente } from "@/lib/rate-limit";
+import { clientIp } from "@/lib/request-ip";
 
 export type InscriptionState = {
   ok: boolean;
@@ -17,6 +19,11 @@ export async function inscrireExposant(
   _prev: InscriptionState,
   formData: FormData
 ): Promise<InscriptionState> {
+  const rate = await checkInscriptionRateLimit(await clientIp());
+  if (!rate.allowed) {
+    return { ok: false, message: messageAttente(rate.retryAfterSeconds) };
+  }
+
   const parsed = inscriptionExposantSchema.safeParse({
     email: formData.get("email"),
     prenom: formData.get("prenom"),

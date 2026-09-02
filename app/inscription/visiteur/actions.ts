@@ -7,6 +7,8 @@ import { db } from "@/lib/db";
 import { signIn } from "@/auth";
 import { sendEmail } from "@/lib/emails";
 import { inscriptionVisiteurSchema } from "@/lib/validation/visiteur";
+import { checkInscriptionRateLimit, messageAttente } from "@/lib/rate-limit";
+import { clientIp } from "@/lib/request-ip";
 
 export type InscriptionVisiteurState = {
   ok: boolean;
@@ -18,6 +20,11 @@ export async function inscrireVisiteur(
   _prev: InscriptionVisiteurState,
   formData: FormData,
 ): Promise<InscriptionVisiteurState> {
+  const rate = await checkInscriptionRateLimit(await clientIp());
+  if (!rate.allowed) {
+    return { ok: false, message: messageAttente(rate.retryAfterSeconds) };
+  }
+
   const parsed = inscriptionVisiteurSchema.safeParse({
     email: formData.get("email"),
     prenom: formData.get("prenom"),

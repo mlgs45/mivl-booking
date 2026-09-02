@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { homePathForRole } from "@/lib/auth-redirect";
 import { checkLoginRateLimit } from "@/lib/rate-limit";
 import { clientIp } from "@/lib/request-ip";
+import { empreinteEmail } from "@/lib/audit";
 import { Button } from "@/components/ui/button";
 
 export const metadata = {
@@ -31,7 +32,12 @@ async function connexionAction(formData: FormData) {
   } catch (error) {
     if (error instanceof AuthError) {
       await db.auditLog.create({
-        data: { action: "auth.signin_failed", entite: "User", ip, payload: { email } },
+        data: {
+            action: "auth.signin_failed",
+            entite: "User",
+            ip,
+            payload: empreinteEmail(email),
+          },
       });
       redirect(`/connexion?erreur=true`);
     }

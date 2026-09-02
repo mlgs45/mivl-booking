@@ -10,6 +10,8 @@ import {
   ACCEPTED_LOGO_TYPES,
   LOGOS_DIR,
   removeLogoFileIfExists,
+  contenuEstUneImage,
+  MESSAGE_CONTENU_INVALIDE,
 } from "@/lib/logo-storage";
 
 export type LogoState = {
@@ -48,8 +50,13 @@ export async function televerserLogo(
     return { ok: false, message: "Format non supporté (PNG, JPG, WEBP)." };
   }
 
-  const filename = `${exposant.id}.${ext}`;
   const buffer = Buffer.from(await file.arrayBuffer());
+  // Le type déclaré par le navigateur ne suffit pas : on vérifie les octets.
+  if (!contenuEstUneImage(buffer, ext)) {
+    return { ok: false, message: MESSAGE_CONTENU_INVALIDE };
+  }
+
+  const filename = `${exposant.id}.${ext}`;
   const logoUrl = `/api/logos/${filename}`;
 
   try {
