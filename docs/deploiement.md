@@ -253,23 +253,35 @@ au-dessus). La protection est `iptables`, chaîne `DOCKER-USER`, persistée par
 |---|---|---|
 | 5437 | MIVL Connect | IP privée de compute-01 uniquement |
 | 5440 | (autre projet) | interface privée `enp7s0` uniquement |
-| 5433, 5435, 5438, 5439 | pack-objectif, cci-repere, cci-hello, mail-mlgs | IP publique **et** privée de compute-01 |
+| 5433, 5435, 5438, 5439 | pack-objectif, cci-repere, cci-hello, mail-mlgs | IP privée de compute-01 uniquement |
 
 Les quatre dernières ont été fermées à Internet le 02/09/2026 : elles étaient
 entièrement ouvertes, et deux d'entre elles subissaient une force brute
-(3 668 et 2 012 tentatives sur sept jours). Leurs applications joignent encore
-data-01 par son IP publique ; la règle privée est en place pour permettre la
-même bascule que MIVL (§ « Réseau privé ») quand on le décidera.
+(3 668 et 2 012 tentatives sur sept jours). Le même jour, leurs applications
+ont été basculées sur l'IP privée de data-01 comme MIVL (§ « Réseau privé »),
+et l'autorisation de l'IP publique de compute-01 a été retirée. **Plus aucune
+application ne joint data-01 par Internet.**
 
-Modèle de règles pour un nouveau port — **DROP d'abord, puis les ACCEPT** :
+Un **Hetzner Cloud Firewall** est attaché aux deux serveurs depuis le
+02/09/2026 (entrant : 22, 80, 443 ; le réseau privé n'est pas filtré). C'est
+une seconde couche, indépendante de Docker et d'iptables : si une règle
+`DOCKER-USER` disparaissait, le port resterait fermé à Internet. Elle ne
+protège pas contre un client situé sur le réseau privé, d'où le maintien des
+règles ci-dessus.
+
+Modèle de règles pour un nouveau port — **DROP d'abord, puis l'ACCEPT** :
 `-I` insère en tête, donc l'ordre d'exécution est l'inverse de l'ordre de frappe.
 
 ```bash
 iptables -I DOCKER-USER 1 -p tcp --dport <port> -j DROP
-iptables -I DOCKER-USER 1 -s <ip-privée-compute-01>  -p tcp --dport <port> -j ACCEPT
-iptables -I DOCKER-USER 1 -s <ip-publique-compute-01> -p tcp --dport <port> -j ACCEPT   # si l'app passe encore par le public
+iptables -I DOCKER-USER 1 -s <ip-privée-compute-01> -p tcp --dport <port> -j ACCEPT
 netfilter-persistent save
 ```
+
+Et côté application, `DATABASE_URL` doit viser l'**IP privée** de data-01 : le
+pare-feu cloud bloque la voie publique, une application qui l'emprunterait
+encore perdrait sa base au prochain redémarrage de son pool de connexions —
+sans erreur immédiate, les pools étant paresseux.
 
 **État vérifié le 02/09/2026** : règles actives et persistées, ports testés
 depuis Internet en timeout, voie compute-01 ouverte.
