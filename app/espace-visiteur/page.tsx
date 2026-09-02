@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { AppHeader } from "@/components/layout/app-header";
-import { getRdvOuvertureConfig, isRdvOuvert } from "@/lib/rdv-ouvert";
 import { SECTEUR_LABELS } from "@/lib/referentiel/secteurs";
 import type { SecteurCode } from "@/lib/referentiel/secteurs";
 
@@ -18,9 +17,6 @@ export default async function EspaceVisiteurPage() {
     select: { id: true, prenom: true, exposantsFavoris: true },
   });
   if (!visiteur) redirect("/connexion");
-
-  const rdvConfig = await getRdvOuvertureConfig();
-  const ouvert = isRdvOuvert(rdvConfig);
 
   const favoris = visiteur.exposantsFavoris.length > 0
     ? await db.exposant.findMany({
@@ -48,41 +44,30 @@ export default async function EspaceVisiteurPage() {
           <p className="text-sm text-neutral-700 mt-1">
             Salon Made In Val de Loire — 15 octobre 2026
           </p>
+          <p className="text-sm text-neutral-700 mt-3 max-w-xl">
+            Repérez dès maintenant les entreprises que vous souhaitez rencontrer pour
+            préparer votre journée. L&apos;accès aux stands est libre : il n&apos;y a
+            aucun rendez-vous à prendre.
+          </p>
         </div>
 
-        {/* Statut ouverture */}
-        {!ouvert && (
-          <div className="mb-6 rounded-xl border border-warning/20 bg-warning/5 p-4">
-            <p className="text-sm font-medium text-neutral-800">
-              {rdvConfig.ouvertureRdvAt
-                ? `La sélection des entreprises ouvrira le ${rdvConfig.ouvertureRdvAt.toLocaleString("fr-FR", { dateStyle: "long", timeStyle: "short" })}.`
-                : "La sélection des entreprises n'est pas encore ouverte."}
-            </p>
-            <p className="text-xs text-neutral-600 mt-1">
-              Tous les visiteurs pourront préparer leur programme en même temps dès l'ouverture.
-            </p>
-          </div>
-        )}
-
-        {/* Mon programme */}
+        {/* Ma visite */}
         <div className="rounded-xl border border-neutral-100 bg-white p-6 mb-6">
           <div className="flex items-center justify-between gap-4 mb-4">
             <div>
-              <h2 className="font-heading font-semibold text-neutral-900">Mon programme</h2>
+              <h2 className="font-heading font-semibold text-neutral-900">Ma visite</h2>
               <p className="text-sm text-neutral-600 mt-0.5">
                 {favoris.length > 0
-                  ? `${favoris.length} entreprise${favoris.length > 1 ? "s" : ""} sélectionnée${favoris.length > 1 ? "s" : ""}`
-                  : "Aucune entreprise sélectionnée pour l'instant."}
+                  ? `${favoris.length} entreprise${favoris.length > 1 ? "s" : ""} à visiter`
+                  : "Aucune entreprise repérée pour l'instant."}
               </p>
             </div>
-            {ouvert && (
-              <Link
+                          <Link
                 href="/espace-visiteur/programme"
                 className="shrink-0 bg-primary hover:bg-primary/90 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
               >
                 {favoris.length > 0 ? "Modifier" : "Préparer ma visite"}
               </Link>
-            )}
           </div>
 
           {favoris.length > 0 ? (
@@ -106,11 +91,11 @@ export default async function EspaceVisiteurPage() {
                 </li>
               ))}
             </ul>
-          ) : ouvert ? (
+          ) : (
             <p className="text-sm text-neutral-500 italic">
               Parcourez les exposants et ajoutez ceux que vous souhaitez rencontrer.
             </p>
-          ) : null}
+          )}
         </div>
 
         {/* Infos pratiques */}

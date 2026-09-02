@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { AppHeader } from "@/components/layout/app-header";
-import { getRdvOuvertureConfig, isRdvOuvert } from "@/lib/rdv-ouvert";
 import { SECTEUR_LABELS, SECTEUR_CODES } from "@/lib/referentiel/secteurs";
 import type { SecteurCode } from "@/lib/referentiel/secteurs";
 import { ProgrammeGrid } from "./programme-grid";
@@ -23,34 +22,6 @@ export default async function ProgrammePage({
     select: { id: true, exposantsFavoris: true },
   });
   if (!visiteur) redirect("/connexion");
-
-  const rdvConfig = await getRdvOuvertureConfig();
-  if (!isRdvOuvert(rdvConfig)) {
-    return (
-      <>
-        <AppHeader session={session} />
-        <main className="max-w-3xl mx-auto px-4 sm:px-6 py-16 text-center">
-          <div className="max-w-md mx-auto">
-            <p className="text-4xl mb-4">🔒</p>
-            <h1 className="text-2xl font-heading font-bold text-neutral-900 mb-3">
-              La sélection n'est pas encore ouverte
-            </h1>
-            <p className="text-neutral-600 text-sm mb-2">
-              {rdvConfig.ouvertureRdvAt
-                ? `Ouverture prévue le ${rdvConfig.ouvertureRdvAt.toLocaleString("fr-FR", { dateStyle: "long", timeStyle: "short" })}.`
-                : "La date d'ouverture sera communiquée prochainement."}
-            </p>
-            <p className="text-neutral-500 text-sm mb-6">
-              Tous les visiteurs pourront préparer leur programme en même temps dès l'ouverture.
-            </p>
-            <Link href="/espace-visiteur" className="text-primary hover:underline underline-offset-2 text-sm font-medium">
-              ← Retour à mon espace
-            </Link>
-          </div>
-        </main>
-      </>
-    );
-  }
 
   const sp = await searchParams;
 
@@ -90,7 +61,7 @@ export default async function ProgrammePage({
             Choisissez vos entreprises à voir
           </h1>
           <p className="text-sm text-neutral-700">
-            Sélectionnez les stands que vous souhaitez visiter. Votre programme est sauvegardé automatiquement.
+            Sélectionnez les stands que vous souhaitez visiter : votre liste est sauvegardée automatiquement. L&apos;accès aux stands est libre, sans rendez-vous.
           </p>
         </div>
 

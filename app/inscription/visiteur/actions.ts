@@ -10,6 +10,8 @@ import { inscriptionVisiteurSchema } from "@/lib/validation/visiteur";
 import { checkInscriptionRateLimit, messageAttente } from "@/lib/rate-limit";
 import { clientIp } from "@/lib/request-ip";
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://connect.mivl-orleans.fr";
+
 export type InscriptionVisiteurState = {
   ok: boolean;
   errors?: Record<string, string[]>;
@@ -78,7 +80,7 @@ export async function inscrireVisiteur(
     await sendEmail({
       to: email,
       template: "confirmation-inscription-visiteur",
-      data: { prenom },
+      data: { prenom, espaceUrl: `${APP_URL}/espace-visiteur` },
     });
   } catch {
     // Ne jamais bloquer l'inscription si l'envoi email échoue

@@ -73,7 +73,7 @@ interface TemplateData {
     creneau: string;
     exposant: string;
   };
-  "confirmation-inscription-visiteur": { prenom: string };
+  "confirmation-inscription-visiteur": { prenom: string; espaceUrl: string };
 }
 
 export interface RenderedEmail {
@@ -386,10 +386,12 @@ export function renderEmail<K extends EmailTemplate>(
           <p>Bonjour ${d.prenom},</p>
           <p>Votre inscription en tant que visiteur au salon <strong>Made In Val de Loire 2026</strong> est bien enregistrée.</p>
           <p>Le salon se tient le <strong>15 octobre 2026 au CO'Met d'Orléans</strong>. L'entrée est libre et gratuite.</p>
+          <p>Dès maintenant, repérez dans votre espace les entreprises que vous souhaitez rencontrer pour préparer votre journée. L'accès aux stands est libre : il n'y a aucun rendez-vous à prendre.</p>
+          <p><a href="${d.espaceUrl}">Préparer ma visite</a></p>
           <p>Vous recevrez un email de rappel quelques jours avant l'événement avec toutes les informations pratiques.</p>
           <p>À très bientôt,<br>L'équipe MIVL</p>
         `),
-        text: `Bonjour ${d.prenom}, votre inscription visiteur au salon Made In Val de Loire 2026 est enregistrée. Rendez-vous le 15 octobre 2026 au CO'Met d'Orléans. Entrée libre et gratuite.`,
+        text: `Bonjour ${d.prenom}, votre inscription visiteur au salon Made In Val de Loire 2026 est enregistrée. Rendez-vous le 15 octobre 2026 au CO'Met d'Orléans. Entrée libre et gratuite, sans rendez-vous. Préparez votre visite : ${d.espaceUrl}`,
       };
     }
     default: {
