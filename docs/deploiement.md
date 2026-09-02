@@ -26,6 +26,25 @@ Deux alias sont attendus dans `~/.ssh/config` (poste de l'admin) :
 | `htz-compute` | compute-01  |
 | `htz-data`    | data-01     |
 
+### Console Coolify
+
+Depuis le 02/09/2026, la console n'est plus joignable par `IP:8000`. Elle est
+servie par Traefik sur **https://web.mlanglois.fr** (domaine d'instance déclaré
+dans Coolify → *Settings* → *Instance's Domain*), avec certificat Let's Encrypt.
+Coolify route lui-même sa console, son temps réel (`/app`) et son terminal
+(`/terminal/ws`) à travers ce domaine : les ports 8000, 6001 et 6002 sont
+fermés à Internet par `DOCKER-USER` sur compute-01 (cf. §2.6).
+
+En secours, l'accès par tunnel reste possible depuis le poste de l'admin :
+
+```bash
+ssh -L 8000:localhost:8000 htz-compute    # puis http://localhost:8000
+```
+
+> ⚠️ Le compte administrateur doit avoir la **double authentification** activée
+> (profil → *Two Factor Authentication*). La console donne root sur les deux
+> serveurs et l'accès à tous les secrets.
+
 ### Repérer les conteneurs
 
 Ces snippets se collent **dans** la session SSH : `$APP` et `$DB` restent
@@ -216,41 +235,78 @@ docker exec -it \
 
 ### 2.5 Sécurité réseau data-01
 
-Le conteneur proxy Coolify publie PostgreSQL sur `0.0.0.0:5437` — le port est
-donc exposé sur l'interface publique. UFW ne filtre pas le trafic Docker
-(Docker insère ses règles **au-dessus** de celles d'UFW). La DB est donc
-protégée par `iptables` directement, dans la chaîne `DOCKER-USER` :
+Le conteneur proxy Coolify publie chaque PostgreSQL sur `0.0.0.0:<port>` — les
+ports sont donc exposés sur l'interface publique. data-01 n'a **pas** d'UFW, et
+UFW ne filtrerait de toute façon pas le trafic Docker (Docker insère ses règles
+au-dessus). La protection est `iptables`, chaîne `DOCKER-USER`, persistée par
+`netfilter-persistent` dans `/etc/iptables/rules.v4`.
+
+| Port | Base | Autorisé |
+|---|---|---|
+| 5437 | MIVL Connect | IP privée de compute-01 uniquement |
+| 5440 | (autre projet) | interface privée `enp7s0` uniquement |
+| 5433, 5435, 5438, 5439 | pack-objectif, cci-repere, cci-hello, mail-mlgs | IP publique **et** privée de compute-01 |
+
+Les quatre dernières ont été fermées à Internet le 02/09/2026 : elles étaient
+entièrement ouvertes, et deux d'entre elles subissaient une force brute
+(3 668 et 2 012 tentatives sur sept jours). Leurs applications joignent encore
+data-01 par son IP publique ; la règle privée est en place pour permettre la
+même bascule que MIVL (§ « Réseau privé ») quand on le décidera.
+
+Modèle de règles pour un nouveau port — **DROP d'abord, puis les ACCEPT** :
+`-I` insère en tête, donc l'ordre d'exécution est l'inverse de l'ordre de frappe.
 
 ```bash
-# Sur data-01 — noter le port 5437, et l'IP *privée* de compute-01
-iptables -I DOCKER-USER -p tcp --dport 5437 -s <ip-privée-compute-01> -j ACCEPT
-iptables -I DOCKER-USER -p tcp --dport 5437 -j DROP
-
-# Persister (package iptables-persistent)
+iptables -I DOCKER-USER 1 -p tcp --dport <port> -j DROP
+iptables -I DOCKER-USER 1 -s <ip-privée-compute-01>  -p tcp --dport <port> -j ACCEPT
+iptables -I DOCKER-USER 1 -s <ip-publique-compute-01> -p tcp --dport <port> -j ACCEPT   # si l'app passe encore par le public
 netfilter-persistent save
 ```
 
-**État vérifié le 02/09/2026** : les deux règles sont actives, persistées
-dans `/etc/iptables/rules.v4`, `netfilter-persistent` est activé, et le port
-5437 testé depuis une IP hors allowlist part en timeout. La base n'est pas
-joignable depuis Internet. Depuis la bascule sur le réseau privé, l'unique
-règle `ACCEPT` porte sur l'IP **privée** de compute-01 : l'IP publique n'est
-plus autorisée.
+**État vérifié le 02/09/2026** : règles actives et persistées, ports testés
+depuis Internet en timeout, voie compute-01 ouverte.
 
-Contrôler après tout reboot de data-01, réinstallation OS ou changement de
-port côté Coolify :
+Contrôler après tout reboot, réinstallation OS ou changement de port :
 
 ```bash
-# Les deux règles doivent apparaître
 ssh htz-data 'iptables -S DOCKER-USER'
-
-# Et le port doit être injoignable depuis n'importe quelle autre machine
 nc -z -v -w 6 <ip-publique-data-01> 5437     # attendu : timeout
 ```
 
-Ces règles sont la **seule** protection du port : le conteneur proxy Coolify
-le publie sur `0.0.0.0`. Si elles disparaissent, la base est exposée
-immédiatement.
+### 2.6 Sécurité réseau compute-01
+
+compute-01 a UFW (politique `INPUT DROP`), mais les ports publiés par Docker le
+contournent. Les ports de la console Coolify sont donc fermés dans
+`DOCKER-USER`, persistés par `netfilter-persistent` (installé le 02/09/2026 —
+il ne l'était pas, les règles n'auraient pas survécu à un redémarrage) :
+
+```
+-A DOCKER-USER -i eth0   -p tcp -m conntrack --ctorigdstport 8000 -j DROP
+-A DOCKER-USER -i enp7s0 -p tcp -m conntrack --ctorigdstport 8000 -j DROP
+-A DOCKER-USER -i eth0   -p tcp --dport 6001 -j DROP     (idem enp7s0, idem 6002)
+```
+
+> ⚠️ **Piège : `DOCKER-USER` voit le paquet APRÈS le DNAT.** Coolify publie sa
+> console en `8000 → 8080` : quand le paquet atteint `DOCKER-USER`, son port de
+> destination est déjà `8080`, et une règle `--dport 8000` ne matche jamais —
+> silencieusement (compteur à zéro, port toujours ouvert). Il faut filtrer sur
+> le port **d'origine** avec `-m conntrack --ctorigdstport`. Les ports 6001/6002
+> et tous les PostgreSQL de data-01 sont publiés à port identique, ce qui masque
+> le problème jusqu'au jour où on tombe sur un mapping différent. Vérifier
+> toujours depuis l'extérieur, jamais seulement en lisant les règles.
+
+> ⚠️ **Piège : ne jamais mettre de règle sans `-i eth0` sur 6001/6002.** Traefik
+> joint lui-même `coolify-realtime:6001/6002` à travers le pont Docker, et une
+> règle non qualifiée par interface couperait ce trajet interne — la console
+> perdrait le temps réel et le terminal.
+
+### 2.7 SSH (les deux serveurs)
+
+`/etc/ssh/sshd_config.d/99-durcissement.conf` : `PasswordAuthentication no`,
+`KbdInteractiveAuthentication no`, `X11Forwarding no`. Aucun compte ne possède de
+mot de passe, l'accès est exclusivement par clé. fail2ban est actif (prison
+`sshd`). Clés root autorisées : celle de l'admin, celles de Coolify, et sur
+data-01 la clé de sauvegarde à commande forcée (§4).
 
 ---
 

@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  // Ne pas annoncer la pile technique dans les réponses (audit, constat annexe).
+  poweredByHeader: false,
   turbopack: {
     root: __dirname,
   },
