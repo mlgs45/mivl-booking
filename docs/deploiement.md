@@ -283,8 +283,10 @@ pare-feu cloud bloque la voie publique, une application qui l'emprunterait
 encore perdrait sa base au prochain redémarrage de son pool de connexions —
 sans erreur immédiate, les pools étant paresseux.
 
-**État vérifié le 02/09/2026** : règles actives et persistées, ports testés
-depuis Internet en timeout, voie compute-01 ouverte.
+**État vérifié le 02/09/2026, après redémarrage réel des deux serveurs** :
+règles revenues à l'identique (12 sur data-01, 6 sur compute-01), ports testés
+depuis Internet en timeout, voie privée ouverte. La persistance par
+`netfilter-persistent` est donc éprouvée, pas seulement configurée.
 
 Contrôler après tout reboot, réinstallation OS ou changement de port :
 
