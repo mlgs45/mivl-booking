@@ -35,6 +35,8 @@ export default async function ExposantProfilPage() {
       elementsStand: true,
       elementsStandAutre: true,
       animations: true,
+      ressourcesMatin: true,
+      ressourcesApresMidi: true,
       innovationMiseEnAvant: true,
       descriptionInnovation: true,
       statutRecrutement: true,

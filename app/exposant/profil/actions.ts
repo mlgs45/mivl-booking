@@ -114,6 +114,8 @@ export async function sauvegarderProfil(
       elementsStand: d.elementsStand,
       elementsStandAutre: d.elementsStandAutre ?? null,
       animations: d.animations,
+      ressourcesMatin: d.ressourcesMatin,
+      ressourcesApresMidi: d.ressourcesApresMidi,
       innovationMiseEnAvant: d.innovationMiseEnAvant,
       descriptionInnovation: d.innovationMiseEnAvant
         ? (d.descriptionInnovation ?? null)
@@ -185,6 +187,8 @@ export async function soumettreProfil(
       elementsStand: d.elementsStand,
       elementsStandAutre: d.elementsStandAutre ?? null,
       animations: d.animations,
+      ressourcesMatin: d.ressourcesMatin,
+      ressourcesApresMidi: d.ressourcesApresMidi,
       innovationMiseEnAvant: d.innovationMiseEnAvant,
       descriptionInnovation: d.innovationMiseEnAvant
         ? (d.descriptionInnovation ?? null)

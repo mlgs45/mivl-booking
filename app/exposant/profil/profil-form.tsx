@@ -30,6 +30,8 @@ type ExposantProfil = Pick<
   | "secteurAutre"
   | "offres"
   | "typesOpportunites"
+  | "ressourcesMatin"
+  | "ressourcesApresMidi"
   | "metiersProposes"
   | "elementsStand"
   | "elementsStandAutre"
@@ -406,6 +408,51 @@ export function ProfilForm({
           disabled={structuralLock}
           errors={errors}
         />
+      </Section>
+
+      <hr className="border-neutral-100" />
+
+      {/* ── Section 6 : Accueil le jour J ──────────────────────────── */}
+      <Section
+        title="Votre capacité d'accueil le 15 octobre"
+        description="Ces deux réponses servent à construire les rendez-vous : le matin, les parcours des collégiens et lycéens ; l'après-midi, le speed dating emploi. Indiquez 0 si vous ne participez pas à ce temps."
+      >
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Field
+            label="Le matin, combien de personnes de votre stand peuvent recevoir un groupe de collégiens en même temps ?"
+            name="ressourcesMatin"
+            errors={errors}
+            hint="1 personne = 1 groupe de 6 élèves au plus, pendant 20 minutes. Sur la matinée, chaque personne accueille jusqu'à 6 groupes."
+          >
+            <input
+              type="number"
+              name="ressourcesMatin"
+              defaultValue={exposant.ressourcesMatin}
+              disabled={fullLock}
+              min={0}
+              max={20}
+              inputMode="numeric"
+              className={inputClass}
+            />
+          </Field>
+          <Field
+            label="L'après-midi, combien de personnes peuvent mener des entretiens de speed dating en même temps ?"
+            name="ressourcesApresMidi"
+            errors={errors}
+            hint="1 personne = 1 candidat à la fois, en tête-à-tête de 5 minutes."
+          >
+            <input
+              type="number"
+              name="ressourcesApresMidi"
+              defaultValue={exposant.ressourcesApresMidi}
+              disabled={fullLock}
+              min={0}
+              max={20}
+              inputMode="numeric"
+              className={inputClass}
+            />
+          </Field>
+        </div>
       </Section>
 
       <hr className="border-neutral-100" />

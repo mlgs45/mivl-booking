@@ -37,6 +37,16 @@ const METIER_SET = new Set<string>(METIER_CODES);
  * Schéma pour sauvegarde brouillon : tout est optionnel, les valeurs vides sont tolérées.
  * Sert pour auto-save et bouton "Enregistrer".
  */
+const ressourcesSchema = z.preprocess(
+  (v) => (v === "" || v === null || v === undefined ? undefined : v),
+  z.coerce
+    .number({ message: "Indiquez un nombre entier." })
+    .int("Indiquez un nombre entier.")
+    .min(0, "0 au minimum.")
+    .max(20, "20 au maximum — contactez la CCI au-delà.")
+    .default(1),
+);
+
 export const profilExposantDraftSchema = z.object({
   raisonSociale: z.string().trim().max(200).optional(),
   siret: z
@@ -90,6 +100,12 @@ export const profilExposantDraftSchema = z.object({
 
   innovationMiseEnAvant: z.boolean().default(false),
   descriptionInnovation: z.string().trim().max(1000).optional(),
+
+  // Capacité d'accueil le jour J — déclarée par l'exposant (cf. spécification
+  // « Parcours collèges du matin » §2). 0 = ne participe pas à ce temps.
+  // Un champ absent du formulaire (chaîne vide) garde la valeur par défaut.
+  ressourcesMatin: ressourcesSchema,
+  ressourcesApresMidi: ressourcesSchema,
 
   statutRecrutement: z
     .enum(STATUT_RECRUTEMENT_VALUES as [StatutRecrutement, ...StatutRecrutement[]])

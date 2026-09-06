@@ -36,6 +36,9 @@ export function extractProfilFromFormData(formData: FormData) {
 
     animations: all("animations"),
 
+    ressourcesMatin: str("ressourcesMatin"),
+    ressourcesApresMidi: str("ressourcesApresMidi"),
+
     innovationMiseEnAvant: bool("innovationMiseEnAvant"),
     descriptionInnovation: str("descriptionInnovation"),
 
