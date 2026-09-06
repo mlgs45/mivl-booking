@@ -87,8 +87,10 @@ export async function modifierProfilAdmin(
       elementsStand: d.elementsStand,
       elementsStandAutre: d.elementsStandAutre ?? null,
       animations: d.animations,
-      ressourcesMatin: d.ressourcesMatin,
-      ressourcesApresMidi: d.ressourcesApresMidi,
+      nomsRessourcesMatin: d.nomsRessourcesMatin,
+      nomsRessourcesApresMidi: d.nomsRessourcesApresMidi,
+      ressourcesMatin: d.nomsRessourcesMatin.length,
+      ressourcesApresMidi: d.nomsRessourcesApresMidi.length,
       innovationMiseEnAvant: d.innovationMiseEnAvant,
       descriptionInnovation: d.innovationMiseEnAvant
         ? (d.descriptionInnovation ?? null)

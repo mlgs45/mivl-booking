@@ -32,6 +32,8 @@ type ExposantProfil = Pick<
   | "typesOpportunites"
   | "ressourcesMatin"
   | "ressourcesApresMidi"
+  | "nomsRessourcesMatin"
+  | "nomsRessourcesApresMidi"
   | "metiersProposes"
   | "elementsStand"
   | "elementsStandAutre"
@@ -414,44 +416,26 @@ export function ProfilForm({
 
       {/* ── Section 6 : Accueil le jour J ──────────────────────────── */}
       <Section
-        title="Votre capacité d'accueil le 15 octobre"
-        description="Ces deux réponses servent à construire les rendez-vous : le matin, les parcours des collégiens et lycéens ; l'après-midi, le speed dating emploi. Indiquez 0 si vous ne participez pas à ce temps."
+        title="Qui accueille sur votre stand le 15 octobre ?"
+        description="Une ligne par personne. Le prénom est facultatif : il sert seulement à orienter les groupes le jour J (« le groupe 4eB est attendu par Marie »). Ne laissez aucune ligne si vous ne participez pas à ce temps."
       >
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field
-            label="Le matin, combien de personnes de votre stand peuvent recevoir un groupe de collégiens en même temps ?"
-            name="ressourcesMatin"
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <RessourcesListe
+            name="nomsRessourcesMatin"
+            titre="Le matin — parcours des collégiens et lycéens"
+            aide="Chaque personne reçoit un groupe de 6 élèves au plus, 20 minutes, jusqu'à 6 groupes dans la matinée."
+            initial={initialNoms(exposant.nomsRessourcesMatin, exposant.ressourcesMatin)}
+            disabled={fullLock}
             errors={errors}
-            hint="1 personne = 1 groupe de 6 élèves au plus, pendant 20 minutes. Sur la matinée, chaque personne accueille jusqu'à 6 groupes."
-          >
-            <input
-              type="number"
-              name="ressourcesMatin"
-              defaultValue={exposant.ressourcesMatin}
-              disabled={fullLock}
-              min={0}
-              max={20}
-              inputMode="numeric"
-              className={inputClass}
-            />
-          </Field>
-          <Field
-            label="L'après-midi, combien de personnes peuvent mener des entretiens de speed dating en même temps ?"
-            name="ressourcesApresMidi"
+          />
+          <RessourcesListe
+            name="nomsRessourcesApresMidi"
+            titre="L'après-midi — speed dating emploi"
+            aide="Chaque personne reçoit un candidat à la fois, en tête-à-tête de 5 minutes."
+            initial={initialNoms(exposant.nomsRessourcesApresMidi, exposant.ressourcesApresMidi)}
+            disabled={fullLock}
             errors={errors}
-            hint="1 personne = 1 candidat à la fois, en tête-à-tête de 5 minutes."
-          >
-            <input
-              type="number"
-              name="ressourcesApresMidi"
-              defaultValue={exposant.ressourcesApresMidi}
-              disabled={fullLock}
-              min={0}
-              max={20}
-              inputMode="numeric"
-              className={inputClass}
-            />
-          </Field>
+          />
         </div>
       </Section>
 
@@ -693,6 +677,88 @@ function Section({
       )}
       <div className="space-y-4">{children}</div>
     </section>
+  );
+}
+
+/**
+ * Une fiche saisie avant la liste nommée n'a qu'un compteur : on l'affiche comme
+ * autant de lignes sans prénom, pour que l'enregistrement suivant reste cohérent.
+ */
+function initialNoms(noms: string[], compteur: number): string[] {
+  if (noms.length > 0) return noms;
+  return Array.from({ length: Math.max(0, compteur) }, () => "");
+}
+
+function RessourcesListe({
+  name,
+  titre,
+  aide,
+  initial,
+  disabled,
+  errors,
+}: {
+  name: string;
+  titre: string;
+  aide: string;
+  initial: string[];
+  disabled: boolean;
+  errors: Record<string, string[]>;
+}) {
+  const [noms, setNoms] = useState<string[]>(initial);
+  const MAX = 20;
+  return (
+    <div className="space-y-3">
+      <div>
+        <p className="text-sm font-medium text-neutral-900">{titre}</p>
+        <p className="text-xs text-neutral-600 mt-0.5">{aide}</p>
+      </div>
+      {noms.length === 0 ? (
+        <p className="text-sm text-neutral-500 italic">Aucune personne — vous ne participez pas à ce temps.</p>
+      ) : (
+        <ul className="space-y-2">
+          {noms.map((nom, i) => (
+            <li key={i} className="flex items-center gap-2">
+              <span className="shrink-0 w-24 text-xs font-medium text-neutral-600">Ressource {i + 1}</span>
+              <input
+                type="text"
+                name={name}
+                value={nom}
+                onChange={(e) => setNoms(noms.map((n, j) => (j === i ? e.target.value : n)))}
+                placeholder="Prénom (facultatif)"
+                maxLength={40}
+                disabled={disabled}
+                className={inputClass}
+                aria-label={`Ressource ${i + 1}, prénom facultatif`}
+              />
+              {!disabled && (
+                <button
+                  type="button"
+                  onClick={() => setNoms(noms.filter((_, j) => j !== i))}
+                  className="shrink-0 text-neutral-500 hover:text-danger text-sm px-2 py-1"
+                  aria-label={`Retirer la ressource ${i + 1}`}
+                >
+                  ✕
+                </button>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+      {!disabled && noms.length < MAX && (
+        <button
+          type="button"
+          onClick={() => setNoms([...noms, ""])}
+          className="text-sm font-medium text-primary hover:underline underline-offset-2"
+        >
+          + Ajouter une personne
+        </button>
+      )}
+      <p className="text-xs text-neutral-500">
+        {noms.length} personne{noms.length > 1 ? "s" : ""}
+        {name === "nomsRessourcesMatin" && noms.length > 0 ? ` — jusqu'à ${noms.length * 6} groupes dans la matinée` : ""}
+      </p>
+      <FieldErrors errors={errors} field={name} />
+    </div>
   );
 }
 

@@ -37,15 +37,10 @@ const METIER_SET = new Set<string>(METIER_CODES);
  * Schéma pour sauvegarde brouillon : tout est optionnel, les valeurs vides sont tolérées.
  * Sert pour auto-save et bouton "Enregistrer".
  */
-const ressourcesSchema = z.preprocess(
-  (v) => (v === "" || v === null || v === undefined ? undefined : v),
-  z.coerce
-    .number({ message: "Indiquez un nombre entier." })
-    .int("Indiquez un nombre entier.")
-    .min(0, "0 au minimum.")
-    .max(20, "20 au maximum — contactez la CCI au-delà.")
-    .default(1),
-);
+const nomsRessourcesSchema = z
+  .array(z.string().trim().max(40, "40 caractères au maximum."))
+  .max(20, "20 personnes au maximum — contactez la CCI au-delà.")
+  .default([]);
 
 export const profilExposantDraftSchema = z.object({
   raisonSociale: z.string().trim().max(200).optional(),
@@ -101,11 +96,11 @@ export const profilExposantDraftSchema = z.object({
   innovationMiseEnAvant: z.boolean().default(false),
   descriptionInnovation: z.string().trim().max(1000).optional(),
 
-  // Capacité d'accueil le jour J — déclarée par l'exposant (cf. spécification
-  // « Parcours collèges du matin » §2). 0 = ne participe pas à ce temps.
-  // Un champ absent du formulaire (chaîne vide) garde la valeur par défaut.
-  ressourcesMatin: ressourcesSchema,
-  ressourcesApresMidi: ressourcesSchema,
+  // Personnes d'accueil le jour J, déclarées par l'exposant (cf. spécification
+  // « Parcours collèges du matin » §2). Une entrée par personne, prénom facultatif
+  // (chaîne vide = « Ressource n »). Liste vide = ne participe pas à ce temps.
+  nomsRessourcesMatin: nomsRessourcesSchema,
+  nomsRessourcesApresMidi: nomsRessourcesSchema,
 
   statutRecrutement: z
     .enum(STATUT_RECRUTEMENT_VALUES as [StatutRecrutement, ...StatutRecrutement[]])

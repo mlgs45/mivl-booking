@@ -208,6 +208,11 @@ model Exposant {
   ressourcesMatin              Int            @default(1)
   /// Nombre de ressources humaines dispos pour accueillir en parallèle l'après-midi
   ressourcesApresMidi          Int            @default(1)
+  /// Personnes qui accueillent, dans l'ordre (index 1..N = ressourceIndex des créneaux).
+  /// Entrée vide = personne non nommée, affichée « Ressource n ». La longueur de la
+  /// liste fait foi ; ressourcesMatin / ressourcesApresMidi sont maintenus égaux.
+  nomsRessourcesMatin          String[]       @default([])
+  nomsRessourcesApresMidi      String[]       @default([])
 
   /// Quota : nb max de groupes scolaires accueillis sur un même créneau de 20 min
   quotaGroupesMatinParCreneau  Int            @default(1)
